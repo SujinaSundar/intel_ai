@@ -1,0 +1,81 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+.venv/
+venv/
+env/
+
+# Environment Variables
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Logs
+*.log
+logs/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Build
+build/
+dist/
+*.egg-info/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Airflow
+airflow.db
+airflow-webserver.pid
+airflow.cfg
+airflow/logs/
+airflow/plugins/__pycache__/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# ChromaDB
+chroma/
+chromadb/
+*.sqlite3
+
+# Neo4j
+neo4j/data/
+neo4j/logs/
+neo4j/import/
+
+# Docker
+docker-compose.override.yml
+
+# Local Databases
+*.db
+
+# Secrets & Keys
+*.pem
+*.key
+*.crt
+
+# Temporary Files
+tmp/
+temp/
+.cache/
+
+# Alembic
+alembic/versions/__pycache__/
+
+# Ruff / MyPy
+.mypy_cache/
+.ruff_cache/
