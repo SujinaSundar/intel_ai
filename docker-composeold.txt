@@ -1,0 +1,54 @@
+services:
+
+  postgres:
+    image: postgres:17
+    container_name: intel-ai-postgres
+
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  neo4j:
+    image: neo4j:5
+    container_name: intel-ai-neo4j
+
+    environment:
+      NEO4J_AUTH: ${NEO4J_USERNAME}/${NEO4J_PASSWORD}
+
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+
+    volumes:
+      - neo4j_data:/data
+
+  airflow:
+    
+    image: apache/airflow:2.10.0
+    container_name: intel-ai-airflow
+
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+
+    ports:
+      - "8080:8080"
+
+    command: standalone
+
+    volumes:
+      - ./services/etl-service:/opt/airflow/etl-service
+      - ./services/etl-service/app/dags:/opt/airflow/dags
+
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+  neo4j_data:

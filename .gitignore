@@ -1,81 +1,146 @@
+# =========================
 # Python
+# =========================
 __pycache__/
 *.py[cod]
 *$py.class
 
+# =========================
 # Virtual Environment
+# =========================
 .venv/
 venv/
 env/
 
+# =========================
 # Environment Variables
+# =========================
 .env
 .env.*
+!.env.example
 
+# =========================
 # IDE
+# =========================
 .vscode/
 .idea/
 
+# =========================
 # Jupyter
+# =========================
 .ipynb_checkpoints/
 
+# =========================
 # Logs
+# =========================
 *.log
 logs/
 
-# Testing
+# =========================
+# Testing & Coverage
+# =========================
 .pytest_cache/
 .coverage
+coverage.xml
 htmlcov/
 
-# Build
+# =========================
+# Build Artifacts
+# =========================
 build/
 dist/
 *.egg-info/
 
+# =========================
 # OS Files
+# =========================
 .DS_Store
 Thumbs.db
 
+# =========================
 # Airflow
+# =========================
 airflow.db
 airflow-webserver.pid
 airflow.cfg
 airflow/logs/
 airflow/plugins/__pycache__/
 
-# Streamlit
+# =========================
+# Streamlit Secrets
+# =========================
 .streamlit/secrets.toml
 
+# =========================
 # ChromaDB
+# =========================
 chroma/
 chromadb/
-*.sqlite3
+chroma_db/
 
-# Neo4j
+# =========================
+# Neo4j Volumes
+# =========================
 neo4j/data/
 neo4j/logs/
 neo4j/import/
 
+# =========================
 # Docker
+# =========================
 docker-compose.override.yml
 
+# =========================
 # Local Databases
+# =========================
 *.db
 
+# =========================
 # Secrets & Keys
+# =========================
 *.pem
 *.key
 *.crt
 
+# =========================
 # Temporary Files
+# =========================
 tmp/
 temp/
 .cache/
 
+# =========================
 # Alembic
+# =========================
 alembic/versions/__pycache__/
 
-# Ruff / MyPy
+# =========================
+# Type Checkers / Linters
+# =========================
 .mypy_cache/
 .ruff_cache/
+.pyright/
+
+# =========================
+# Hugging Face
+# =========================
+.huggingface/
+hf_cache/
+
+# =========================
+# Docker Volumes
+# =========================
+postgres_data/
+neo4j_data/
+
+# =========================
+# PDF Reports (Local Storage)
+# =========================
+database/reports/
+
+# =========================
+# Misc
+# =========================
+*.swp
+*.swo
+
