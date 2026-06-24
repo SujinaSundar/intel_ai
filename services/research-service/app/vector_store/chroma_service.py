@@ -1,9 +1,14 @@
+"""
+ChromaDB client.
+"""
+
 import chromadb
 
+
 client = chromadb.PersistentClient(
-    path="./chroma_data"
+    path="chroma_db"
 )
 
 collection = client.get_or_create_collection(
-    name="financial_documents"
+    name="financial_reports"
 )

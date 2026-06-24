@@ -1,11 +1,13 @@
 """
-Generic report ingestion module.
+Load report and store chunks.
 
 Workflow
 --------
 PDF
  ↓
 Extract Text
+ ↓
+Check Existing Report
  ↓
 Save Report Metadata
  ↓
@@ -15,6 +17,7 @@ Save Chunks
 """
 
 from app.database.connection import SessionLocal
+
 from app.database.models import (
     ResearchReport,
     DocumentChunk
@@ -55,8 +58,6 @@ def load_report(
 
     quarter : str | None
         Quarter information.
-        Example:
-        Q1, Q2, Q3, Q4
 
     Returns
     -------
@@ -67,12 +68,34 @@ def load_report(
 
     try:
 
-        # Extract text from PDF
+        # Check whether report already exists
+        existing_report = (
+            db.query(ResearchReport)
+            .filter(
+                ResearchReport.company_id == company_id,
+                ResearchReport.report_type == report_type,
+                ResearchReport.year == year,
+                ResearchReport.quarter == quarter
+            )
+            .first()
+        )
+
+        if existing_report:
+
+            print(
+                f"Report already exists "
+                f"(Company {company_id}, "
+                f"{report_type}, {year})."
+            )
+
+            return
+
+        # Extract text
         text = extract_pdf_text(
             pdf_path
         )
 
-        # Save report metadata
+        # Save metadata
         report = ResearchReport(
             company_id=company_id,
             report_type=report_type,
@@ -87,9 +110,13 @@ def load_report(
 
         db.refresh(report)
 
-        # Split into chunks
+        # Generate chunks
         chunks = split_into_chunks(
             text
+        )
+
+        print(
+            f"Generated {len(chunks)} chunks."
         )
 
         # Store chunks
@@ -101,7 +128,9 @@ def load_report(
                 chunk_text=chunk
             )
 
-            db.add(document_chunk)
+            db.add(
+                document_chunk
+            )
 
         db.commit()
 
@@ -120,55 +149,3 @@ def load_report(
     finally:
 
         db.close()
-
-
-"""
-Load reports into database.
-"""
-
-from app.report_ingestion.report_loader import (
-    load_report
-)
-
-
-def main() -> None:
-    """
-    Load sample reports.
-    """
-
-    load_report(
-        company_id=1,
-        report_type="annual",
-        year=2026,
-        pdf_path="app/database/reports/infosys-ar-26.pdf"
-    )
-
-load_report(
-    company_id=2,
-    report_type="annual",
-    year=2025,
-    pdf_path="app/database/reports/HDFC_Bank_Annual_Report_2024_25.pdf"
-)
-
-load_report(
-    company_id=4,
-    report_type="annual",
-    year=2025,
-    pdf_path="app/database/reports/LNT_AR_Y2026.pdf"
-)
-
-load_report(
-    company_id=1,
-    report_type="annual",
-    year=2025,
-    pdf_path="app/database/reports/RIL-IAR-2025.pdf"
-)
-
-load_report(
-    company_id=8,
-    report_type="annual",
-    year=2025,
-    pdf_path="app/database/reports/tcs_report_2025-26.pdf"
-)
-if __name__ == "__main__":
-    main()

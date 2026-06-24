@@ -16,7 +16,7 @@ load_report(
     company_id=2,
     report_type="annual",
     year=2025,
-    pdf_path="app/database/reports/HDFC_Bank_Annual_Report_2024_25"
+    pdf_path="app/database/reports/HDFC_Bank_Annual_Report_2024_25.pdf"
 )
 
 load_report(
