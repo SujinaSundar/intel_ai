@@ -5,45 +5,45 @@ GraphRAG prompt template.
 
 def build_graph_prompt(
     question: str,
-    graph_documents: list[str],
-    sentiment_text: str,
-    stock_text: str
+    graph_documents: list[str]
 ) -> str:
     """
     Build GraphRAG prompt.
     """
 
-    graph_context = "\n".join(
-        graph_documents
-    )
+    if graph_documents:
+
+        graph_context = "\n".join(
+            graph_documents
+        )
+
+    else:
+
+        graph_context = (
+            "No graph relationships found."
+        )
 
     prompt = f"""
 You are a financial research assistant.
 
-Use ONLY the information provided below.
-
-Use graph relationships, sentiment information and stock data.
+Answer ONLY using the graph
+relationships provided below.
 
 Do not use external knowledge.
 
-Do not make definitive investment recommendations.
+If the answer cannot be found,
+say:
 
-If information is unavailable, explicitly say so.
+"Information unavailable in graph."
 
 Graph Context
 -------------
+
 {graph_context}
-
-Sentiment
----------
-{sentiment_text}
-
-Stock Information
------------------
-{stock_text}
 
 Question
 --------
+
 {question}
 
 Answer:

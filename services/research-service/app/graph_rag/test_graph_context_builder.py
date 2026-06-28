@@ -1,16 +1,20 @@
 """
-Test graph context builder.
+Test Graph Context Builder.
 """
 
 from app.graph_rag.graph_context_builder import (
-    build_graph_context
+    build_context
 )
 
 
 def main():
 
-    context = build_graph_context(
-        "Infosys"
+    company_name = input(
+        "Enter company name: "
+    )
+
+    context = build_context(
+        company_name
     )
 
     print()
@@ -23,32 +27,8 @@ def main():
         "-" * 80
     )
 
-    for document in context[
-        "graph_documents"
-    ]:
-
-        print(
-            document
-        )
-
-    print()
-
     print(
-        "Sentiment"
-    )
-
-    print(
-        context["sentiment"]
-    )
-
-    print()
-
-    print(
-        "Stock"
-    )
-
-    print(
-        context["stock"]
+        context
     )
 
 

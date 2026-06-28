@@ -1,6 +1,3 @@
-"""
-GraphRAG pipeline.
-"""
 
 from app.graph_rag.graph_context_builder import (
     build_graph_context
@@ -28,19 +25,10 @@ def ask_graph_question(
     )
 
     prompt = build_graph_prompt(
-
         question=question,
-
         graph_documents=
-        context["graph_documents"],
-
-        sentiment_text=
-        context["sentiment"],
-
-        stock_text=
-        context["stock"]
+        context["graph_documents"]
     )
-
     answer = generate_answer(
         prompt
     )

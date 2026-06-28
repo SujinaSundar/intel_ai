@@ -6,21 +6,21 @@ from app.report_ingestion.report_loader import (
 def main() -> None:
 
     load_report(
-        company_id=1,
-        report_type="annual",
-        year=2026,
-        pdf_path="app/database/reports/infosys-ar-26.pdf"
-    )
+    company_id=3,
+    report_type="annual",
+    year=2026,
+    pdf_path="app/database/reports/infosys-ar-26.pdf"
+)
 
 load_report(
-    company_id=2,
+    company_id=4,
     report_type="annual",
     year=2025,
     pdf_path="app/database/reports/HDFC_Bank_Annual_Report_2024_25.pdf"
 )
 
 load_report(
-    company_id=4,
+    company_id=8,
     report_type="annual",
     year=2025,
     pdf_path="app/database/reports/LNT_AR_Y2026.pdf"
@@ -34,7 +34,7 @@ load_report(
 )
 
 load_report(
-    company_id=8,
+    company_id=2,
     report_type="annual",
     year=2025,
     pdf_path="app/database/reports/tcs_report_2025-26.pdf"

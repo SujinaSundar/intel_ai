@@ -1,5 +1,5 @@
 """
-Graph retrieval service.
+Graph retriever.
 """
 
 from app.graph_rag.neo4j_service import (
@@ -8,18 +8,10 @@ from app.graph_rag.neo4j_service import (
 
 
 def retrieve_graph_context(
-    company_name: str
+    entity_name: str
 ) -> list[str]:
     """
-    Retrieve graph information.
-
-    Parameters
-    ----------
-    company_name : str
-
-    Returns
-    -------
-    list[str]
+    Retrieve graph context.
     """
 
     driver = get_driver()
@@ -27,30 +19,30 @@ def retrieve_graph_context(
     with driver.session() as session:
 
         result = session.run(
+
             """
-            MATCH (c:Company {name:$company_name})-[r]->(n)
+            MATCH (a)-[r]->(b)
+
+            WHERE a.name = $name
 
             RETURN
-                c.name AS company,
-                type(r) AS relationship,
-                n.name AS entity
+                a.name,
+                type(r),
+                b.name
             """,
 
-            company_name=company_name
+            name=entity_name
         )
 
-        context = []
+        context = set()
 
-        for record in result:
+        for row in result:
 
-            sentence = (
-                f"{record['company']} "
-                f"{record['relationship']} "
-                f"{record['entity']}"
+            context.add(
+
+                f"{row[0]} "
+                f"{row[1]} "
+                f"{row[2]}"
             )
 
-            context.append(
-                sentence
-            )
-
-    return context
+        return list(context)

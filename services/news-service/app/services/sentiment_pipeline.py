@@ -20,7 +20,8 @@ from app.database.connection import SessionLocal
 
 from app.database.models import (
     NewsMetadata,
-    SentimentScore
+    SentimentScore,
+    Company
 )
 
 from app.sentiment.sentiment_service import (
@@ -87,7 +88,6 @@ def process_news_sentiment() -> None:
         sentiment = SentimentScore(
             news_id=article.id,
             company_id=article.company_id,
-            sentiment_score=sentiment_score,
             sentiment_label=label,
             confidence_score=confidence
         )

@@ -1,26 +1,30 @@
 """
-Test graph loader.
+Test Graph Loader.
 """
 
 from app.graph_rag.graph_loader import (
-    load_chunks
+    load_company_chunks
 )
 
 
 def main():
 
-    chunks = load_chunks()
+    chunks = load_company_chunks(
+        "TCS"
+    )
 
     print()
 
     print(
-        "Total chunks:"
+        f"Total chunks: {len(chunks)}"
     )
+    for i in range(5):
+        print(f"Chunk {i+1}")
+        print("-" * 80)
 
-    print(
-        len(chunks)
-    )
-
+        print(
+            chunks[i][:300]
+        )
     print()
 
     print(

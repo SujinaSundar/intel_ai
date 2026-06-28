@@ -1,5 +1,5 @@
 """
-Test graph retrieval.
+Test Graph Retriever.
 """
 
 from app.graph_rag.graph_retriever import (
@@ -9,8 +9,12 @@ from app.graph_rag.graph_retriever import (
 
 def main():
 
-    context = retrieve_graph_context(
-        "Infosys"
+    entity_name = input(
+        "Enter entity name: "
+    )
+
+    results = retrieve_graph_context(
+        entity_name
     )
 
     print()
@@ -20,13 +24,13 @@ def main():
     )
 
     print(
-        "-" * 50
+        "-" * 80
     )
 
-    for item in context:
+    for row in results:
 
         print(
-            item
+            row
         )
 
 
