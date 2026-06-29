@@ -19,16 +19,18 @@ from app.llm.llm_service import (
 
 def ask_question(
     question: str,
-    company_name: str
+    company_name: str | None = None
 ) -> dict:
     """
-    Execute RAG pipeline.
+    Execute Traditional RAG pipeline.
 
     Parameters
     ----------
     question : str
+        User question.
 
-    company_name : str
+    company_name : str | None
+        Optional company filter.
 
     Returns
     -------
@@ -55,6 +57,8 @@ def ask_question(
     sentiment = context["sentiment"]
 
     stock = context["stock"]
+    
+    metadata = context["metadata"]
 
     # -----------------------------
     # Sentiment
@@ -111,10 +115,15 @@ def ask_question(
     # -----------------------------
 
     prompt = build_prompt(
+
         question=question,
+
         documents=documents,
+
         sentiment=sentiment_text,
+
         stock_data=stock_text
+
     )
 
     # -----------------------------
@@ -135,6 +144,8 @@ def ask_question(
 
         "question": question,
 
+        "company_name": company_name,
+
         "answer": answer,
 
         "documents": documents,
@@ -146,6 +157,8 @@ def ask_question(
         "stock": stock_data,
 
         "retrieval_time": retrieval_time,
+        
+        "metadata": metadata,
 
         "num_chunks": len(documents)
 

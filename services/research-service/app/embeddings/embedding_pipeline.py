@@ -15,7 +15,9 @@ Mark as Embedded
 from app.database.connection import SessionLocal
 
 from app.database.models import (
-    DocumentChunk
+    DocumentChunk,
+    ResearchReport,
+    Company
 )
 
 from app.embeddings.embedding_model import (
@@ -31,32 +33,39 @@ def generate_embeddings() -> None:
     """
     Generate embeddings for report chunks and
     store them in ChromaDB.
-
-    Steps
-    -----
-    1. Fetch chunks that are not embedded.
-    2. Generate embeddings using SentenceTransformer.
-    3. Store embeddings in ChromaDB.
-    4. Mark chunks as embedded.
-
-    Returns
-    -------
-    None
     """
 
     db = SessionLocal()
 
     try:
 
-        chunks = (
-            db.query(DocumentChunk)
+        rows = (
+
+            db.query(
+                DocumentChunk,
+                ResearchReport,
+                Company
+            )
+
+            .join(
+                ResearchReport,
+                DocumentChunk.report_id == ResearchReport.id
+            )
+
+            .join(
+                Company,
+                ResearchReport.company_id == Company.id
+            )
+
             .filter(
                 DocumentChunk.is_embedded == False
             )
+
             .all()
+
         )
 
-        if not chunks:
+        if not rows:
 
             print(
                 "No chunks found."
@@ -65,13 +74,15 @@ def generate_embeddings() -> None:
             return
 
         print(
-            f"Found {len(chunks)} chunks."
+            f"Found {len(rows)} chunks."
         )
 
-        # Extract chunk texts
         texts = [
+
             chunk.chunk_text
-            for chunk in chunks
+
+            for chunk, report, company in rows
+
         ]
 
         print(
@@ -79,9 +90,13 @@ def generate_embeddings() -> None:
         )
 
         embeddings = embedding_model.encode(
+
             texts,
+
             batch_size=32,
+
             show_progress_bar=True
+
         )
 
         batch_size = 5000
@@ -91,12 +106,16 @@ def generate_embeddings() -> None:
         )
 
         for i in range(
+
             0,
-            len(chunks),
+
+            len(rows),
+
             batch_size
+
         ):
 
-            batch_chunks = chunks[
+            batch_rows = rows[
                 i:i + batch_size
             ]
 
@@ -111,8 +130,11 @@ def generate_embeddings() -> None:
             collection.add(
 
                 ids=[
+
                     str(chunk.id)
-                    for chunk in batch_chunks
+
+                    for chunk, _, _ in batch_rows
+
                 ],
 
                 embeddings=batch_embeddings.tolist(),
@@ -122,26 +144,42 @@ def generate_embeddings() -> None:
                 metadatas=[
 
                     {
-                        "report_id": chunk.report_id,
+
+                        "company_id": company.id,
+
+                        "company_name": company.company_name,
+
+                        "report_id": report.id,
+
+                        "report_type": report.report_type,
+
+                        "year": report.year,
+
                         "chunk_number": chunk.chunk_number
+
                     }
 
-                    for chunk in batch_chunks
+                    for chunk, report, company in batch_rows
 
                 ]
+
             )
 
             print(
+
                 f"Inserted "
-                f"{min(i + batch_size, len(chunks))}"
-                f"/{len(chunks)} chunks"
+
+                f"{min(i + batch_size, len(rows))}"
+
+                f"/{len(rows)} chunks"
+
             )
 
         print(
             "Updating PostgreSQL..."
         )
 
-        for chunk in chunks:
+        for chunk, _, _ in rows:
 
             chunk.is_embedded = True
 

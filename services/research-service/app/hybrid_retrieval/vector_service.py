@@ -9,8 +9,9 @@ from app.retrieval.retrieval_service import (
 
 def vector_retrieve(
     query: str,
+    company_name: str | None = None,
     top_k: int = 5
-) -> list[str]:
+) -> dict:
     """
     Retrieve documents using vector search.
 
@@ -18,14 +19,22 @@ def vector_retrieve(
     ----------
     query : str
 
+    company_name : str | None
+        Optional company filter.
+
     top_k : int
 
     Returns
     -------
-    list[str]
+    dict
     """
 
     return retrieve_documents(
+
         query=query,
+
+        company_name=company_name,
+
         top_k=top_k
+
     )

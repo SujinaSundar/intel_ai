@@ -7,16 +7,14 @@ Question
     ↓
 Report Retrieval
     ↓
-Sentiment Retrieval
+Sentiment Retrieval (Optional)
     ↓
-Stock Price Retrieval
+Stock Price Retrieval (Optional)
     ↓
 Combined Context
 """
 
-from app.database.connection import (
-    SessionLocal
-)
+from app.database.connection import SessionLocal
 
 from app.database.models import (
     Company,
@@ -31,7 +29,7 @@ from app.retrieval.retrieval_service import (
 
 def build_context(
     question: str,
-    company_name: str
+    company_name: str | None = None
 ) -> dict:
     """
     Build context for RAG.
@@ -40,7 +38,8 @@ def build_context(
     ----------
     question : str
 
-    company_name : str
+    company_name : str | None
+        Optional company filter.
 
     Returns
     -------
@@ -51,56 +50,110 @@ def build_context(
 
     try:
 
-        company = (
-            db.query(
-                Company
-            )
-            .filter(
-                Company.company_name.ilike(
-                    company_name
+        company = None
+
+        sentiment = None
+
+        stock = None
+
+        metadata = []
+
+        # -----------------------------
+        # Company-specific retrieval
+        # -----------------------------
+
+        if company_name:
+
+            company = (
+                db.query(
+                    Company
                 )
+                .filter(
+                    Company.company_name.ilike(
+                        company_name
+                    )
+                )
+                .first()
             )
-            .first()
-        )
 
-        if company is None:
+            if company is None:
 
-            return {}
+                return {
 
-        documents = retrieve_documents(
-            query=question,
-            top_k=5
-        )
+                    "documents": [],
 
-        sentiment = (
-            db.query(
-                SentimentScore
-            )
-            .filter(
-                SentimentScore.company_id == company.id
-            )
-            .order_by(
-                SentimentScore.created_at.desc()
-            )
-            .first()
-        )
+                    "metadata": [],
 
-        stock = (
-            db.query(
-                StockPrice
+                    "sentiment": None,
+
+                    "stock": None
+                }
+
+            retrieval_result = retrieve_documents(
+
+                query=question,
+
+                company_name=company_name,
+
+                top_k=5
+
             )
-            .filter(
-                StockPrice.company_id == company.id
+
+            documents = retrieval_result["documents"]
+
+            metadata = retrieval_result["metadata"]
+
+            sentiment = (
+                db.query(
+                    SentimentScore
+                )
+                .filter(
+                    SentimentScore.company_id == company.id
+                )
+                .order_by(
+                    SentimentScore.created_at.desc()
+                )
+                .first()
             )
-            .order_by(
-                StockPrice.trade_date.desc()
+
+            stock = (
+                db.query(
+                    StockPrice
+                )
+                .filter(
+                    StockPrice.company_id == company.id
+                )
+                .order_by(
+                    StockPrice.trade_date.desc()
+                )
+                .first()
             )
-            .first()
-        )
+
+        # -----------------------------
+        # Global retrieval
+        # -----------------------------
+
+        else:
+
+            retrieval_result = retrieve_documents(
+
+                query=question,
+
+                company_name=None,
+
+                top_k=5
+
+            )
+
+            documents = retrieval_result["documents"]
+
+            metadata = retrieval_result["metadata"]
 
         return {
 
             "documents": documents,
+
+            "metadata": metadata,
 
             "sentiment": sentiment,
 

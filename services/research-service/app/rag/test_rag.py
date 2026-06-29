@@ -9,8 +9,6 @@ from app.rag.rag_pipeline import (
 
 def main():
 
-    company_name = "HDFC Bank"
-
     while True:
 
         question = input(
@@ -22,8 +20,7 @@ def main():
             break
 
         result = ask_question(
-            question=question,
-            company_name=company_name
+            question=question
         )
 
         print()
@@ -40,12 +37,44 @@ def main():
         print("RETRIEVED DOCUMENTS")
         print("=" * 100)
 
-        for i, doc in enumerate(result["documents"], start=1):
+        documents = result["documents"]
+
+        metadata = result.get(
+            "metadata",
+            []
+        )
+
+        for i, doc in enumerate(
+            documents,
+            start=1
+        ):
 
             print(f"\nChunk {i}")
             print("-" * 80)
 
-            # Show first 700 characters
+            # Display metadata if available
+            if i <= len(metadata):
+
+                info = metadata[i - 1]
+
+                print(
+                    f"Company     : {info.get('company_name', 'N/A')}"
+                )
+
+                print(
+                    f"Report Type : {info.get('report_type', 'N/A')}"
+                )
+
+                print(
+                    f"Year        : {info.get('year', 'N/A')}"
+                )
+
+                print(
+                    f"Chunk No.   : {info.get('chunk_number', 'N/A')}"
+                )
+
+                print("-" * 80)
+
             print(doc[:700])
 
         print()
@@ -54,8 +83,14 @@ def main():
         print("RETRIEVAL INFO")
         print("=" * 100)
 
-        print(f"Pipeline       : {result['pipeline']}")
-        print(f"Chunks         : {result['num_chunks']}")
+        print(
+            f"Pipeline       : {result['pipeline']}"
+        )
+
+        print(
+            f"Chunks         : {result['num_chunks']}"
+        )
+
         print(
             f"Retrieval Time : "
             f"{result['retrieval_time']:.2f} sec"

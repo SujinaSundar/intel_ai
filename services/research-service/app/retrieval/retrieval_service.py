@@ -8,7 +8,9 @@ Question
 Generate Query Embedding
     ↓
 ChromaDB Search
-    ↓
+        ↓
+(Optional Company Filter)
+        ↓
 Top K Chunks
 """
 
@@ -23,6 +25,7 @@ from app.vector_store.chroma_service import (
 
 def retrieve_documents(
     query: str,
+    company_name: str | None = None,
     top_k: int = 5
 ) -> list[str]:
     """
@@ -32,6 +35,9 @@ def retrieve_documents(
     ----------
     query : str
         User question.
+
+    company_name : str | None
+        Optional company filter.
 
     top_k : int
         Number of chunks to retrieve.
@@ -45,16 +51,55 @@ def retrieve_documents(
         query
     )
 
-    results = collection.query(
+    # -----------------------------------
+    # Company-specific retrieval
+    # -----------------------------------
 
-        query_embeddings=[
-            query_embedding
-        ],
+    if company_name:
 
-        n_results=top_k
-    )
+        print(
+            f"Retrieving documents for: {company_name}"
+        )
 
-    documents = results["documents"][0]
+        results = collection.query(
+
+            query_embeddings=[
+                query_embedding
+            ],
+
+            where={
+                "company_name": company_name
+            },
+
+            n_results=top_k
+
+        )
+
+    # -----------------------------------
+    # Global retrieval
+    # -----------------------------------
+
+    else:
+
+        print(
+            "Performing global retrieval..."
+        )
+
+        results = collection.query(
+
+            query_embeddings=[
+                query_embedding
+            ],
+
+            n_results=top_k
+
+        )
+
+    documents = []
+
+    if results["documents"]:
+
+        documents = results["documents"][0]
 
     unique_documents = []
 
@@ -74,4 +119,9 @@ def retrieve_documents(
         f"Unique chunks: {len(unique_documents)}"
     )
 
-    return unique_documents
+    return {
+        
+    "documents": unique_documents,
+    "metadata": results["metadatas"][0]
+}
+    

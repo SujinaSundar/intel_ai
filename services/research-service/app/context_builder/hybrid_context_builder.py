@@ -8,9 +8,9 @@ Question
 Hybrid Retrieval
 (Vector + BM25)
     ↓
-Sentiment
+Sentiment Retrieval (Optional)
     ↓
-Stock Data
+Stock Retrieval (Optional)
     ↓
 Combined Context
 """
@@ -30,18 +30,17 @@ from app.hybrid_retrieval.hybrid_service import (
 
 def build_hybrid_context(
     question: str,
-    company_name: str
+    company_name: str | None = None
 ) -> dict:
     """
-    Build context using hybrid retrieval.
+    Build context using Hybrid RAG.
 
     Parameters
     ----------
     question : str
-        User question.
 
-    company_name : str
-        Company name.
+    company_name : str | None
+        Optional company filter.
 
     Returns
     -------
@@ -52,75 +51,112 @@ def build_hybrid_context(
 
     try:
 
-        company = (
-            db.query(Company)
-            .filter(
-                Company.company_name == company_name
-            )
-            .first()
-        )
+        company = None
 
-        if company is None:
+        sentiment = None
 
-            raise ValueError(
-                "Company not found."
-            )
+        stock = None
 
-        documents = hybrid_retrieve(
-            query=question,
-            top_k=5
-        )
+        metadata = []
 
-        sentiment = (
-            db.query(SentimentScore)
-            .filter(
-                SentimentScore.company_id == company.id
-            )
-            .order_by(
-                SentimentScore.created_at.desc()
-            )
-            .first()
-        )
+        # -----------------------------------
+        # Company-specific retrieval
+        # -----------------------------------
 
-        stock = (
-            db.query(StockPrice)
-            .filter(
-                StockPrice.company_id == company.id
-            )
-            .order_by(
-                StockPrice.trade_date.desc()
-            )
-            .first()
-        )
-        sentiment_text = "No sentiment data available."
+        if company_name:
 
-        if sentiment:
-
-            sentiment_text = (
-                f"Label: {sentiment.sentiment_label}\n"
-                f"Confidence: {sentiment.confidence_score}"
+            company = (
+                db.query(Company)
+                .filter(
+                    Company.company_name.ilike(
+                         f"%{company_name}%"
+                    )
+                )
+                .first()
             )
 
-        stock_text = "No stock data available."
+            if company is None:
 
-        if stock:
+                return {
 
-            stock_text = (
-                f"Trade Date: {stock.trade_date}\n"
-                f"Open Price: {stock.open_price}\n"
-                f"High Price: {stock.high_price}\n"
-                f"Low Price: {stock.low_price}\n"
-                f"Close Price: {stock.close_price}\n"
-                f"Volume: {stock.volume}"
+                    "documents": [],
+
+                    "metadata": [],
+
+                    "sentiment": None,
+
+                    "stock": None
+                }
+
+            retrieval_result = hybrid_retrieve(
+
+                query=question,
+
+                company_name=company_name,
+
+                top_k=5
+
             )
+
+            documents = retrieval_result["documents"]
+
+            metadata = retrieval_result["metadata"]
+
+            sentiment = (
+                db.query(
+                    SentimentScore
+                )
+                .filter(
+                    SentimentScore.company_id == company.id
+                )
+                .order_by(
+                    SentimentScore.created_at.desc()
+                )
+                .first()
+            )
+
+            stock = (
+                db.query(
+                    StockPrice
+                )
+                .filter(
+                    StockPrice.company_id == company.id
+                )
+                .order_by(
+                    StockPrice.trade_date.desc()
+                )
+                .first()
+            )
+
+        # -----------------------------------
+        # Global retrieval
+        # -----------------------------------
+
+        else:
+
+            retrieval_result = hybrid_retrieve(
+
+                query=question,
+
+                company_name=None,
+
+                top_k=5
+
+            )
+
+            documents = retrieval_result["documents"]
+
+            metadata = retrieval_result["metadata"]
 
         return {
 
             "documents": documents,
 
-            "sentiment": sentiment_text,
+            "metadata": metadata,
 
-            "stock": stock_text
+            "sentiment": sentiment,
+
+            "stock": stock
         }
 
     finally:
