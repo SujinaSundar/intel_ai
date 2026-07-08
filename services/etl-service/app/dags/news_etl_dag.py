@@ -1,21 +1,23 @@
-
 """
 News ETL DAG
 
 Purpose:
 --------
-This DAG runs the News ETL pipeline daily.
+Runs the complete News ETL pipeline.
 
 Workflow:
 ---------
 1. Extract news from Alpha Vantage.
-2. Validate data.
-3. Remove duplicate records.
-4. Load data into PostgreSQL.
+2. Validate and filter articles.
+3. Remove duplicates.
+4. Store news in PostgreSQL.
+5. Generate FinBERT sentiment.
+6. Store sentiment scores.
+7. Mark processed articles.
 
 Schedule:
 ---------
-Runs daily at 7:00 AM IST.
+Runs daily.
 """
 
 from datetime import datetime
@@ -26,11 +28,15 @@ from airflow.operators.bash import BashOperator
 
 with DAG(
     dag_id="news_etl",
-     start_date=datetime(2025, 1, 1),
+    start_date=datetime(2025, 1, 1),
     schedule="@daily",
     catchup=False,
-    tags=["news", "etl"],
+    tags=["news", "etl", "finbert"],
 ) as dag:
+
+    # ---------------------------------------
+    # Task 1 : Load News
+    # ---------------------------------------
 
     load_news_task = BashOperator(
         task_id="load_news_data",
@@ -39,6 +45,3 @@ with DAG(
         python -m app.jobs.load_news_data
         """
     )
-
-    load_news_task
-

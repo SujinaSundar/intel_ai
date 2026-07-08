@@ -1,0 +1,32 @@
+[
+    {
+        "id": 1,
+        "company": "HDFC Bank",
+        "question": "What is HDFC Bank's focus?",
+        "ground_truth": "HDFC Bank focuses on digital banking, customer relationships, construction finance and technology driven banking."
+    },
+    {
+        "id": 2,
+        "company": "HDFC Bank",
+        "question": "What are HDFC Bank's digital banking initiatives?",
+        "ground_truth": "HDFC Bank expanded digital banking units and digital-first banking services."
+    },
+    {
+        "id": 3,
+        "company": "Infosys",
+        "question": "What AI initiatives does Infosys have?",
+        "ground_truth": "Infosys focuses on generative AI, AI-first services, enterprise AI and responsible AI."
+    },
+    {
+        "id": 4,
+        "company": "Infosys",
+        "question": "What are Infosys sustainability initiatives?",
+        "ground_truth": "Infosys focuses on ESG, carbon neutrality and renewable energy."
+    },
+    {
+        "id": 5,
+        "company": "Reliance Industries",
+        "question": "What AI initiatives does Reliance have?",
+        "ground_truth": "Reliance focuses on indigenous AI, AI ecosystem development and digital infrastructure."
+    }
+]

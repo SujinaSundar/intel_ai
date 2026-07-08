@@ -1,463 +1,192 @@
 """
 Graph loader.
 
-Loads report chunks and news,
+Loads annual report chunks,
 extracts relationships,
 and builds Neo4j graph.
 """
 
-from app.database.connection import (
-    SessionLocal
-)
-
-from app.database.models import (
-    Company,
-    ResearchReport,
-    DocumentChunk,
-    NewsMetadata
-)
-
-from app.graph_rag.relation_extractor import (
-    extract_relations
-)
-
-from app.graph_rag.graph_builder import (
-    create_node,
-    create_relationship
-)
-
+from app.database.connection import SessionLocal
+from app.database.models import Company, ResearchReport, DocumentChunk
+from app.graph_rag.relation_extractor import extract_relations
+from app.graph_rag.graph_builder import create_node, create_relationship
 
 ALLOWED_RELATIONS = {
+    "HAS_CEO","HAS_CFO","HAS_CHAIRMAN","HAS_MANAGING_DIRECTOR","HAS_FOUNDER",
+    "HAS_PRODUCT","HAS_SERVICE","HAS_PLATFORM","HAS_TECHNOLOGY",
+    "PROVIDES","OFFERS",
+    "FOCUSES_ON","OPERATES_IN","SERVES","EXPANDS_TO",
+    "PARTNERS_WITH","ACQUIRED","SUBSIDIARY_OF","INVESTS_IN","BELONGS_TO",
+    "DEVELOPS","USES","LAUNCHED",
+    "HAS_REVENUE","HAS_NET_PROFIT","HAS_OPERATING_PROFIT","HAS_EPS",
+    "HAS_ROE","HAS_ROA","HAS_MARKET_CAP","HAS_PE_RATIO","HAS_PB_RATIO",
+    "HAS_DIVIDEND","HAS_GROSS_NPA","HAS_NET_NPA","HAS_CASA_RATIO",
+    "SUPPORTS","PROMOTES","REDUCES_EMISSIONS"
+}
 
-    "HAS_CEO",
-
-    "HAS_PRODUCT",
-
-    "HAS_POLICY",
-
-    "PARTNERS_WITH",
-
-    "BELONGS_TO",
-
-    "ACQUIRED",
-
-    "INVESTS_IN",
-
-    "SUBSIDIARY_OF",
-
-    "FOCUSES_ON",
-
-    "PROVIDES"
+GENERIC_ENTITIES = {
+    "company","companies","organization","organisations",
+    "business","entity","group",
+    "partner","partners",
+    "customer","customers",
+    "client","clients",
+    "employee","employees",
+    "stakeholder","stakeholders",
+    "service","services",
+    "product","products",
+    "technology","platform",
+    "solution","initiative",
+    "market","markets",
+    "industry","industries"
 }
 
 
-def load_company_chunks(
-    company_name: str
-) -> list[str]:
-    """
-    Load report chunks and news titles.
-    """
+def load_company_chunks(company_name: str) -> list[str]:
 
     db = SessionLocal()
 
     try:
-
         company = (
-
-            db.query(
-                Company
-            )
-
-            .filter(
-                Company.company_name ==
-                company_name
-            )
-
+            db.query(Company)
+            .filter(Company.company_name == company_name)
             .first()
         )
 
         if company is None:
-
-            print(
-                "Company not found."
-            )
-
+            print("Company not found.")
             return []
 
-        print()
-
-        print(
-            "Company ID:",
-            company.id
-        )
-
-        reports = (
-
-            db.query(
-                ResearchReport
-            )
-
-            .filter(
-                ResearchReport.company_id ==
-                company.id
-            )
-
-            .all()
-        )
-
-        print(
-            "Reports:",
-            len(reports)
-        )
-
-        report_chunks = (
-
-            db.query(
-                DocumentChunk.chunk_text
-            )
-
+        rows = (
+            db.query(DocumentChunk.chunk_text)
             .join(
                 ResearchReport,
-                ResearchReport.id ==
-                DocumentChunk.report_id
+                ResearchReport.id == DocumentChunk.report_id
             )
-
             .filter(
-                ResearchReport.company_id ==
-                company.id
+                ResearchReport.company_id == company.id
             )
-
             .all()
         )
 
-        report_chunks = [
-
-            row[0]
-
-            for row in report_chunks
-        ]
-
-        print(
-            "Report Chunks:",
-            len(report_chunks)
-        )
-
-        news_titles = [
-
-            row.title
-
-            for row in
-
-            db.query(
-                NewsMetadata
-            )
-
-            .filter(
-                NewsMetadata.company_id ==
-                company.id
-            )
-
-            .all()
-
-            if row.title
-        ]
-
-        print(
-            "News Titles:",
-            len(news_titles)
-        )
-
-        return (
-
-            report_chunks
-
-            +
-
-            news_titles
-        )
+        return [r[0] for r in rows]
 
     finally:
-
         db.close()
 
 
 def build_graph(
     company_name: str,
-    max_chunks: int = 10
+    max_chunks: int = 50
 ):
-    """
-    Build graph from company data.
-    """
 
-    chunks = load_company_chunks(
-        company_name
-    )
+    chunks = load_company_chunks(company_name)
 
-    print()
-
-    print(
-        f"Loaded {len(chunks)} chunks."
-    )
-
-    seen_relationships = set()
-
-    total_triples = 0
-
-    stored_triples = 0
-
-    processed_chunks = 0
+    seen = set()
 
     for chunk in chunks[:max_chunks]:
 
-        print()
-
-        print(
-            "-" * 80
-        )
-
-        print(
-            f"Processing Chunk {processed_chunks + 1}"
-        )
-
         triples = extract_relations(
-            chunk
-        )
-
-        total_triples += len(
-            triples
-        )
-
-        print(
-            f"Triples Found: {len(triples)}"
+            company_name=company_name,
+            text=chunk
         )
 
         for triple in triples:
 
             try:
 
-                source = (
-                    triple["source"]
-                )
-
-                source_type = (
-                    triple["source_type"]
-                )
+                source = triple["source"].strip()
+                source_type = triple["source_type"].strip()
 
                 relation = (
                     triple["relation"]
+                    .strip()
+                    .upper()
                 )
 
-                target = (
-                    triple["target"]
-                )
+                target = triple["target"].strip()
+                target_type = triple["target_type"].strip()
 
-                target_type = (
-                    triple["target_type"]
-                )
-                GENERIC_ENTITIES = {
+                if source.lower() != company_name.lower():
+                    continue
 
-                    "partner",
-                    "partners",
-
-                    "customer",
-                    "customers",
-
-                    "employee",
-                    "employees",
-
-                    "stakeholder",
-                    "stakeholders",
-
-                    "company",
-                    "organization",
-
-                    "business",
-
-                    "entity",
-
-                    "group"
-                }
+                source = company_name
 
                 if target.lower() in GENERIC_ENTITIES:
-
                     continue
 
-                # Normalize company entities
+                if len(target) < 3:
+                    continue
+
+                if target.lower() == company_name.lower():
+                    continue
+
+                if relation not in ALLOWED_RELATIONS:
+                    continue
 
                 if source_type in {
-
                     "Company",
-                    "Organization",
-                    "Bank"
-
+                    "Organization"
                 }:
-
                     source = company_name
-                # Normalize generic entities
 
-                if source_type == "Company":
+                if target_type in {
+                    "Product",
+                    "Service",
+                    "Technology",
+                    "Platform",
+                    "Initiative",
+                    "Policy",
+                    "Sector",
+                    "Industry"
+                }:
+                    target = target.title()
 
-                    source = company_name
-                # Stage 2
-                if relation not in ALLOWED_RELATIONS:
-
-                    continue
-
-                # Stage 3
                 key = (
-
-                    source,
-
+                    source.lower(),
                     relation,
-
-                    target
+                    target.lower()
                 )
 
-                if key in seen_relationships:
-
+                if key in seen:
                     continue
 
-                seen_relationships.add(
-                    key
-                )
+                seen.add(key)
 
-                create_node(
-                    source_type,
-                    source
-                )
+                create_node(source_type, source)
+                create_node(target_type, target)
+                create_relationship(source, relation, target)
 
-                create_node(
-                    target_type,
-                    target
-                )
+                print(f"{source} --{relation}--> {target}")
 
-                create_relationship(
-                    source,
-                    relation,
-                    target
-                )
+            except Exception as e:
+                print("Failed:", e)
 
-                stored_triples += 1
 
-                print()
-
-                print(
-                    source
-                )
-
-                print(
-                    f"  └── {relation}"
-                )
-
-                print(
-                    f"        └── {target}"
-                )
-
-            except Exception as error:
-
-                print()
-
-                print(
-                    "Failed:"
-                )
-
-                print(
-                    error
-                )
-
-        processed_chunks += 1
-
-    print()
-
-    print(
-        "=" * 80
-    )
-
-    print(
-        "GRAPH BUILD SUMMARY"
-    )
-
-    print(
-        "=" * 80
-    )
-
-    print(
-        f"Chunks Processed: {processed_chunks}"
-    )
-
-    print(
-        f"Triples Extracted: {total_triples}"
-    )
-
-    print(
-        f"Triples Stored: {stored_triples}"
-    )
-
-    print(
-        f"Unique Relationships: {len(seen_relationships)}"
-    )
-
-    print(
-        "=" * 80
-    )
-def build_graph_for_all_companies(
-    max_chunks: int = 10
-):
-    """
-    Build graph for all companies.
-    """
+def build_graph_for_all_companies(max_chunks: int = 50):
 
     db = SessionLocal()
 
     try:
-
-        companies = (
-
-            db.query(
-                Company
-            )
-
-            .all()
-        )
-
-        print()
-
-        print(
-            f"Found {len(companies)} companies."
-        )
+        companies = db.query(Company).all()
 
         for company in companies:
 
-            print()
-
-            print(
-                "=" * 80
-            )
-
-            print(
-                f"Building Graph For: "
-                f"{company.company_name}"
-            )
-
-            print(
-                "=" * 80
-            )
+            print("=" * 80)
+            print(company.company_name)
+            print("=" * 80)
 
             build_graph(
-
-                company_name=
                 company.company_name,
-
-                max_chunks=
-                max_chunks
+                max_chunks=max_chunks
             )
 
     finally:
-
         db.close()
 
-if __name__ == "__main__":
 
-    build_graph_for_all_companies(
-        max_chunks=5
-    )
+if __name__ == "__main__":
+   build_graph(
+    company_name="HDFC Bank",
+    max_chunks=10
+)
+

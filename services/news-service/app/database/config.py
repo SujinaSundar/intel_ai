@@ -1,10 +1,11 @@
 from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-ENV_FILE = Path(__file__).resolve().parents[4] / ".env"
+DOCKER_ENV = Path("/opt/airflow/.env")
+LOCAL_ENV = Path(__file__).resolve().parents[4] / ".env"
 
-print("ENV FILE:", ENV_FILE)
-print("EXISTS:", ENV_FILE.exists())
+ENV_FILE = DOCKER_ENV if DOCKER_ENV.exists() else LOCAL_ENV
+
 
 class Settings(BaseSettings):
     POSTGRES_HOST: str
@@ -12,13 +13,12 @@ class Settings(BaseSettings):
     POSTGRES_DB: str
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
+
     ALPHA_VANTAGE_API_KEY: str
+    MARKETAUX_API_KEY: str
 
     model_config = SettingsConfigDict(
         env_file=str(ENV_FILE),
         extra="ignore"
     )
-
 settings = Settings()
-print("HOST =", settings.POSTGRES_HOST)
-print("PORT =", settings.POSTGRES_PORT)

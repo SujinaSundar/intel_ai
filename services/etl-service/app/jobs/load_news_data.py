@@ -1,4 +1,3 @@
-
 """
 News Data Ingestion Job
 
@@ -8,23 +7,12 @@ This job performs the News ETL pipeline.
 
 ETL Steps:
 ----------
-1. Extract news articles from Alpha Vantage.
+1. Extract news articles from Marketaux.
 2. Validate incoming news data.
-3. Remove duplicate records.
-4. Transform the data into the application schema.
-5. Load the data into PostgreSQL.
-
-Data Validation:
-----------------
-- Title must not be empty.
-- URL must not be empty.
-- Source must not be empty.
-- Published date must not be empty.
-
-Duplicate Removal:
-------------------
-- News URL must be unique.
-- Duplicate articles are skipped before insertion.
+3. Verify company entity.
+4. Remove duplicate records.
+5. Transform the data into the application schema.
+6. Load the data into PostgreSQL.
 """
 
 import logging
@@ -34,12 +22,42 @@ import requests
 
 from app.database.connection import SessionLocal
 from app.database.config import settings
-from app.database.models import Company
-from app.database.models import NewsMetadata
-
+from app.database.models import (
+    Company,
+    NewsMetadata
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+# --------------------------------------------------
+# Marketaux Symbol Mapping
+# --------------------------------------------------
+
+MARKETAUX_SYMBOLS = {
+
+    "Reliance Industries": "RELIANCE",
+
+    "TCS": "TCS.NS",
+
+    "Infosys": "INFY",
+
+    "HDFC Bank": "HDFCBANK",
+
+    "ICICI Bank": "ICICIBANK",
+
+    "Bharti Airtel": "BHARTIARTL",
+
+    "ITC": "ITC",
+
+    "Larsen & Toubro": "LT",
+
+    "State Bank of India": "SBIN",
+
+    "Axis Bank": "AXISBANK"
+
+}
 
 
 def main():
@@ -48,7 +66,9 @@ def main():
 
     try:
 
-        companies = db.query(Company).all()
+        companies = db.query(
+            Company
+        ).all()
 
         logger.info(
             "Found %s companies",
@@ -64,16 +84,23 @@ def main():
 
             try:
 
-                url = (
-                    "https://www.alphavantage.co/query"
-                    "?function=NEWS_SENTIMENT"
-                    f"&keywords={company.company_name}"
-                    f"&apikey={settings.ALPHA_VANTAGE_API_KEY}"
+                symbol = MARKETAUX_SYMBOLS.get(
+
+                    company.company_name,
+
+                    company.ticker
+                    .split(".")[0]
+                    .upper()
+
                 )
 
-                logger.info(
-                    "Calling API for %s",
-                    company.company_name
+                url = (
+                    "https://api.marketaux.com/v1/news/all"
+                    f"?symbols={symbol}"
+                    "&filter_entities=true"
+                    "&language=en"
+                    "&limit=20"
+                    f"&api_token={settings.MARKETAUX_API_KEY}"
                 )
 
                 response = requests.get(
@@ -81,14 +108,12 @@ def main():
                     timeout=30
                 )
 
-                logger.info(
-                    "API response received"
-                )
+                response.raise_for_status()
 
                 data = response.json()
 
                 articles = data.get(
-                    "feed",
+                    "data",
                     []
                 )
 
@@ -97,98 +122,155 @@ def main():
                     len(articles)
                 )
 
+                stored = 0
+
                 for article in articles:
 
-                    # -------------------------
-                    # Data Validation
-                    # -------------------------
+                    # ---------------------------------
+                    # Validate company entity
+                    # ---------------------------------
 
-                    title = article.get("title")
-                    source = article.get("source")
-                    article_url = article.get("url")
-                    published_date = article.get(
-                        "time_published"
+                    entities = article.get(
+                        "entities",
+                        []
                     )
 
-                    if not title:
+                    found = False
+
+                    for entity in entities:
+
+                        entity_symbol = (
+                            entity.get(
+                                "symbol",
+                                ""
+                            )
+                            .upper()
+                        )
+
+                        if entity_symbol == symbol.upper():
+
+                            found = True
+
+                            break
+
+                    if not found:
+
                         continue
 
-                    if not source:
-                        continue
+                    title = article.get(
+                        "title"
+                    )
 
-                    if not article_url:
-                        continue
+                    source = article.get(
+                        "source"
+                    )
 
-                    if not published_date:
-                        continue
+                    article_url = article.get(
+                        "url"
+                    )
 
-                    # -------------------------
-                    # Convert Date
-                    # -------------------------
+                    published_date = article.get(
+                        "published_at"
+                    )
+
+                    if not all([
+
+                        title,
+
+                        source,
+
+                        article_url,
+
+                        published_date
+
+                    ]):
+
+                        continue
 
                     try:
 
-                        published_date = datetime.strptime(
-                            published_date,
-                            "%Y%m%dT%H%M%S"
+                        published_date = (
+                            datetime.fromisoformat(
+                                published_date.replace(
+                                    "Z",
+                                    "+00:00"
+                                )
+                            )
                         )
 
                     except Exception:
 
                         logger.warning(
-                            "Invalid date format for article: %s",
+                            "Invalid date: %s",
                             title
                         )
 
                         continue
 
-                    # -------------------------
-                    # Duplicate Removal
-                    # -------------------------
+                    # ---------------------------------
+                    # Duplicate Check
+                    # ---------------------------------
 
-                    existing_news = (
-                        db.query(NewsMetadata)
+                    existing = (
+
+                        db.query(
+                            NewsMetadata
+                        )
+
                         .filter(
                             NewsMetadata.url
                             == article_url
                         )
+
                         .first()
+
                     )
 
-                    if existing_news:
+                    if existing:
+
                         continue
 
-                    # -------------------------
-                    # Transform + Load
-                    # -------------------------
+                    # ---------------------------------
+                    # Store News
+                    # ---------------------------------
 
                     news = NewsMetadata(
+
                         company_id=company.id,
+
                         title=title,
+
                         source=source,
+
                         url=article_url,
+
                         published_date=published_date
+
                     )
 
-                    db.add(news)
+                    db.add(
+                        news
+                    )
+
+                    stored += 1
 
                 logger.info(
-                    "News stored for %s",
+                    "%s articles stored for %s",
+                    stored,
                     company.company_name
                 )
 
-            except Exception as exc:
+            except Exception:
 
-                logger.error(
-                    "Failed for %s: %s",
-                    company.company_name,
-                    exc
+                logger.exception(
+                    "Failed for %s",
+                    company.company_name
                 )
 
         db.commit()
 
         logger.info(
-            "News ingestion completed successfully"
+            "News ingestion completed successfully."
         )
 
     finally:
@@ -196,9 +278,10 @@ def main():
         db.close()
 
         logger.info(
-            "Database session closed"
+            "Database session closed."
         )
 
 
 if __name__ == "__main__":
+
     main()

@@ -7,8 +7,10 @@ from sqlalchemy import (
     DateTime,
     Text,
     ForeignKey,
-    BigInteger
+    BigInteger,
+    Boolean
 )
+from datetime import datetime
 
 from sqlalchemy.orm import declarative_base
 
@@ -65,20 +67,81 @@ class StockPrice(Base):
 # --------------------
 
 class NewsMetadata(Base):
+    """
+    Stores news article metadata.
+    """
 
     __tablename__ = "news_metadata"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(
+        Integer,
+        primary_key=True
+    )
 
     company_id = Column(
         Integer,
         ForeignKey("companies.id")
     )
 
-    title = Column(Text)
+    title = Column(
+        Text
+    )
 
-    source = Column(String)
+    source = Column(
+        String
+    )
 
-    url = Column(Text)
+    url = Column(
+        Text,
+        unique=True
+    )
 
-    published_date = Column(DateTime)
+    published_date = Column(
+        DateTime
+    )
+
+    is_processed = Column(
+        Boolean,
+        default=False
+    )
+
+
+class SentimentScore(Base):
+    """
+    Stores sentiment generated from news.
+    One news article corresponds to one sentiment row.
+    """
+
+    __tablename__ = "sentiment_scores"
+
+    id = Column(
+        Integer,
+        primary_key=True
+    )
+
+    news_id = Column(
+        Integer,
+        ForeignKey("news_metadata.id"),
+        unique=True,
+        nullable=False
+    )
+
+    company_id = Column(
+        Integer,
+        ForeignKey("companies.id")
+    )
+
+    sentiment_label = Column(
+        String,
+        nullable=False
+    )
+
+    confidence_score = Column(
+        Float,
+        nullable=False
+    )
+
+    created_at = Column(
+        DateTime,
+        default=datetime.utcnow
+    )

@@ -1,0 +1,11 @@
+yfinance
+pandas
+psycopg2-binary
+python-dotenv
+neo4j
+pydantic
+pydantic-settings
+transformers
+torch
+accelerate
+sentencepiece

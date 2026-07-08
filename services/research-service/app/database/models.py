@@ -106,7 +106,8 @@ class NewsMetadata(Base):
 
 class SentimentScore(Base):
     """
-    One sentiment row per news article.
+    Stores sentiment generated from news.
+    One news article corresponds to one sentiment row.
     """
 
     __tablename__ = "sentiment_scores"
@@ -114,6 +115,13 @@ class SentimentScore(Base):
     id = Column(
         Integer,
         primary_key=True
+    )
+
+    news_id = Column(
+        Integer,
+        ForeignKey("news_metadata.id"),
+        unique=True,
+        nullable=False
     )
 
     company_id = Column(

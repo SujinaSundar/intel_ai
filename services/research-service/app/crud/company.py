@@ -1,17 +1,46 @@
-from fastapi import APIRouter
-from database.connection import SessionLocal
-from database.models import Company
+from sqlalchemy.orm import Session
+from sqlalchemy import func
 
-router = APIRouter()
+from app.database.models import Company
 
 
-@router.get("/companies")
-def get_companies():
+class CompanyCRUD:
 
-    db = SessionLocal()
+    def __init__(self, db: Session):
+        self.db = db
 
-    companies = db.query(
-        Company
-    ).all()
+    def get_all(self):
+        return self.db.query(Company).all()
 
-    return companies
+    def get_by_name(self, company_name: str):
+
+        return (
+            self.db.query(Company)
+            .filter(
+                func.lower(Company.company_name)
+                == company_name.lower()
+            )
+            .first()
+        )
+
+    def get_by_ticker(self, ticker: str):
+
+        return (
+            self.db.query(Company)
+            .filter(
+                func.lower(Company.ticker)
+                == ticker.lower()
+            )
+            .first()
+        )
+
+    def get_by_sector(self, sector: str):
+
+        return (
+            self.db.query(Company)
+            .filter(
+                func.lower(Company.sector)
+                == sector.lower()
+            )
+            .all()
+        )

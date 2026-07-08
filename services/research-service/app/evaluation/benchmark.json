@@ -1,0 +1,163 @@
+[
+  {
+    "id": 1,
+    "company": "HDFC Bank",
+    "category": "Purpose",
+    "difficulty": "Easy",
+    "question": "What is HDFC Bank's purpose?",
+    "ground_truth": "HDFC Bank exists to help every Indian make better money choices, today and tomorrow."
+  },
+  {
+    "id": 2,
+    "company": "HDFC Bank",
+    "category": "Strategy",
+    "difficulty": "Easy",
+    "question": "What is HDFC Bank's overall business strategy?",
+    "ground_truth": "The bank aims to build long-term customer relationships through digital innovation, financial inclusion, operational excellence and sustainable growth."
+  },
+  {
+    "id": 3,
+    "company": "HDFC Bank",
+    "category": "Digital Banking",
+    "difficulty": "Easy",
+    "question": "What are Digital Banking Units (DBUs)?",
+    "ground_truth": "Digital Banking Units provide efficient, secure and paperless banking services using digital technologies."
+  },
+  {
+    "id": 4,
+    "company": "HDFC Bank",
+    "category": "Corporate Banking",
+    "difficulty": "Medium",
+    "question": "What was HDFC Bank's focus in corporate banking during FY25?",
+    "ground_truth": "The bank increased its focus on construction finance, commercial real estate financing and lease rental discounting while serving as a one-stop solution for business customers."
+  },
+  {
+    "id": 5,
+    "company": "HDFC Bank",
+    "category": "Technology",
+    "difficulty": "Easy",
+    "question": "What is HDFC Sky?",
+    "ground_truth": "HDFC Sky is the bank's digital investment platform that offers investment and trading services supported by digital learning initiatives."
+  },
+  {
+    "id": 6,
+    "company": "HDFC Bank",
+    "category": "Financial Literacy",
+    "difficulty": "Easy",
+    "question": "What is the objective of Sky Learn?",
+    "ground_truth": "Sky Learn aims to improve financial literacy by providing educational content about investing and trading through digital channels."
+  },
+  {
+    "id": 7,
+    "company": "HDFC Bank",
+    "category": "International Business",
+    "difficulty": "Medium",
+    "question": "Where does HDFC Bank have an international presence?",
+    "ground_truth": "HDFC Bank has international branches in Hong Kong, Bahrain, Dubai International Financial Centre, Singapore and GIFT IFSC."
+  },
+  {
+    "id": 8,
+    "company": "HDFC Bank",
+    "category": "Retail Banking",
+    "difficulty": "Medium",
+    "question": "How did the merger with HDFC Limited influence retail banking?",
+    "ground_truth": "The merger strengthened customer relationships by increasing savings account penetration among home loan customers and expanding cross-selling opportunities."
+  },
+  {
+    "id": 9,
+    "company": "HDFC Bank",
+    "category": "Digital Transformation",
+    "difficulty": "Medium",
+    "question": "How is HDFC Bank improving digital banking?",
+    "ground_truth": "The bank is expanding digital banking units, investing in digital platforms and offering secure paperless banking services."
+  },
+  {
+    "id": 10,
+    "company": "HDFC Bank",
+    "category": "CSR",
+    "difficulty": "Medium",
+    "question": "What is Project NAMAN?",
+    "ground_truth": "Project NAMAN is HDFC Bank's initiative with the Indian Army to support veterans by improving access to government and banking services."
+  },
+  {
+    "id": 11,
+    "company": "HDFC Bank",
+    "category": "Business Banking",
+    "difficulty": "Medium",
+    "question": "What is the goal of HDFC Bank's business banking segment?",
+    "ground_truth": "The goal is to provide a comprehensive one-stop solution for the business banking needs of customers."
+  },
+  {
+    "id": 12,
+    "company": "HDFC Bank",
+    "category": "Housing Finance",
+    "difficulty": "Medium",
+    "question": "What new opportunities emerged after the HDFC Limited merger?",
+    "ground_truth": "The merger expanded opportunities in housing finance, construction finance and deeper customer engagement."
+  },
+  {
+    "id": 13,
+    "company": "HDFC Bank",
+    "category": "Growth",
+    "difficulty": "Easy",
+    "question": "Which customer segment received increased attention in FY25?",
+    "ground_truth": "The bank increased its focus on self-employed customers while strengthening retail and business banking."
+  },
+  {
+    "id": 14,
+    "company": "HDFC Bank",
+    "category": "Innovation",
+    "difficulty": "Medium",
+    "question": "How does HDFC Bank promote investment awareness?",
+    "ground_truth": "Through HDFC Sky and the Sky Learn initiative, the bank provides digital educational resources for investors."
+  },
+  {
+    "id": 15,
+    "company": "HDFC Bank",
+    "category": "Customer Experience",
+    "difficulty": "Easy",
+    "question": "What is HDFC Bank's objective regarding customer relationships?",
+    "ground_truth": "The bank aims to build deeper and long-term banking relationships with customers."
+  },
+  {
+    "id": 16,
+    "company": "HDFC Bank",
+    "category": "Technology",
+    "difficulty": "Medium",
+    "question": "How does HDFC Bank support paperless banking?",
+    "ground_truth": "The bank uses Digital Banking Units and technology-driven digital services to provide secure paperless banking."
+  },
+  {
+    "id": 17,
+    "company": "HDFC Bank",
+    "category": "Banking Services",
+    "difficulty": "Easy",
+    "question": "What services are provided through Digital Banking Units?",
+    "ground_truth": "Digital Banking Units provide secure digital banking, account services, transactions and customer support through technology-enabled channels."
+  },
+  {
+    "id": 18,
+    "company": "HDFC Bank",
+    "category": "Corporate Strategy",
+    "difficulty": "Medium",
+    "question": "Why did HDFC Bank expand construction finance?",
+    "ground_truth": "The bank expanded construction finance to strengthen its commercial banking business and meet growing financing needs after the merger."
+  },
+  {
+    "id": 19,
+    "company": "HDFC Bank",
+    "category": "Vision",
+    "difficulty": "Easy",
+    "question": "What is HDFC Sky's vision?",
+    "ground_truth": "HDFC Sky aims to empower every Indian to invest wisely through a digital-first and technology-driven investment platform."
+  },
+  {
+    "id": 20,
+    "company": "HDFC Bank",
+    "category": "Business Model",
+    "difficulty": "Medium",
+    "question": "How does HDFC Bank position itself for business customers?",
+    "ground_truth": "HDFC Bank positions itself as a one-stop financial partner offering lending, deposits, payments, trade finance, cash management and corporate banking solutions."
+  }
+]
+

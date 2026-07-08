@@ -30,33 +30,42 @@ Use ONLY the information provided below.
 Rules
 -----
 
-1. Prefer explicit facts from Graph Context.
+1. URules
+-----
 
-2. Use Document Context only when
-   Graph Context does not contain
-   the required information.
+1. Use BOTH Graph Context and Document Context together.
 
-3. Do NOT infer relationships.
+2. Graph Context contains structured business
+   relationships such as:
+   CEO, products, services, partnerships,
+   acquisitions, subsidiaries and focus areas.
 
-4. Do NOT assume facts.
+3. Document Context contains detailed financial
+   information such as annual report content,
+   business strategy, financial performance,
+   risks, policies and other descriptive text.
 
-5. Do NOT use external knowledge.
+4. Combine information from both contexts
+   whenever they complement each other.
 
-6. If information is not explicitly
-   available, respond:
+5. For relationship-based questions,
+   prioritize Graph Context.
+
+6. For financial facts, explanations,
+   numerical values and report details,
+   prioritize Document Context.
+
+7. Do NOT assume facts.
+
+8. Do NOT use external knowledge.
+
+9. If the answer cannot be found in either
+   context, reply exactly:
 
    "Information unavailable."
 
-7. For relationship questions,
-   prioritize Graph Context.
-
-8. For factual details such as
-   policies, products, services,
-   financial information,
-   use Document Context when needed.
-
-9. When possible, cite the exact
-   relationship found in the graph.
+10. When answering relationship questions,
+    mention the exact relationship when possible.
 
 Graph Context
 -------------

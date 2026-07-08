@@ -1,8 +1,8 @@
 """
 Relation extractor.
 
-Uses LLM to extract
-knowledge graph triples.
+Extracts high-confidence business relationships
+from annual report chunks.
 """
 
 import json
@@ -12,158 +12,252 @@ from app.llm.llm_service import (
 )
 
 
+# ----------------------------------------
+# Allowed Relations
+# ----------------------------------------
+
+ALLOWED_RELATIONS = {
+
+    # Leadership
+
+    "HAS_CEO",
+    "HAS_CFO",
+    "HAS_CHAIRMAN",
+    "HAS_MANAGING_DIRECTOR",
+    "HAS_FOUNDER",
+
+    # Products
+
+    "HAS_PRODUCT",
+    "HAS_SERVICE",
+    "HAS_PLATFORM",
+    "HAS_TECHNOLOGY",
+
+    "PROVIDES",
+    "OFFERS",
+
+    # Strategy
+
+    "FOCUSES_ON",
+    "OPERATES_IN",
+    "SERVES",
+    "EXPANDS_TO",
+
+    # Corporate
+
+    "PARTNERS_WITH",
+    "ACQUIRED",
+    "SUBSIDIARY_OF",
+    "INVESTS_IN",
+    "BELONGS_TO",
+
+    # Innovation
+
+    "DEVELOPS",
+    "USES",
+    "LAUNCHED",
+
+    # ESG
+
+    "SUPPORTS",
+    "PROMOTES",
+    "REDUCES_EMISSIONS"
+
+}
+
+
+# ----------------------------------------
+# Generic entities
+# ----------------------------------------
+
+GENERIC_TARGETS = {
+
+    "company",
+    "companies",
+
+    "organization",
+    "organisations",
+
+    "business",
+
+    "entity",
+
+    "group",
+
+    "partner",
+    "partners",
+
+    "customer",
+    "customers",
+
+    "client",
+    "clients",
+
+    "employee",
+    "employees",
+
+    "stakeholder",
+    "stakeholders",
+
+    "service",
+    "services",
+
+    "product",
+    "products",
+
+    "technology",
+    "technologies",
+
+    "platform",
+    "platforms",
+
+    "solution",
+    "solutions",
+
+    "initiative",
+    "initiatives",
+
+    "market",
+    "markets",
+
+    "industry",
+    "industries"
+
+}
+
+
+# ----------------------------------------
+# Clean LLM Response
+# ----------------------------------------
+
+def clean_llm_response(
+    response: str
+) -> str:
+    """
+    Clean markdown from LLM output.
+    """
+
+    response = response.strip()
+
+    response = response.replace(
+        "```json",
+        ""
+    )
+
+    response = response.replace(
+        "```",
+        ""
+    )
+
+    response = response.strip()
+
+    start = response.find("[")
+
+    end = response.rfind("]")
+
+    if start == -1 or end == -1:
+
+        return ""
+
+    return response[
+        start:end + 1
+    ]
+
+
+# ----------------------------------------
+# Relation Extraction
+# ----------------------------------------
+
 def extract_relations(
+    company_name: str,
     text: str
 ) -> list:
     """
-    Extract graph triples.
-
-    Parameters
-    ----------
-    text : str
-
-    Returns
-    -------
-    list
+    Extract graph triples
+    from one report chunk.
     """
 
     prompt = f"""
-You are an expert financial knowledge graph builder.
+You are an expert Financial Knowledge Graph Builder.
 
-Your job is to extract ONLY meaningful
-business relationships from company reports,
-annual reports, quarterly reports,
-corporate disclosures, and financial news.
+The following text belongs ONLY to the annual report of
 
-Return ONLY valid JSON.
+{company_name}
+
+Your task is to extract ONLY business relationships where
+
+{company_name}
+
+is the SOURCE entity.
 
 Rules
------
 
-1. Extract ONLY business-relevant relationships.
+1. Return ONLY JSON.
 
-Focus on:
+2. Return between 1 and 5 HIGH-CONFIDENCE relationships.
 
-- CEO
-- Founder
-- Managing Director
-- Chairman
-- Product
-- Platform
-- Service
-- Technology
-- AI Initiative
-- Partnership
-- Acquisition
-- Merger
-- Subsidiary
-- Investment
-- Industry
-- Sector
-- Customer
-- Vendor
-- Strategic Initiative
+If no meaningful business relationship exists, return [].
 
-2. Ignore:
+Do not guess or infer missing information.
 
-- lease disclosures
-- accounting policies
-- depreciation notes
-- audit notes
-- tax disclosures
-- employee compensation notes
-- financial statement notes
-- accounting standards
-- legal boilerplate
-- generic governance disclosures
-- risk disclosures without entities
-- generic financial reporting text
+3. Ignore unrelated companies.
 
-3. Use concise UPPERCASE relationship names.
+4. Ignore financial metrics.
 
-Examples:
+5. Ignore accounting notes.
 
-HAS_CEO
-HAS_PRODUCT
-HAS_SERVICE
-HAS_PLATFORM
-HAS_TECHNOLOGY
-PARTNERS_WITH
-BELONGS_TO
-ACQUIRED
-INVESTS_IN
-SERVES
-OWNS
-MANAGES
-LAUNCHED
-FOCUSES_ON
-PROVIDES
-SUBSIDIARY_OF
+6. Ignore audit notes.
 
-4. Do NOT use generic relationships.
+7. Ignore legal disclosures.
 
-Avoid:
+8. Ignore tables.
 
-has
-contains
-includes
-related_to
-mentions
+9. Ignore historical examples.
 
-5. Entity types must be one of:
+10. Never invent facts.
 
-Company
-Person
-Product
-Service
-Technology
-Platform
-Sector
-Industry
-Organization
-Bank
-Customer
-Vendor
-Initiative
-Policy
+11. Every relationship must be explicitly supported
+by the text.
 
-6. If no meaningful business relationship exists,
-return:
+Allowed Relations
 
-[]
+{", ".join(sorted(ALLOWED_RELATIONS))}
 
-7. Return ONLY JSON.
-
-Format
-------
+Output Format
 
 [
-  {{
-    "source":"Infosys",
-    "source_type":"Company",
-    "relation":"HAS_CEO",
-    "target":"Salil Parekh",
-    "target_type":"Person"
-  }}
+    {{
+        "source":"{company_name}",
+        "source_type":"Company",
+        "relation":"HAS_PRODUCT",
+        "target":"Finacle",
+        "target_type":"Product"
+    }}
 ]
 
-Text
-----
+TEXT
 
-{text[:1500]}
+{text[:2500]}
 """
-
     response = generate_answer(
         prompt
     )
 
+    response = clean_llm_response(
+        response
+    )
+
+    if not response:
+
+        return []
+
     try:
 
-        return json.loads(
+        relations = json.loads(
             response
         )
 
-    except Exception as error:
+    except Exception:
 
         print()
 
@@ -171,18 +265,203 @@ Text
             "Relation extraction failed."
         )
 
-        print(
-            error
-        )
-
         print()
-
-        print(
-            "LLM Response:"
-        )
 
         print(
             response
         )
 
         return []
+
+    if not isinstance(
+        relations,
+        list
+    ):
+
+        return []
+
+    unique = []
+
+    seen = set()
+
+    for relation in relations:
+
+        try:
+
+            # -------------------------
+            # Required Fields
+            # -------------------------
+
+            required = {
+
+                "source",
+
+                "source_type",
+
+                "relation",
+
+                "target",
+
+                "target_type"
+
+            }
+
+            if not required.issubset(
+
+                relation.keys()
+
+            ):
+
+                continue
+
+            source = (
+
+                relation["source"]
+
+                .strip()
+
+            )
+
+            source_type = (
+
+                relation["source_type"]
+
+                .strip()
+
+            )
+
+            relation_name = (
+
+                relation["relation"]
+
+                .strip()
+
+                .upper()
+
+            )
+
+            target = (
+
+                relation["target"]
+
+                .strip()
+
+            )
+
+            target_type = (
+
+                relation["target_type"]
+
+                .strip()
+
+            )
+
+            # -------------------------
+            # Keep only current company
+            # -------------------------
+
+            if source.lower() != company_name.lower():
+
+                continue
+
+            source = company_name
+
+            # -------------------------
+            # Allowed Relations
+            # -------------------------
+
+            if relation_name not in ALLOWED_RELATIONS:
+
+                continue
+
+            # -------------------------
+            # Empty Target
+            # -------------------------
+
+            if not target:
+
+                continue
+
+            # -------------------------
+            # Generic Target
+            # -------------------------
+
+            if target.lower() in GENERIC_TARGETS:
+
+                continue
+
+            # -------------------------
+            # Self Loop
+            # -------------------------
+
+            if target.lower() == company_name.lower():
+
+                continue
+
+            # -------------------------
+            # Normalize Target
+            # -------------------------
+
+            if target_type in {
+
+                "Product",
+
+                "Service",
+
+                "Technology",
+
+                "Platform",
+
+                "Industry",
+
+                "Sector"
+
+            }:
+
+                target = target.title()
+
+            # -------------------------
+            # Duplicate Removal
+            # -------------------------
+
+            key = (
+
+                source.lower(),
+
+                relation_name,
+
+                target.lower()
+
+            )
+
+            if key in seen:
+
+                continue
+
+            seen.add(
+                key
+            )
+
+            unique.append(
+
+                {
+
+                    "source": source,
+
+                    "source_type": source_type,
+
+                    "relation": relation_name,
+
+                    "target": target,
+
+                    "target_type": target_type
+
+                }
+
+            )
+
+        except Exception:
+
+            continue
+
+    return unique
