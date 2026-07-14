@@ -1,11 +1,48 @@
-from app.langgraph.workflow import WorkflowRunner
+"""
+Chat Service.
 
-runner = WorkflowRunner()
+Executes the LangGraph
+workflow for frontend
+requests.
+"""
+
+from app.langgraph.workflow import (
+    WorkflowRunner
+)
 
 
-def ask_question(question: str) -> str:
+# ---------------------------------------------------------
+# Workflow Runner
+# ---------------------------------------------------------
+
+workflow = WorkflowRunner()
+
+
+# ---------------------------------------------------------
+# Execute Workflow
+# ---------------------------------------------------------
+
+def ask_question(
+    question: str
+) -> str:
     """
-    Execute LangGraph workflow.
+    Execute the LangGraph
+    workflow.
+
+    Parameters
+    ----------
+    question : str
+        User research question.
+
+    Returns
+    -------
+    str
+        Final response generated
+        by the LangGraph workflow.
     """
 
-    return runner.run(question)
+    return workflow.run(
+
+        question
+
+    )
