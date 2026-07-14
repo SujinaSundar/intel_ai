@@ -29,43 +29,52 @@ class ResearchAgent:
     ):
         """
         Initialize the
-        Research Agent.
+        Research MCP.
         """
 
         self.mcp = ResearchMCP()
+
+    # -----------------------------------------------------
+    # Default Response
+    # -----------------------------------------------------
 
     def answer(
         self,
         question: str
     ) -> dict:
         """
-        Answer a research question.
+        Default response.
+
+        Answers a research
+        question using the
+        Research MCP.
 
         Parameters
         ----------
         question : str
-            User research question.
 
         Returns
         -------
         dict
-            Research Service response.
         """
 
         return self.mcp.answer_question(
             question
         )
 
+    # -----------------------------------------------------
+    # Health Check
+    # -----------------------------------------------------
+
     def health_check(
         self
     ) -> dict:
         """
-        Check Research Service.
+        Check Research MCP.
 
         Returns
         -------
         dict
-            Service status.
         """
 
         return self.mcp.health_check()

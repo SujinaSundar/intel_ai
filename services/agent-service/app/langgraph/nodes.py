@@ -23,15 +23,18 @@ class WorkflowNodes:
     """
     Workflow Nodes.
 
-    Each node updates
-    the shared state.
+    Each node performs
+    a single task and
+    updates the shared
+    workflow state.
     """
 
     def __init__(
         self
     ):
         """
-        Initialize components.
+        Initialize workflow
+        components.
         """
 
         self.supervisor = SupervisorAgent()
@@ -47,9 +50,17 @@ class WorkflowNodes:
         state: AgentState
     ) -> AgentState:
         """
-        Decide which Agent
-        should handle the
-        question.
+        Route the user
+        question using
+        the Supervisor.
+
+        Parameters
+        ----------
+        state : AgentState
+
+        Returns
+        -------
+        AgentState
         """
 
         route = self.supervisor.route(
@@ -58,93 +69,238 @@ class WorkflowNodes:
 
         )
 
-        state["route"] = route
+        if not route or "error" in route:
 
-        return state
-        # -----------------------------------------------------
-    # Agent Node
-    # -----------------------------------------------------
-
-    def agent_node(
-        self,
-        state: AgentState
-    ) -> AgentState:
-        """
-        Execute the selected
-        Agent.
-        """
-
-        route = state["route"]
-
-        if route is None:
-
-            state["agent_response"] = {
+            state["route"] = {
 
                 "error":
 
-                    "Routing failed."
+                    "Unable to determine the appropriate agent."
 
             }
 
             return state
 
-        agent = route.get(
-            "agent"
+        state["route"] = route
+
+        return state
+    # -----------------------------------------------------
+    # Finance Node
+    # -----------------------------------------------------
+
+    def finance_node(
+        self,
+        state: AgentState
+    ) -> AgentState:
+        """
+        Execute Finance Agent.
+        """
+
+        route = state["route"]
+
+        company = route.get(
+            "company"
         )
 
-        if agent == "Finance":
+        if not company:
 
-            result = self.supervisor.finance.answer(
-
-                route["company"]
-
-            )
-
-        elif agent == "News":
-
-            result = self.supervisor.news.answer(
-
-                route["company"]
-
-            )
-
-        elif agent == "Research":
-
-            result = self.supervisor.research.answer(
-
-                route["question"]
-
-            )
-
-        elif agent == "Comparison":
-
-            result = self.supervisor.comparison.compare(
-
-                route["company_one"],
-
-                route["company_two"]
-
-            )
-
-        elif agent == "Sector":
-
-            result = self.supervisor.sector.summarize(
-
-                route["sector"]
-
-            )
-
-        else:
-
-            result = {
+            state["agent_response"] = {
 
                 "error":
 
-                    "Unknown agent."
+                    "Company name missing."
 
             }
 
-        state["agent_response"] = result
+            return state
+
+        state["agent_response"] = (
+
+            self.supervisor.finance.answer(
+
+                question=state["question"],
+
+                company_name=company
+
+            )
+
+        )
+
+        return state
+
+    # -----------------------------------------------------
+    # News Node
+    # -----------------------------------------------------
+
+    def news_node(
+        self,
+        state: AgentState
+    ) -> AgentState:
+        """
+        Execute News Agent.
+        """
+
+        route = state["route"]
+
+        company = route.get(
+            "company"
+        )
+
+        if not company:
+
+            state["agent_response"] = {
+
+                "error":
+
+                    "Company name missing."
+
+            }
+
+            return state
+
+        state["agent_response"] = (
+
+            self.supervisor.news.answer(
+
+                question=state["question"],
+
+                company_name=company
+
+            )
+
+        )
+
+        return state
+
+    # -----------------------------------------------------
+    # Research Node
+    # -----------------------------------------------------
+
+    def research_node(
+        self,
+        state: AgentState
+    ) -> AgentState:
+        """
+        Execute Research Agent.
+        """
+
+        route = state["route"]
+
+        question = route.get(
+            "question"
+        )
+
+        if not question:
+
+            state["agent_response"] = {
+
+                "error":
+
+                    "Research question missing."
+
+            }
+
+            return state
+
+        state["agent_response"] = (
+
+            self.supervisor.research.answer(
+
+                question
+
+            )
+
+        )
+
+        return state
+
+        # -----------------------------------------------------
+    # Comparison Node
+    # -----------------------------------------------------
+
+    def comparison_node(
+        self,
+        state: AgentState
+    ) -> AgentState:
+        """
+        Execute Comparison Agent.
+        """
+
+        route = state["route"]
+
+        company_one = route.get(
+            "company_one"
+        )
+
+        company_two = route.get(
+            "company_two"
+        )
+
+        if not company_one or not company_two:
+
+            state["agent_response"] = {
+
+                "error":
+
+                    "Comparison requires two company names."
+
+            }
+
+            return state
+
+        state["agent_response"] = (
+
+            self.supervisor.comparison.answer(
+
+                company_one,
+
+                company_two
+
+            )
+
+        )
+
+        return state
+
+        # -----------------------------------------------------
+    # Sector Node
+    # -----------------------------------------------------
+
+    def sector_node(
+        self,
+        state: AgentState
+    ) -> AgentState:
+        """
+        Execute Sector Agent.
+        """
+
+        route = state["route"]
+
+        sector = route.get(
+            "sector"
+        )
+
+        if not sector:
+
+            state["agent_response"] = {
+
+                "error":
+
+                    "Sector name missing."
+
+            }
+
+            return state
+
+        state["agent_response"] = (
+
+            self.supervisor.sector.answer(
+
+                sector
+
+            )
+
+        )
 
         return state
 
@@ -158,15 +314,22 @@ class WorkflowNodes:
     ) -> AgentState:
         """
         Generate the final
-        natural language
         response.
         """
+
+        response_data = state["agent_response"]
+
+        if isinstance(response_data, dict) and "error" in response_data:
+
+            state["final_response"] = response_data["error"]
+
+            return state
 
         response = self.generator.generate(
 
             question=state["question"],
 
-            data=state["agent_response"]
+            data=response_data
 
         )
 

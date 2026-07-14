@@ -29,10 +29,41 @@ class SectorAgent:
     ):
         """
         Initialize the
-        Sector Agent.
+        Sector MCP.
         """
 
         self.mcp = SectorMCP()
+
+    # -----------------------------------------------------
+    # Default Response
+    # -----------------------------------------------------
+
+    def answer(
+        self,
+        sector: str
+    ) -> dict:
+        """
+        Default response.
+
+        Returns a summary
+        of the given sector.
+
+        Parameters
+        ----------
+        sector : str
+
+        Returns
+        -------
+        dict
+        """
+
+        return self.summarize(
+            sector
+        )
+
+    # -----------------------------------------------------
+    # Sector Summary
+    # -----------------------------------------------------
 
     def summarize(
         self,
@@ -44,17 +75,19 @@ class SectorAgent:
         Parameters
         ----------
         sector : str
-            Business sector.
 
         Returns
         -------
         dict
-            Sector analysis.
         """
 
         return self.mcp.get_sector_summary(
             sector
         )
+
+    # -----------------------------------------------------
+    # Sector Companies
+    # -----------------------------------------------------
 
     def companies(
         self,
@@ -62,7 +95,8 @@ class SectorAgent:
     ) -> list:
         """
         Get companies
-        in a sector.
+        belonging to
+        a sector.
 
         Parameters
         ----------
@@ -77,16 +111,19 @@ class SectorAgent:
             sector
         )
 
+    # -----------------------------------------------------
+    # Health Check
+    # -----------------------------------------------------
+
     def health_check(
         self
     ) -> dict:
         """
-        Check MCP status.
+        Check Sector MCP.
 
         Returns
         -------
         dict
-            MCP availability.
         """
 
         return self.mcp.health_check()

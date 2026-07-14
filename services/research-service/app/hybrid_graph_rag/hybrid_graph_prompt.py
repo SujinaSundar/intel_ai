@@ -22,15 +22,36 @@ def build_hybrid_graph_prompt(
         graph_documents
     )
 
+    # -----------------------------------
+    # Optional Market Context
+    # -----------------------------------
+
+    market_context = ""
+
+    if sentiment_text:
+
+        market_context += f"""
+
+News Sentiment
+--------------
+{sentiment_text}
+"""
+
+    if stock_text:
+
+        market_context += f"""
+
+Stock Information
+-----------------
+{stock_text}
+"""
+
     return f"""
 You are a financial research assistant.
 
 Use ONLY the information provided below.
 
 Rules
------
-
-1. URules
 -----
 
 1. Use BOTH Graph Context and Document Context together.
@@ -40,32 +61,41 @@ Rules
    CEO, products, services, partnerships,
    acquisitions, subsidiaries and focus areas.
 
-3. Document Context contains detailed financial
-   information such as annual report content,
-   business strategy, financial performance,
-   risks, policies and other descriptive text.
+3. Document Context contains detailed business
+   information such as:
+   annual reports, financial performance,
+   business strategy, risks, ESG initiatives,
+   technologies and management discussion.
 
-4. Combine information from both contexts
+4. Combine Graph Context and Document Context
    whenever they complement each other.
 
 5. For relationship-based questions,
    prioritize Graph Context.
 
-6. For financial facts, explanations,
-   numerical values and report details,
+6. For detailed explanations,
+   business strategy,
+   financial facts and report content,
    prioritize Document Context.
 
-7. Do NOT assume facts.
+7. Market Context (if provided)
+   contains recent stock information
+   and news sentiment.
 
-8. Do NOT use external knowledge.
+8. Use Market Context ONLY when it is
+   relevant to the user's question.
 
-9. If the answer cannot be found in either
-   context, reply exactly:
+9. Do NOT assume facts.
 
-   "Information unavailable."
+10. Do NOT use external knowledge.
 
-10. When answering relationship questions,
-    mention the exact relationship when possible.
+11. If the answer cannot be found in the
+    provided context, reply exactly:
+
+    "Information unavailable."
+
+12. When answering relationship questions,
+    mention the relationship whenever possible.
 
 Graph Context
 -------------
@@ -74,14 +104,7 @@ Graph Context
 Document Context
 ----------------
 {document_context}
-
-Sentiment
----------
-{sentiment_text}
-
-Stock Information
------------------
-{stock_text}
+{market_context}
 
 Question
 --------

@@ -42,8 +42,59 @@ class AgentWorkflow:
         )
 
         self._build()
-
     # -----------------------------------------------------
+    # Route Decision
+    # -----------------------------------------------------
+
+    def _route(
+        self,
+        state: AgentState
+    ) -> str:
+        """
+        Decide the next
+        LangGraph node.
+
+        Parameters
+        ----------
+        state : AgentState
+
+        Returns
+        -------
+        str
+        """
+
+        route = state["route"]
+
+        if route is None:
+
+            return END
+
+        agent = route.get(
+            "agent"
+        )
+
+        if agent == "Finance":
+
+            return "finance"
+
+        elif agent == "News":
+
+            return "news"
+
+        elif agent == "Research":
+
+            return "research"
+
+        elif agent == "Comparison":
+
+            return "comparison"
+
+        elif agent == "Sector":
+
+            return "sector"
+
+        return END
+        # -----------------------------------------------------
     # Build Workflow
     # -----------------------------------------------------
 
@@ -51,12 +102,13 @@ class AgentWorkflow:
         self
     ):
         """
-        Build LangGraph.
+        Build the LangGraph
+        workflow.
         """
 
-        # -----------------------------
+        # -------------------------------------------------
         # Add Nodes
-        # -----------------------------
+        # -------------------------------------------------
 
         self.builder.add_node(
 
@@ -68,9 +120,41 @@ class AgentWorkflow:
 
         self.builder.add_node(
 
-            "agent",
+            "finance",
 
-            self.nodes.agent_node
+            self.nodes.finance_node
+
+        )
+
+        self.builder.add_node(
+
+            "news",
+
+            self.nodes.news_node
+
+        )
+
+        self.builder.add_node(
+
+            "research",
+
+            self.nodes.research_node
+
+        )
+
+        self.builder.add_node(
+
+            "comparison",
+
+            self.nodes.comparison_node
+
+        )
+
+        self.builder.add_node(
+
+            "sector",
+
+            self.nodes.sector_node
 
         )
 
@@ -82,9 +166,9 @@ class AgentWorkflow:
 
         )
 
-        # -----------------------------
+        # -------------------------------------------------
         # Entry Point
-        # -----------------------------
+        # -------------------------------------------------
 
         self.builder.set_entry_point(
 
@@ -92,21 +176,71 @@ class AgentWorkflow:
 
         )
 
-        # -----------------------------
-        # Edges
-        # -----------------------------
+        # -------------------------------------------------
+        # Conditional Routing
+        # -------------------------------------------------
 
-        self.builder.add_edge(
+        self.builder.add_conditional_edges(
 
             "router",
 
-            "agent"
+            self._route,
+
+            {
+
+                "finance": "finance",
+
+                "news": "news",
+
+                "research": "research",
+
+                "comparison": "comparison",
+
+                "sector": "sector"
+
+            }
+
+        )
+
+        # -------------------------------------------------
+        # Response Edges
+        # -------------------------------------------------
+
+        self.builder.add_edge(
+
+            "finance",
+
+            "response"
 
         )
 
         self.builder.add_edge(
 
-            "agent",
+            "news",
+
+            "response"
+
+        )
+
+        self.builder.add_edge(
+
+            "research",
+
+            "response"
+
+        )
+
+        self.builder.add_edge(
+
+            "comparison",
+
+            "response"
+
+        )
+
+        self.builder.add_edge(
+
+            "sector",
 
             "response"
 
@@ -120,13 +254,12 @@ class AgentWorkflow:
 
         )
 
-        # -----------------------------
+        # -------------------------------------------------
         # Compile
-        # -----------------------------
+        # -------------------------------------------------
 
         self.graph = self.builder.compile()
-
-    # -----------------------------------------------------
+        # -----------------------------------------------------
     # Run Workflow
     # -----------------------------------------------------
 
@@ -135,7 +268,8 @@ class AgentWorkflow:
         question: str
     ) -> str:
         """
-        Execute workflow.
+        Execute the LangGraph
+        workflow.
 
         Parameters
         ----------

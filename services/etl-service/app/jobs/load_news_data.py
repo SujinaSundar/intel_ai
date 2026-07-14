@@ -216,11 +216,7 @@ def main():
                         db.query(
                             NewsMetadata
                         )
-
-                        .filter(
-                            NewsMetadata.url
-                            == article_url
-                        )
+                        .filter(NewsMetadata.title==title)|(NewsMetadata.url == article_url)
 
                         .first()
 

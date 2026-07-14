@@ -2,6 +2,7 @@
 Database models for the Financial Research Agent.
 """
 
+from sqlalchemy import DateTime, String
 from datetime import datetime
 
 from sqlalchemy import (
@@ -238,6 +239,16 @@ class ResearchReport(Base):
         DateTime,
         default=datetime.utcnow
     )
+    graph_status = Column(
+        String,
+        nullable=False,
+        default="PENDING"
+    )
+
+    graph_processed_at = Column(
+        DateTime,
+        nullable=True
+    )
 
 
 class DocumentChunk(Base):
@@ -275,3 +286,13 @@ class DocumentChunk(Base):
         DateTime,
         default=datetime.utcnow
     )
+    graph_status = Column(
+    String,
+    nullable=False,
+    default="PENDING"
+)
+
+graph_processed_at = Column(
+    DateTime,
+    nullable=True
+)

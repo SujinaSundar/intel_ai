@@ -21,6 +21,10 @@ from app.prompts.supervisor_prompt import (
     get_supervisor_prompt
 )
 
+from app.response.response_generator import (
+    ResponseGenerator
+)
+
 from app.agents.finance_agent import (
     FinanceAgent
 )
@@ -70,6 +74,8 @@ class SupervisorAgent:
         self.comparison = ComparisonAgent()
 
         self.sector = SectorAgent()
+
+        self.generator = ResponseGenerator()
 
     # -----------------------------------------------------
     # Route Question
@@ -121,147 +127,7 @@ class SupervisorAgent:
             }
 
         return decision
-    # -----------------------------------------------------
-    # Execute Request
-    # -----------------------------------------------------
 
-    def run(
-        self,
-        question: str
-    ) -> dict:
-        """
-        Execute a user request.
-
-        Parameters
-        ----------
-        question : str
-
-        Returns
-        -------
-        dict
-            Agent response.
-        """
-
-        decision = self.route(
-            question
-        )
-
-        if "error" in decision:
-
-            return decision
-
-        agent = decision.get(
-            "agent"
-        )
-
-        # -------------------------------------------------
-        # Finance
-        # -------------------------------------------------
-
-        if agent == "Finance":
-
-            return self.finance.answer(
-
-                decision["company"]
-
-            )
-
-        # -------------------------------------------------
-        # News
-        # -------------------------------------------------
-
-        if agent == "News":
-
-            return self.news.answer(
-
-                decision["company"]
-
-            )
-
-        # -------------------------------------------------
-        # Research
-        # -------------------------------------------------
-
-        if agent == "Research":
-
-            return self.research.answer(
-
-                decision["question"]
-
-            )
-
-        # -------------------------------------------------
-        # Comparison
-        # -------------------------------------------------
-
-        if agent == "Comparison":
-
-            return self.comparison.compare(
-
-                decision["company_one"],
-
-                decision["company_two"]
-
-            )
-
-        # -------------------------------------------------
-        # Sector
-        # -------------------------------------------------
-
-        if agent == "Sector":
-
-            return self.sector.summarize(
-
-                decision["sector"]
-
-            )
-
-        return {
-
-            "error":
-
-                "Unknown agent."
-
-        }
-
-    # -----------------------------------------------------
-    # Health Check
-    # -----------------------------------------------------
-
-    def health_check(
-        self
-    ) -> dict:
-        """
-        Check all agents.
-
-        Returns
-        -------
-        dict
-        """
-
-        return {
-
-            "finance":
-
-                self.finance.health_check(),
-
-            "news":
-
-                self.news.health_check(),
-
-            "research":
-
-                self.research.health_check(),
-
-            "comparison":
-
-                self.comparison.health_check(),
-
-            "sector":
-
-                self.sector.health_check()
-
-        }
     # -----------------------------------------------------
     # Execute Request
     # -----------------------------------------------------
@@ -339,7 +205,7 @@ class SupervisorAgent:
 
         elif agent == "Comparison":
 
-            result = self.comparison.compare(
+            result = self.comparison.answer(
 
                 decision["company_one"],
 
@@ -353,7 +219,7 @@ class SupervisorAgent:
 
         elif agent == "Sector":
 
-            result = self.sector.summarize(
+            result = self.sector.answer(
 
                 decision["sector"]
 
@@ -376,4 +242,46 @@ class SupervisorAgent:
         )
 
         return final_response
-    
+
+    # -----------------------------------------------------
+    # Health Check
+    # -----------------------------------------------------
+
+    def health_check(
+        self
+    ) -> dict:
+        """
+        Check all Agents.
+
+        Returns
+        -------
+        dict
+        """
+
+        return {
+
+            "finance":
+
+                self.finance.health_check(),
+
+            "news":
+
+                self.news.health_check(),
+
+            "research":
+
+                self.research.health_check(),
+
+            "comparison":
+
+                self.comparison.health_check(),
+
+            "sector":
+
+                self.sector.health_check(),
+
+            "response_generator":
+
+                self.generator.health_check()
+
+        }

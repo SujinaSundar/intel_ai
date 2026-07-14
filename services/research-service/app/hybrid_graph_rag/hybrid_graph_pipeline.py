@@ -19,7 +19,36 @@ from app.hybrid_graph_rag.hybrid_graph_prompt import (
 from app.llm.llm_service import (
     generate_answer
 )
+def needs_market_context(
+    question: str
+) -> bool:
+    """
+    Determine whether market data should
+    be included in the Hybrid GraphRAG context.
+    """
 
+    keywords = {
+        "invest",
+        "investment",
+        "stock",
+        "share",
+        "price",
+        "market",
+        "buy",
+        "sell",
+        "trading",
+        "target",
+        "valuation",
+        "returns",
+        "performance"
+    }
+
+    question = question.lower()
+
+    return any(
+        keyword in question
+        for keyword in keywords
+    )
 
 def ask_hybrid_graph_question(
     question: str
@@ -94,29 +123,29 @@ def ask_hybrid_graph_question(
 
     )
 
-    # -----------------------------------
-    # Optional Context
-    # -----------------------------------
+# -----------------------------------
+# Optional Market Context
+# -----------------------------------
 
-    sentiment_text = (
+    if needs_market_context(question):
 
-        str(context["sentiment"])
+        sentiment_text = (
+            str(context["sentiment"])
+            if context["sentiment"]
+            else "No sentiment found."
+        )
 
-        if context["sentiment"]
+        stock_text = (
+            str(context["stock"])
+            if context["stock"]
+            else "No stock data found."
+        )
 
-        else "No sentiment found."
+    else:
 
-    )
+        sentiment_text = ""
 
-    stock_text = (
-
-        str(context["stock"])
-
-        if context["stock"]
-
-        else "No stock data found."
-
-    )
+        stock_text = ""
 
     # -----------------------------------
     # Prompt

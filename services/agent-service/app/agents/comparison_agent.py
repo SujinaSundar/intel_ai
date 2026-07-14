@@ -28,10 +28,48 @@ class ComparisonAgent:
     ):
         """
         Initialize the
-        Comparison Agent.
+        Comparison MCP.
         """
 
         self.mcp = ComparisonMCP()
+
+    # -----------------------------------------------------
+    # Default Response
+    # -----------------------------------------------------
+
+    def answer(
+        self,
+        company_one: str,
+        company_two: str
+    ) -> dict:
+        """
+        Default response.
+
+        Compares two
+        companies.
+
+        Parameters
+        ----------
+        company_one : str
+
+        company_two : str
+
+        Returns
+        -------
+        dict
+        """
+
+        return self.compare(
+
+            company_one,
+
+            company_two
+
+        )
+
+    # -----------------------------------------------------
+    # Company Comparison
+    # -----------------------------------------------------
 
     def compare(
         self,
@@ -44,15 +82,12 @@ class ComparisonAgent:
         Parameters
         ----------
         company_one : str
-            First company.
 
         company_two : str
-            Second company.
 
         Returns
         -------
         dict
-            Comparison results.
         """
 
         return self.mcp.compare_companies(
@@ -63,16 +98,19 @@ class ComparisonAgent:
 
         )
 
+    # -----------------------------------------------------
+    # Health Check
+    # -----------------------------------------------------
+
     def health_check(
         self
     ) -> dict:
         """
-        Check MCP availability.
+        Check Comparison MCP.
 
         Returns
         -------
         dict
-            MCP health status.
         """
 
         return self.mcp.health_check()

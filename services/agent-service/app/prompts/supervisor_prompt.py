@@ -86,14 +86,34 @@ Use for:
 ------------------------------------------------------
 
 Comparison
+----------------
 
-Use for:
+Use ONLY when the user explicitly mentions
+TWO companies for comparison.
 
-- Compare companies
-- Difference between companies
-- Better company
-- Compare performance
+Examples
 
+✓ Compare Infosys and TCS
+
+✓ Infosys vs TCS
+
+✓ Which is better, Reliance or Infosys?
+
+✓ Compare HDFC Bank with ICICI Bank
+
+Never select Comparison when:
+
+- Only one company is mentioned.
+
+- No company is mentioned.
+
+- The user asks for investment advice.
+
+- The user asks "Which company should I invest in?"
+
+- The user asks "Suggest a good stock."
+
+Those questions should be routed to Research instead.
 ------------------------------------------------------
 
 Sector
