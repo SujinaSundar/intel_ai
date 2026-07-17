@@ -9,7 +9,10 @@
  */
 
 import Markdown from "@/components/common/Markdown";
-import { Skeleton } from "@/components/ui/skeleton";
+import SectionCard from "@/components/common/SectionCard";
+import EmptyState from "@/components/common/EmptyState";
+import LoadingState from "@/components/common/LoadingState";
+
 
 interface FinanceTabProps {
 
@@ -20,6 +23,7 @@ interface FinanceTabProps {
     finance: string;
 
 }
+
 
 export default function FinanceTab({
 
@@ -37,23 +41,7 @@ export default function FinanceTab({
 
     if (loading) {
 
-        return (
-
-            <div className="mt-6 space-y-4">
-
-                <Skeleton className="h-6 w-52" />
-
-                <Skeleton className="h-4 w-full" />
-
-                <Skeleton className="h-4 w-full" />
-
-                <Skeleton className="h-4 w-5/6" />
-
-                <Skeleton className="h-4 w-4/6" />
-
-            </div>
-
-        );
+        return <LoadingState />;
 
     }
 
@@ -65,21 +53,13 @@ export default function FinanceTab({
 
         return (
 
-            <div className="mt-6 rounded-lg border p-6">
+            <EmptyState
 
-                <p className="text-slate-400">
+                title="Financial Summary"
 
-                    No financial information available for{" "}
+                description={`No financial information available for ${company}.`}
 
-                    <span className="font-semibold">
-
-                        {company}
-
-                    </span>.
-
-                </p>
-
-            </div>
+            />
 
         );
 
@@ -91,23 +71,13 @@ export default function FinanceTab({
 
     return (
 
-        <div className="mt-6 rounded-lg border bg-card p-6">
+        <SectionCard
 
-            <div className="mb-6">
+            title="Financial Summary"
 
-                <h2 className="text-2xl font-semibold">
+            description={`Latest financial information for ${company}`}
 
-                    Financial Summary
-
-                </h2>
-
-                <p className="text-sm text-slate-400">
-
-                    Latest financial information for {company}
-
-                </p>
-
-            </div>
+        >
 
             <Markdown
 
@@ -115,7 +85,7 @@ export default function FinanceTab({
 
             />
 
-        </div>
+        </SectionCard>
 
     );
 

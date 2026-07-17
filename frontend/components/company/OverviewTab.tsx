@@ -3,22 +3,19 @@
 /**
  * Overview Tab.
  *
- * Displays an overview
- * of the selected company.
+ * Displays an AI-powered
+ * overview of the selected
+ * company.
  */
 
 import Markdown from "@/components/common/Markdown";
+import SectionCard from "@/components/common/SectionCard";
+import LoadingState from "@/components/common/LoadingState";
 
 import {
     Card,
-    CardContent,
-    CardHeader,
-    CardTitle
+    CardContent
 } from "@/components/ui/card";
-
-import {
-    Skeleton
-} from "@/components/ui/skeleton";
 
 import {
     Building2,
@@ -26,7 +23,6 @@ import {
     TrendingUp,
     Brain
 } from "lucide-react";
-
 
 interface OverviewTabProps {
 
@@ -41,7 +37,6 @@ interface OverviewTabProps {
     news: string;
 
 }
-
 
 export default function OverviewTab({
 
@@ -63,21 +58,7 @@ export default function OverviewTab({
 
     if (loading) {
 
-        return (
-
-            <div className="space-y-6 mt-6">
-
-                <Skeleton className="h-28 rounded-xl" />
-
-                <Skeleton className="h-48 rounded-xl" />
-
-                <Skeleton className="h-48 rounded-xl" />
-
-                <Skeleton className="h-48 rounded-xl" />
-
-            </div>
-
-        );
+        return <LoadingState />;
 
     }
 
@@ -87,33 +68,35 @@ export default function OverviewTab({
 
     return (
 
-        <div className="space-y-6 mt-6">
+        <div className="mt-6 space-y-8">
 
-            {/* ------------------------------------------- */}
-            {/* Company Header */}
-            {/* ------------------------------------------- */}
+            {/* ------------------------------------------------ */}
+            {/* Hero */}
+            {/* ------------------------------------------------ */}
 
-            <Card className="border-slate-700 bg-slate-900/60">
+            <Card className="overflow-hidden border-border bg-card shadow-md">
 
-                <CardContent className="flex items-center gap-4 p-8">
+                <CardContent className="flex items-center gap-5 p-8">
 
-                    <div className="rounded-xl bg-blue-500/20 p-3">
+                    <div className="rounded-2xl bg-primary/10 p-4">
 
-                        <Building2 className="h-8 w-8 text-blue-400" />
+                        <Building2 className="h-10 w-10 text-primary" />
 
                     </div>
 
                     <div>
 
-                        <h1 className="text-3xl font-bold">
+                        <h1 className="text-4xl font-bold tracking-tight">
 
                             {company}
 
                         </h1>
 
-                        <p className="text-slate-400">
+                        <p className="mt-2 text-muted-foreground">
 
-                            AI-powered company overview
+                            AI-powered company overview combining financial performance,
+
+                            business research and latest news.
 
                         </p>
 
@@ -123,95 +106,65 @@ export default function OverviewTab({
 
             </Card>
 
-            {/* ------------------------------------------- */}
+            {/* ------------------------------------------------ */}
             {/* Financial Summary */}
-            {/* ------------------------------------------- */}
+            {/* ------------------------------------------------ */}
 
-            <Card className="border-slate-700 bg-slate-900/60">
+            <SectionCard
 
-                <CardHeader>
+                title="📈 Financial Summary"
 
-                    <CardTitle className="flex items-center gap-2">
+                description="Latest stock performance and financial overview."
 
-                        <TrendingUp className="h-5 w-5" />
+            >
 
-                        Financial Summary
+                <Markdown
 
-                    </CardTitle>
+                    content={finance}
 
-                </CardHeader>
+                />
 
-                <CardContent>
+            </SectionCard>
 
-                    <Markdown
-
-                        content={finance}
-
-                    />
-
-                </CardContent>
-
-            </Card>
-
-            {/* ------------------------------------------- */}
+            {/* ------------------------------------------------ */}
             {/* Research */}
-            {/* ------------------------------------------- */}
+            {/* ------------------------------------------------ */}
 
-            <Card className="border-slate-700 bg-slate-900/60">
+            <SectionCard
 
-                <CardHeader>
+                title="🧠 AI Research Highlights"
 
-                    <CardTitle className="flex items-center gap-2">
+                description="Business overview, products, partnerships and strategic insights."
 
-                        <Brain className="h-5 w-5" />
+            >
 
-                        Research Highlights
+                <Markdown
 
-                    </CardTitle>
+                    content={research}
 
-                </CardHeader>
+                />
 
-                <CardContent>
+            </SectionCard>
 
-                    <Markdown
-
-                        content={research}
-
-                    />
-
-                </CardContent>
-
-            </Card>
-
-            {/* ------------------------------------------- */}
+            {/* ------------------------------------------------ */}
             {/* News */}
-            {/* ------------------------------------------- */}
+            {/* ------------------------------------------------ */}
 
-            <Card className="border-slate-700 bg-slate-900/60">
+            <SectionCard
 
-                <CardHeader>
+                title="📰 Latest News"
 
-                    <CardTitle className="flex items-center gap-2">
+                description="Recent news and AI-generated news summary."
 
-                        <Newspaper className="h-5 w-5" />
+            >
 
-                        Latest News
+                <Markdown
 
-                    </CardTitle>
+                    content={news}
 
-                </CardHeader>
+                />
 
-                <CardContent>
-
-                    <Markdown
-
-                        content={news}
-
-                    />
-
-                </CardContent>
-
-            </Card>
+            </SectionCard>
 
         </div>
 

@@ -8,18 +8,24 @@
  */
 
 import Markdown from "@/components/common/Markdown";
+import SectionCard from "@/components/common/SectionCard";
+import EmptyState from "@/components/common/EmptyState";
+import LoadingState from "@/components/common/LoadingState";
+
+import InsightBanner from "@/components/dashboard/InsightBanner";
+import InfoTile from "@/components/dashboard/InfoTile";
 
 import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle
-} from "@/components/ui/card";
 
-import {
-    Skeleton
-} from "@/components/ui/skeleton";
+    Landmark,
 
+    Building2,
+
+    TrendingUp,
+
+    Brain
+
+} from "lucide-react";
 
 interface SectorResultProps {
 
@@ -28,7 +34,6 @@ interface SectorResultProps {
     result: string;
 
 }
-
 
 export default function SectorResult({
 
@@ -44,23 +49,7 @@ export default function SectorResult({
 
     if (loading) {
 
-        return (
-
-            <div className="mt-6 space-y-4">
-
-                <Skeleton className="h-6 w-52" />
-
-                <Skeleton className="h-4 w-full" />
-
-                <Skeleton className="h-4 w-full" />
-
-                <Skeleton className="h-4 w-5/6" />
-
-                <Skeleton className="h-4 w-4/6" />
-
-            </div>
-
-        );
+        return <LoadingState />;
 
     }
 
@@ -72,27 +61,13 @@ export default function SectorResult({
 
         return (
 
-            <Card className="mt-6">
+            <EmptyState
 
-                <CardContent className="p-6">
+                title="Ready for Sector Analysis"
 
-                    <p className="text-slate-400">
+                description="Select a NIFTY 50 sector and click 'Analyze Sector' to generate AI-powered insights."
 
-                        Select a sector and click
-
-                        <span className="font-semibold">
-
-                            {" "}Analyze Sector
-
-                        </span>
-
-                        {" "}to generate an AI-powered analysis.
-
-                    </p>
-
-                </CardContent>
-
-            </Card>
+            />
 
         );
 
@@ -104,25 +79,95 @@ export default function SectorResult({
 
     return (
 
-        <Card className="mt-6 border-slate-700 bg-slate-900/60 shadow-lg">
+        <div className="space-y-8">
 
-            <CardHeader>
+            {/* --------------------------------------------- */}
+            {/* AI Insight */}
+            {/* --------------------------------------------- */}
 
-                <CardTitle className="text-3xl">
+            <InsightBanner
 
-                    Sector Analysis
+                title="Sector Analysis Complete"
 
-                </CardTitle>
+                description="Intel AI analyzed the selected sector using Finance, Research and News agents to generate a comprehensive report."
 
-                <p className="text-slate-400">
+            />
 
-                    AI-generated insights for the selected sector.
+            {/* --------------------------------------------- */}
+            {/* Analysis Overview */}
+            {/* --------------------------------------------- */}
 
-                </p>
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
 
-            </CardHeader>
+                <InfoTile
 
-            <CardContent>
+                    icon={
+
+                        <Landmark className="h-6 w-6" />
+
+                    }
+
+                    title="Sector Overview"
+
+                    subtitle="Industry summary and outlook"
+
+                />
+
+                <InfoTile
+
+                    icon={
+
+                        <Building2 className="h-6 w-6" />
+
+                    }
+
+                    title="Companies"
+
+                    subtitle="Leading NIFTY 50 companies"
+
+                />
+
+                <InfoTile
+
+                    icon={
+
+                        <TrendingUp className="h-6 w-6" />
+
+                    }
+
+                    title="Market Performance"
+
+                    subtitle="Financial trends and activity"
+
+                />
+
+                <InfoTile
+
+                    icon={
+
+                        <Brain className="h-6 w-6" />
+
+                    }
+
+                    title="AI Insights"
+
+                    subtitle="Research and sentiment analysis"
+
+                />
+
+            </div>
+
+            {/* --------------------------------------------- */}
+            {/* Detailed Analysis */}
+            {/* --------------------------------------------- */}
+
+            <SectionCard
+
+                title="Detailed Sector Analysis"
+
+                description="Comprehensive AI-generated analysis of the selected NIFTY 50 sector."
+
+            >
 
                 <Markdown
 
@@ -130,9 +175,9 @@ export default function SectorResult({
 
                 />
 
-            </CardContent>
+            </SectionCard>
 
-        </Card>
+        </div>
 
     );
 

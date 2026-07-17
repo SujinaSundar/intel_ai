@@ -11,20 +11,53 @@
 
 import { useState } from "react";
 
-import { Button } from "@/components/ui/button";
+import {
+
+    Landmark,
+
+    Sparkles
+
+} from "lucide-react";
 
 import {
+
+    Button
+
+} from "@/components/ui/button";
+
+import {
+
+    Card,
+
+    CardContent
+
+} from "@/components/ui/card";
+
+import {
+
     Select,
+
     SelectContent,
+
     SelectItem,
+
     SelectTrigger,
+
     SelectValue
+
 } from "@/components/ui/select";
 
-import { askQuestion } from "@/services/agent.service";
+import {
 
-import { SECTORS } from "@/constants/sectors";
+    askQuestion
 
+} from "@/services/agent.service";
+
+import {
+
+    SECTORS
+
+} from "@/constants/sectors";
 
 interface SectorSelectorProps {
 
@@ -44,7 +77,6 @@ interface SectorSelectorProps {
 
 }
 
-
 export default function SectorSelector({
 
     loading,
@@ -54,6 +86,10 @@ export default function SectorSelector({
     setResult
 
 }: SectorSelectorProps) {
+
+    // ---------------------------------------------------------
+    // State
+    // ---------------------------------------------------------
 
     const [
 
@@ -67,7 +103,7 @@ export default function SectorSelector({
     // Analyze Sector
     // ---------------------------------------------------------
 
-    const analyzeSector = async () => {
+    async function analyzeSector() {
 
         if (!sector) {
 
@@ -85,11 +121,7 @@ export default function SectorSelector({
 
             );
 
-            setResult(
-
-                response
-
-            );
+            setResult(response);
 
         }
 
@@ -111,7 +143,7 @@ export default function SectorSelector({
 
         }
 
-    };
+    }
 
     // ---------------------------------------------------------
     // UI
@@ -119,107 +151,138 @@ export default function SectorSelector({
 
     return (
 
-        <div className="space-y-6">
+        <Card className="border-border shadow-sm">
 
-            <div>
+            <CardContent className="space-y-8 p-8">
 
-                <h1 className="text-4xl font-bold">
+                {/* --------------------------------------------- */}
+                {/* Header */}
+                {/* --------------------------------------------- */}
 
-                    🏦 Sector Analysis
+                <div className="text-center">
 
-                </h1>
+                    <h2 className="text-2xl font-bold">
 
-                <p className="mt-2 text-slate-400">
+                        Select Sector
 
-                    Explore AI-generated insights for NIFTY 50 sectors.
+                    </h2>
 
-                </p>
+                    <p className="mt-2 text-muted-foreground">
 
-            </div>
+                        Choose a NIFTY 50 sector to generate AI-powered
+                        financial, research and news insights.
 
-            <div className="max-w-md">
+                    </p>
 
-                <Select
+                </div>
 
-                    value={sector}
+                {/* --------------------------------------------- */}
+                {/* Selector */}
+                {/* --------------------------------------------- */}
 
-                    onValueChange={setSector}
+                <div className="mx-auto max-w-lg">
 
-                >
+                    <label className="mb-3 flex items-center gap-2 text-sm font-medium">
 
-                    <SelectTrigger>
+                        <Landmark className="h-4 w-4 text-primary" />
 
-                        <SelectValue
+                        Sector
 
-                            placeholder="Select a sector"
+                    </label>
 
-                        />
+                    <Select
 
-                    </SelectTrigger>
+                        value={sector}
 
-                    <SelectContent>
+                        onValueChange={setSector}
 
-                        {
+                    >
 
-                            SECTORS.map(
+                        <SelectTrigger className="h-12 rounded-xl">
 
-                                (
+                            <SelectValue
 
-                                    item
+                                placeholder="Select a NIFTY 50 sector"
 
-                                ) => (
+                            />
 
-                                    <SelectItem
+                        </SelectTrigger>
 
-                                        key={item}
+                        <SelectContent>
 
-                                        value={item}
+                            {
 
-                                    >
+                                SECTORS.map(
 
-                                        {item}
+                                    (sector) => (
 
-                                    </SelectItem>
+                                        <SelectItem
+
+                                            key={sector}
+
+                                            value={sector}
+
+                                        >
+
+                                            {sector}
+
+                                        </SelectItem>
+
+                                    )
 
                                 )
 
-                            )
+                            }
+
+                        </SelectContent>
+
+                    </Select>
+
+                </div>
+
+                {/* --------------------------------------------- */}
+                {/* Button */}
+                {/* --------------------------------------------- */}
+
+                <div className="flex justify-center">
+
+                    <Button
+
+                        size="lg"
+
+                        className="rounded-xl px-10"
+
+                        disabled={
+
+                            loading ||
+
+                            !sector
 
                         }
 
-                    </SelectContent>
+                        onClick={analyzeSector}
 
-                </Select>
+                    >
 
-            </div>
+                        <Sparkles className="mr-2 h-5 w-5" />
 
-            <Button
+                        {
 
-                onClick={analyzeSector}
+                            loading
 
-                disabled={
+                                ? "Generating AI Analysis..."
 
-                    loading ||
+                                : "Analyze Sector"
 
-                    !sector
+                        }
 
-                }
+                    </Button>
 
-            >
+                </div>
 
-                {
+            </CardContent>
 
-                    loading
-
-                        ? "Analyzing..."
-
-                        : "Analyze Sector"
-
-                }
-
-            </Button>
-
-        </div>
+        </Card>
 
     );
 

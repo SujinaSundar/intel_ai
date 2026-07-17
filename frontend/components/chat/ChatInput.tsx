@@ -1,44 +1,230 @@
 "use client";
 
-import { useState } from "react";
-import { Send } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+/**
+ * Chat Input.
+ *
+ * Modern AI chat input
+ * for asking questions.
+ */
 
-interface Props {
-  onSend: (message: string) => void;
-  disabled?: boolean;
+import { useState, KeyboardEvent } from "react";
+
+import {
+
+    Send,
+
+    Loader2
+
+} from "lucide-react";
+
+import {
+
+    Button
+
+} from "@/components/ui/button";
+
+import {
+
+    Textarea
+
+} from "@/components/ui/textarea";
+
+interface ChatInputProps {
+
+    onSend: (
+
+        message: string
+
+    ) => void;
+
+    disabled?: boolean;
+
 }
 
 export default function ChatInput({
-  onSend,
-  disabled,
-}: Props) {
-  const [message, setMessage] = useState("");
 
-  const send = () => {
-    if (!message.trim()) return;
+    onSend,
 
-    onSend(message);
+    disabled = false
 
-    setMessage("");
-  };
+}: ChatInputProps) {
 
-  return (
-    <div className="border-t border-slate-800 pt-6">
-      <div className="flex gap-4">
-        <Textarea
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Ask anything about NIFTY 50 companies..."
-          className="min-h-[60px]"
-          disabled={disabled}
-        />
+    // ---------------------------------------------------------
+    // State
+    // ---------------------------------------------------------
 
-        <Button onClick={send} disabled={disabled}>
-          <Send className="h-4 w-4" />
-        </Button>
-      </div>
-    </div>
-  );
+    const [
+
+        message,
+
+        setMessage
+
+    ] = useState("");
+
+    // ---------------------------------------------------------
+    // Send
+    // ---------------------------------------------------------
+
+    function sendMessage() {
+
+        const text = message.trim();
+
+        if (!text) {
+
+            return;
+
+        }
+
+        onSend(text);
+
+        setMessage("");
+
+    }
+
+    // ---------------------------------------------------------
+    // Enter Key
+    // ---------------------------------------------------------
+
+    function handleKeyDown(
+
+        event: KeyboardEvent<HTMLTextAreaElement>
+
+    ) {
+
+        if (
+
+            event.key === "Enter" &&
+
+            !event.shiftKey
+
+        ) {
+
+            event.preventDefault();
+
+            sendMessage();
+
+        }
+
+    }
+
+    // ---------------------------------------------------------
+    // UI
+    // ---------------------------------------------------------
+
+    return (
+
+        <div className="mt-6 border-t border-border pt-6">
+
+            <div className="rounded-2xl border border-border bg-card shadow-sm">
+
+                <div className="flex items-end gap-4 p-4">
+
+                    {/* ------------------------------------- */}
+                    {/* Text Area */}
+                    {/* ------------------------------------- */}
+
+                    <Textarea
+
+                        value={message}
+
+                        onChange={(event) =>
+
+                            setMessage(
+
+                                event.target.value
+
+                            )
+
+                        }
+
+                        onKeyDown={handleKeyDown}
+
+                        placeholder="Ask anything about NIFTY 50 companies..."
+
+                        disabled={disabled}
+
+                        className="
+                            min-h-[64px]
+                            resize-none
+                            border-0
+                            bg-transparent
+                            p-0
+                            text-base
+                            shadow-none
+                            focus-visible:ring-0
+                            focus-visible:ring-offset-0
+                        "
+
+                    />
+
+                    {/* ------------------------------------- */}
+                    {/* Send Button */}
+                    {/* ------------------------------------- */}
+
+                    <Button
+
+                        size="icon"
+
+                        className="h-11 w-11 rounded-xl"
+
+                        disabled={
+
+                            disabled ||
+
+                            !message.trim()
+
+                        }
+
+                        onClick={sendMessage}
+
+                    >
+
+                        {
+
+                            disabled
+
+                                ? (
+
+                                    <Loader2 className="h-5 w-5 animate-spin" />
+
+                                )
+
+                                : (
+
+                                    <Send className="h-5 w-5" />
+
+                                )
+
+                        }
+
+                    </Button>
+
+                </div>
+
+                {/* ------------------------------------- */}
+                {/* Footer */}
+                {/* ------------------------------------- */}
+
+                <div className="flex items-center justify-between border-t border-border px-4 py-2 text-xs text-muted-foreground">
+
+                    <span>
+
+                        Press <strong>Enter</strong> to send
+
+                    </span>
+
+                    <span>
+
+                        <strong>Shift + Enter</strong> for a new line
+
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    );
+
 }

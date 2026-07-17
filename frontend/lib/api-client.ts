@@ -25,10 +25,18 @@ export async function apiClient(
   );
 
   if (!response.ok) {
+
+    const error = await response.text();
+
+    console.error("Status:", response.status);
+
+    console.error("Response:", error);
+
     throw new Error(
-      "API request failed."
+        `API request failed (${response.status})`
     );
-  }
+
+}
 
   return response.json();
 }

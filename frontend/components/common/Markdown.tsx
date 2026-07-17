@@ -4,8 +4,7 @@
  * Markdown Renderer.
  *
  * Shared markdown component
- * used throughout the
- * application.
+ * used across the application.
  */
 
 import ReactMarkdown from "react-markdown";
@@ -25,7 +24,7 @@ export default function Markdown({
 
     return (
 
-        <div className="space-y-4 text-base leading-8 text-slate-200">
+        <div className="max-w-none text-base leading-7 text-foreground">
 
             <ReactMarkdown
 
@@ -33,9 +32,13 @@ export default function Markdown({
 
                 components={{
 
+                    // -------------------------------------------------
+                    // Heading 1
+                    // -------------------------------------------------
+
                     h1: ({ children }) => (
 
-                        <h1 className="mb-6 mt-2 text-3xl font-bold tracking-tight text-white">
+                        <h1 className="mb-4 mt-1 text-3xl font-bold tracking-tight text-foreground">
 
                             {children}
 
@@ -43,9 +46,13 @@ export default function Markdown({
 
                     ),
 
+                    // -------------------------------------------------
+                    // Heading 2
+                    // -------------------------------------------------
+
                     h2: ({ children }) => (
 
-                        <h2 className="mb-4 mt-8 border-b border-slate-700 pb-2 text-2xl font-semibold text-white">
+                        <h2 className="mb-3 mt-6 border-b border-border pb-2 text-2xl font-semibold text-foreground">
 
                             {children}
 
@@ -53,9 +60,13 @@ export default function Markdown({
 
                     ),
 
+                    // -------------------------------------------------
+                    // Heading 3
+                    // -------------------------------------------------
+
                     h3: ({ children }) => (
 
-                        <h3 className="mb-3 mt-6 text-xl font-semibold text-white">
+                        <h3 className="mb-2 mt-5 text-xl font-semibold text-foreground">
 
                             {children}
 
@@ -63,9 +74,13 @@ export default function Markdown({
 
                     ),
 
+                    // -------------------------------------------------
+                    // Paragraph
+                    // -------------------------------------------------
+
                     p: ({ children }) => (
 
-                        <p className="mb-4 leading-8 text-slate-300">
+                        <p className="mb-3 leading-7 text-muted-foreground">
 
                             {children}
 
@@ -73,9 +88,13 @@ export default function Markdown({
 
                     ),
 
+                    // -------------------------------------------------
+                    // Unordered List
+                    // -------------------------------------------------
+
                     ul: ({ children }) => (
 
-                        <ul className="mb-5 list-disc space-y-2 pl-6 text-slate-300">
+                        <ul className="mb-4 list-disc space-y-1 pl-6 text-muted-foreground">
 
                             {children}
 
@@ -83,15 +102,23 @@ export default function Markdown({
 
                     ),
 
+                    // -------------------------------------------------
+                    // Ordered List
+                    // -------------------------------------------------
+
                     ol: ({ children }) => (
 
-                        <ol className="mb-5 list-decimal space-y-2 pl-6 text-slate-300">
+                        <ol className="mb-4 list-decimal space-y-1 pl-6 text-muted-foreground">
 
                             {children}
 
                         </ol>
 
                     ),
+
+                    // -------------------------------------------------
+                    // List Item
+                    // -------------------------------------------------
 
                     li: ({ children }) => (
 
@@ -103,9 +130,13 @@ export default function Markdown({
 
                     ),
 
+                    // -------------------------------------------------
+                    // Strong
+                    // -------------------------------------------------
+
                     strong: ({ children }) => (
 
-                        <strong className="font-semibold text-white">
+                        <strong className="font-semibold text-foreground">
 
                             {children}
 
@@ -113,9 +144,27 @@ export default function Markdown({
 
                     ),
 
+                    // -------------------------------------------------
+                    // Inline Code
+                    // -------------------------------------------------
+
+                    code: ({ children }) => (
+
+                        <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-sm text-primary">
+
+                            {children}
+
+                        </code>
+
+                    ),
+
+                    // -------------------------------------------------
+                    // Block Quote
+                    // -------------------------------------------------
+
                     blockquote: ({ children }) => (
 
-                        <blockquote className="my-6 border-l-4 border-blue-500 pl-4 italic text-slate-400">
+                        <blockquote className="my-4 border-l-4 border-primary pl-4 italic text-muted-foreground">
 
                             {children}
 
@@ -123,57 +172,25 @@ export default function Markdown({
 
                     ),
 
-                    code: ({ className, children }) => {
-
-                        const isBlock = className?.startsWith("language-");
-
-                        if (isBlock) {
-
-                            return (
-
-                                <code className={className}>
-
-                                    {children}
-
-                                </code>
-
-                            );
-
-                        }
-
-                        return (
-
-                            <code className="rounded bg-slate-800 px-1.5 py-1 text-sm text-cyan-300">
-
-                                {children}
-
-                            </code>
-
-                        );
-
-                    },
-
-                    pre: ({ children }) => (
-
-                        <pre className="my-6 overflow-x-auto rounded-xl bg-slate-950 p-4 text-sm text-slate-200">
-
-                            {children}
-
-                        </pre>
-
-                    ),
+                    // -------------------------------------------------
+                    // Horizontal Rule
+                    // -------------------------------------------------
 
                     hr: () => (
 
-                        <hr className="my-8 border-slate-700" />
+                        <hr className="my-4 border-border" />
 
                     ),
 
+                    // -------------------------------------------------
+                    // Table
+                    // -------------------------------------------------
+
                     table: ({ children }) => (
 
-                        <div className="my-6 overflow-x-auto">
+                        <div className="my-4 overflow-x-auto">
 
-                            <table className="min-w-full border border-slate-700">
+                            <table className="w-full border-collapse">
 
                                 {children}
 
@@ -185,7 +202,7 @@ export default function Markdown({
 
                     thead: ({ children }) => (
 
-                        <thead className="bg-slate-800">
+                        <thead className="border-b border-border bg-muted/40">
 
                             {children}
 
@@ -205,7 +222,7 @@ export default function Markdown({
 
                     tr: ({ children }) => (
 
-                        <tr className="border-b border-slate-700">
+                        <tr className="border-b border-border">
 
                             {children}
 
@@ -215,7 +232,7 @@ export default function Markdown({
 
                     th: ({ children }) => (
 
-                        <th className="px-4 py-3 text-left font-semibold text-white">
+                        <th className="px-4 py-2 text-left font-semibold text-foreground">
 
                             {children}
 
@@ -225,31 +242,11 @@ export default function Markdown({
 
                     td: ({ children }) => (
 
-                        <td className="px-4 py-3 text-slate-300">
+                        <td className="px-4 py-2 text-muted-foreground">
 
                             {children}
 
                         </td>
-
-                    ),
-
-                    a: ({ href, children }) => (
-
-                        <a
-
-                            href={href}
-
-                            target="_blank"
-
-                            rel="noopener noreferrer"
-
-                            className="text-blue-400 underline hover:text-blue-300"
-
-                        >
-
-                            {children}
-
-                        </a>
 
                     )
 

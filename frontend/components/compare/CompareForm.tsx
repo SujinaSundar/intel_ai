@@ -3,18 +3,34 @@
 /**
  * Compare Form.
  *
- * Allows the user to select
- * two companies and compare
- * them using the AI Agent.
+ * Select two companies
+ * and compare them using
+ * the AI Trading Research
+ * Platform.
  */
 
-import { useState } from "react";
+import {
+    ArrowLeftRight,
+    Building2,
+    Sparkles
+} from "lucide-react";
 
 import {
     Button
 } from "@/components/ui/button";
 
-import CompanySelector from "@/components/company/CompanySelector";
+import {
+    Card,
+    CardContent
+} from "@/components/ui/card";
+
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue
+} from "@/components/ui/select";
 
 import {
     COMPANIES
@@ -24,27 +40,41 @@ import {
     askQuestion
 } from "@/services/agent.service";
 
-
 interface CompareFormProps {
+
+    companyOne: string;
+
+    companyTwo: string;
+
+    setCompanyOne: (
+        value: string
+    ) => void;
+
+    setCompanyTwo: (
+        value: string
+    ) => void;
 
     loading: boolean;
 
     setLoading: (
-
         loading: boolean
-
     ) => void;
 
     setResult: (
-
         result: string
-
     ) => void;
 
 }
 
-
 export default function CompareForm({
+
+    companyOne,
+
+    companyTwo,
+
+    setCompanyOne,
+
+    setCompanyTwo,
 
     loading,
 
@@ -54,27 +84,11 @@ export default function CompareForm({
 
 }: CompareFormProps) {
 
-    const [
-
-        companyOne,
-
-        setCompanyOne
-
-    ] = useState("");
-
-    const [
-
-        companyTwo,
-
-        setCompanyTwo
-
-    ] = useState("");
-
     // ---------------------------------------------------------
     // Compare Companies
     // ---------------------------------------------------------
 
-    const compareCompanies = async () => {
+    async function compareCompanies() {
 
         if (
 
@@ -98,21 +112,13 @@ export default function CompareForm({
 
             );
 
-            setResult(
-
-                response
-
-            );
+            setResult(response);
 
         }
 
         catch (error) {
 
-            console.error(
-
-                error
-
-            );
+            console.error(error);
 
         }
 
@@ -122,7 +128,7 @@ export default function CompareForm({
 
         }
 
-    };
+    }
 
     // ---------------------------------------------------------
     // UI
@@ -130,78 +136,208 @@ export default function CompareForm({
 
     return (
 
-        <div className="space-y-6">
+        <Card className="border-border shadow-sm">
 
-            <div>
+            <CardContent className="space-y-8 p-8">
 
-                <h1 className="text-4xl font-bold">
+                <div className="text-center">
 
-                    📊 Compare Companies
+                    <h2 className="text-2xl font-bold">
 
-                </h1>
+                        Select Companies
 
-                <p className="mt-2 text-slate-400">
+                    </h2>
 
-                    Compare two NIFTY 50 companies using
-                    our AI Research Platform.
+                    <p className="mt-2 text-muted-foreground">
 
-                </p>
+                        Compare financial performance, business research
+                        and latest news for any two NIFTY 50 companies.
 
-            </div>
+                    </p>
 
-            <div className="grid gap-6 md:grid-cols-2">
+                </div>
 
-                <CompanySelector
+                <div className="grid items-center gap-8 lg:grid-cols-[1fr_auto_1fr]">
 
-                    companies={COMPANIES}
+                    {/* Company A */}
 
-                    value={companyOne}
+                    <div>
 
-                    onChange={setCompanyOne}
+                        <label className="mb-3 flex items-center gap-2 text-sm font-medium">
 
-                />
+                            <Building2 className="h-4 w-4 text-primary" />
 
-                <CompanySelector
+                            Company A
 
-                    companies={COMPANIES}
+                        </label>
 
-                    value={companyTwo}
+                        <Select
 
-                    onChange={setCompanyTwo}
+                            value={companyOne}
 
-                />
+                            onValueChange={setCompanyOne}
 
-            </div>
+                        >
 
-            <Button
+                            <SelectTrigger className="h-12 rounded-xl">
 
-                onClick={compareCompanies}
+                                <SelectValue
 
-                disabled={
+                                    placeholder="Select first company"
 
-                    loading ||
+                                />
 
-                    !companyOne ||
+                            </SelectTrigger>
 
-                    !companyTwo
+                            <SelectContent>
 
-                }
+                                {
 
-            >
+                                    COMPANIES.map(
 
-                {
+                                        company => (
 
-                    loading
+                                            <SelectItem
 
-                        ? "Comparing..."
+                                                key={company.value}
 
-                        : "Compare"
+                                                value={company.value}
 
-                }
+                                            >
 
-            </Button>
+                                                {company.label}
 
-        </div>
+                                            </SelectItem>
+
+                                        )
+
+                                    )
+
+                                }
+
+                            </SelectContent>
+
+                        </Select>
+
+                    </div>
+
+                    {/* VS */}
+
+                    <div className="flex justify-center">
+
+                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg">
+
+                            <ArrowLeftRight className="h-7 w-7" />
+
+                        </div>
+
+                    </div>
+
+                    {/* Company B */}
+
+                    <div>
+
+                        <label className="mb-3 flex items-center gap-2 text-sm font-medium">
+
+                            <Building2 className="h-4 w-4 text-primary" />
+
+                            Company B
+
+                        </label>
+
+                        <Select
+
+                            value={companyTwo}
+
+                            onValueChange={setCompanyTwo}
+
+                        >
+
+                            <SelectTrigger className="h-12 rounded-xl">
+
+                                <SelectValue
+
+                                    placeholder="Select second company"
+
+                                />
+
+                            </SelectTrigger>
+
+                            <SelectContent>
+
+                                {
+
+                                    COMPANIES.map(
+
+                                        company => (
+
+                                            <SelectItem
+
+                                                key={company.value}
+
+                                                value={company.value}
+
+                                            >
+
+                                                {company.label}
+
+                                            </SelectItem>
+
+                                        )
+
+                                    )
+
+                                }
+
+                            </SelectContent>
+
+                        </Select>
+
+                    </div>
+
+                </div>
+
+                <div className="flex justify-center">
+
+                    <Button
+
+                        size="lg"
+
+                        className="rounded-xl px-10"
+
+                        disabled={
+
+                            loading ||
+
+                            !companyOne ||
+
+                            !companyTwo
+
+                        }
+
+                        onClick={compareCompanies}
+
+                    >
+
+                        <Sparkles className="mr-2 h-5 w-5" />
+
+                        {
+
+                            loading
+
+                                ? "Generating AI Comparison..."
+
+                                : "Compare Companies"
+
+                        }
+
+                    </Button>
+
+                </div>
+
+            </CardContent>
+
+        </Card>
 
     );
 

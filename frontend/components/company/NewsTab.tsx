@@ -8,18 +8,9 @@
  */
 
 import Markdown from "@/components/common/Markdown";
-
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle
-} from "@/components/ui/card";
-
-import {
-    Skeleton
-} from "@/components/ui/skeleton";
-
+import SectionCard from "@/components/common/SectionCard";
+import EmptyState from "@/components/common/EmptyState";
+import LoadingState from "@/components/common/LoadingState";
 
 interface NewsTabProps {
 
@@ -31,7 +22,6 @@ interface NewsTabProps {
 
 }
 
-
 export default function NewsTab({
 
     company,
@@ -42,99 +32,41 @@ export default function NewsTab({
 
 }: NewsTabProps) {
 
-    // ---------------------------------------------------------
-    // Loading
-    // ---------------------------------------------------------
-
     if (loading) {
 
-        return (
-
-            <div className="mt-6 space-y-4">
-
-                <Skeleton className="h-6 w-52" />
-
-                <Skeleton className="h-4 w-full" />
-
-                <Skeleton className="h-4 w-full" />
-
-                <Skeleton className="h-4 w-5/6" />
-
-                <Skeleton className="h-4 w-4/6" />
-
-            </div>
-
-        );
+        return <LoadingState />;
 
     }
-
-    // ---------------------------------------------------------
-    // Empty State
-    // ---------------------------------------------------------
 
     if (!news) {
 
         return (
 
-            <Card className="mt-6">
+            <EmptyState
 
-                <CardContent className="p-6">
+                title="Latest News"
 
-                    <p className="text-slate-400">
+                description={`No recent news available for ${company}.`}
 
-                        No recent news available for{" "}
-
-                        <span className="font-semibold">
-
-                            {company}
-
-                        </span>.
-
-                    </p>
-
-                </CardContent>
-
-            </Card>
+            />
 
         );
 
     }
 
-    // ---------------------------------------------------------
-    // UI
-    // ---------------------------------------------------------
-
     return (
 
-        <Card className="mt-6 border-slate-700 bg-slate-900/60 shadow-lg">
+        <SectionCard
 
-            <CardHeader>
+            title="Latest News"
 
-                <CardTitle className="text-3xl">
+            description={`Recent developments related to ${company}`}
 
-                    Latest News
+        >
 
-                </CardTitle>
+            <Markdown content={news} />
 
-                <p className="text-slate-400">
-
-                    Recent developments related to {company}
-
-                </p>
-
-            </CardHeader>
-
-            <CardContent>
-
-                <Markdown
-
-                    content={news}
-
-                />
-
-            </CardContent>
-
-        </Card>
+        </SectionCard>
 
     );
 

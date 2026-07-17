@@ -12,17 +12,25 @@ import {
 
     Brain,
 
+    Cpu,
+
     Database,
+
+    Layers3,
 
     Network,
 
     Server,
 
-    Layers3,
+    Boxes,
 
-    Cpu
+    Sparkles
 
 } from "lucide-react";
+
+import PageHeader from "@/components/common/PageHeader";
+import InsightBanner from "@/components/dashboard/InsightBanner";
+import InfoTile from "@/components/dashboard/InfoTile";
 
 import {
 
@@ -40,44 +48,99 @@ export default function AboutPage() {
 
     return (
 
-        <div className="space-y-8">
+        <div className="mx-auto max-w-7xl space-y-8">
 
-            {/* ------------------------------------------- */}
-            {/* Hero */}
-            {/* ------------------------------------------- */}
+            {/* ------------------------------------------------ */}
+            {/* Page Header */}
+            {/* ------------------------------------------------ */}
 
-            <div>
+            <PageHeader
 
-                <h1 className="text-4xl font-bold">
+                title="Intel AI Trading Research Platform"
 
-                    🚀 Intel AI Trading Research Platform
+                description="A production-style multi-agent AI platform for intelligent stock research, company comparison and sector analysis."
 
-                </h1>
+                icon={
 
-                <p className="mt-3 text-lg text-slate-400">
+                    <Brain className="h-8 w-8 text-primary" />
 
-                    An Agentic AI platform for intelligent
-                    stock research, company comparison and
-                    sector analysis using LangGraph,
-                    Hybrid GraphRAG and Microservices.
+                }
 
-                </p>
+            />
+
+            {/* ------------------------------------------------ */}
+            {/* Insight */}
+            {/* ------------------------------------------------ */}
+
+            <InsightBanner
+
+                title="Production-Style AI Architecture"
+
+                description="Built using LangGraph, Hybrid GraphRAG, FastAPI microservices and modern frontend technologies to deliver AI-powered trading research."
+
+            />
+
+            {/* ------------------------------------------------ */}
+            {/* Project Statistics */}
+            {/* ------------------------------------------------ */}
+
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+
+                <InfoTile
+
+                    icon={<Brain className="h-6 w-6" />}
+
+                    title="5 AI Agents"
+
+                    subtitle="Finance, News, Research, Comparison & Sector"
+
+                />
+
+                <InfoTile
+
+                    icon={<Server className="h-6 w-6" />}
+
+                    title="3 Services"
+
+                    subtitle="Finance, News & Research"
+
+                />
+
+                <InfoTile
+
+                    icon={<Database className="h-6 w-6" />}
+
+                    title="3 Databases"
+
+                    subtitle="PostgreSQL, Neo4j & ChromaDB"
+
+                />
+
+                <InfoTile
+
+                    icon={<Sparkles className="h-6 w-6" />}
+
+                    title="AI Powered"
+
+                    subtitle="LangGraph + Hybrid GraphRAG"
+
+                />
 
             </div>
 
-            {/* ------------------------------------------- */}
+            {/* ------------------------------------------------ */}
             {/* Architecture */}
-            {/* ------------------------------------------- */}
+            {/* ------------------------------------------------ */}
 
-            <Card>
+            <Card className="border-border shadow-sm">
 
                 <CardHeader>
 
                     <CardTitle className="flex items-center gap-2">
 
-                        <Network size={22} />
+                        <Network className="h-5 w-5 text-primary" />
 
-                        Architecture
+                        System Architecture
 
                     </CardTitle>
 
@@ -85,52 +148,52 @@ export default function AboutPage() {
 
                 <CardContent>
 
-                    <pre className="overflow-x-auto rounded-lg bg-slate-950 p-6 text-sm">
+<pre className="overflow-x-auto rounded-xl bg-muted p-6 text-sm leading-7">
 
 {`User
-   │
-   ▼
+ │
+ ▼
 Next.js Frontend
-   │
-   ▼
+ │
+ ▼
 Agent Service
-   │
-   ▼
+ │
+ ▼
 LangGraph Supervisor
-   │
-   ├── Finance Agent
-   ├── News Agent
-   ├── Research Agent
-   ├── Comparison Agent
-   └── Sector Agent
-   │
-   ▼
+ │
+ ├── Finance Agent
+ ├── News Agent
+ ├── Research Agent
+ ├── Comparison Agent
+ └── Sector Agent
+ │
+ ▼
 Finance Service
 News Service
 Research Service
-   │
-   ▼
+ │
+ ▼
 PostgreSQL
 Neo4j
 ChromaDB`}
 
-                    </pre>
+</pre>
 
                 </CardContent>
 
             </Card>
 
-            {/* ------------------------------------------- */}
+            {/* ------------------------------------------------ */}
             {/* Technology Stack */}
-            {/* ------------------------------------------- */}
+            {/* ------------------------------------------------ */}
 
-            <Card>
+            <Card className="border-border shadow-sm">
 
                 <CardHeader>
 
                     <CardTitle className="flex items-center gap-2">
 
-                        <Cpu size={22} />
+                        <Cpu className="h-5 w-5 text-primary" />
 
                         Technology Stack
 
@@ -140,95 +203,47 @@ ChromaDB`}
 
                 <CardContent>
 
-                    <div className="grid gap-4 md:grid-cols-2">
+                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
 
-                        <div>
+                        <InfoTile
 
-                            <h3 className="font-semibold">
+                            icon={<Boxes className="h-6 w-6" />}
 
-                                Frontend
+                            title="Frontend"
 
-                            </h3>
+                            subtitle="Next.js • React • TypeScript • Tailwind CSS"
 
-                            <ul className="mt-2 list-disc pl-5 text-slate-300">
+                        />
 
-                                <li>Next.js 16</li>
+                        <InfoTile
 
-                                <li>React</li>
+                            icon={<Server className="h-6 w-6" />}
 
-                                <li>TypeScript</li>
+                            title="Backend"
 
-                                <li>Tailwind CSS</li>
+                            subtitle="FastAPI • LangGraph • Groq • LlamaIndex"
 
-                                <li>shadcn/ui</li>
+                        />
 
-                            </ul>
+                        <InfoTile
 
-                        </div>
+                            icon={<Database className="h-6 w-6" />}
 
-                        <div>
+                            title="Databases"
 
-                            <h3 className="font-semibold">
+                            subtitle="PostgreSQL • Neo4j • ChromaDB"
 
-                                Backend
+                        />
 
-                            </h3>
+                        <InfoTile
 
-                            <ul className="mt-2 list-disc pl-5 text-slate-300">
+                            icon={<Sparkles className="h-6 w-6" />}
 
-                                <li>FastAPI</li>
+                            title="Deployment"
 
-                                <li>LangGraph</li>
+                            subtitle="Docker • Docker Compose • Microservices"
 
-                                <li>LlamaIndex</li>
-
-                                <li>Groq LLM</li>
-
-                                <li>REST APIs</li>
-
-                            </ul>
-
-                        </div>
-
-                        <div>
-
-                            <h3 className="font-semibold">
-
-                                Databases
-
-                            </h3>
-
-                            <ul className="mt-2 list-disc pl-5 text-slate-300">
-
-                                <li>PostgreSQL</li>
-
-                                <li>Neo4j</li>
-
-                                <li>ChromaDB</li>
-
-                            </ul>
-
-                        </div>
-
-                        <div>
-
-                            <h3 className="font-semibold">
-
-                                Deployment
-
-                            </h3>
-
-                            <ul className="mt-2 list-disc pl-5 text-slate-300">
-
-                                <li>Docker</li>
-
-                                <li>Docker Compose</li>
-
-                                <li>Microservices</li>
-
-                            </ul>
-
-                        </div>
+                        />
 
                     </div>
 
@@ -236,17 +251,17 @@ ChromaDB`}
 
             </Card>
 
-            {/* ------------------------------------------- */}
-            {/* Features */}
-            {/* ------------------------------------------- */}
+            {/* ------------------------------------------------ */}
+            {/* Platform Features */}
+            {/* ------------------------------------------------ */}
 
-            <Card>
+            <Card className="border-border shadow-sm">
 
                 <CardHeader>
 
                     <CardTitle className="flex items-center gap-2">
 
-                        <Layers3 size={22} />
+                        <Layers3 className="h-5 w-5 text-primary" />
 
                         Platform Features
 
@@ -256,23 +271,87 @@ ChromaDB`}
 
                 <CardContent>
 
-                    <div className="grid gap-3 md:grid-cols-2">
+                    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
 
-                        <div>✅ AI Research Copilot</div>
+                        <InfoTile
 
-                        <div>✅ Company Explorer</div>
+                            icon={<Brain className="h-5 w-5" />}
 
-                        <div>✅ Compare Companies</div>
+                            title="AI Research"
 
-                        <div>✅ Sector Analysis</div>
+                            subtitle="Research Copilot"
 
-                        <div>✅ Hybrid GraphRAG</div>
+                        />
 
-                        <div>✅ LangGraph Workflow</div>
+                        <InfoTile
 
-                        <div>✅ MCP Architecture</div>
+                            icon={<Database className="h-5 w-5" />}
 
-                        <div>✅ Multi-Agent System</div>
+                            title="Company Explorer"
+
+                            subtitle="Company Insights"
+
+                        />
+
+                        <InfoTile
+
+                            icon={<Network className="h-5 w-5" />}
+
+                            title="Compare"
+
+                            subtitle="AI Company Comparison"
+
+                        />
+
+                        <InfoTile
+
+                            icon={<Cpu className="h-5 w-5" />}
+
+                            title="Sector Analysis"
+
+                            subtitle="Industry Intelligence"
+
+                        />
+
+                        <InfoTile
+
+                            icon={<Sparkles className="h-5 w-5" />}
+
+                            title="Hybrid GraphRAG"
+
+                            subtitle="Knowledge + Vector Search"
+
+                        />
+
+                        <InfoTile
+
+                            icon={<Server className="h-5 w-5" />}
+
+                            title="LangGraph"
+
+                            subtitle="Agent Orchestration"
+
+                        />
+
+                        <InfoTile
+
+                            icon={<Boxes className="h-5 w-5" />}
+
+                            title="MCP"
+
+                            subtitle="Model Context Protocol"
+
+                        />
+
+                        <InfoTile
+
+                            icon={<Layers3 className="h-5 w-5" />}
+
+                            title="Multi-Agent"
+
+                            subtitle="Production Architecture"
+
+                        />
 
                     </div>
 

@@ -3,9 +3,17 @@
 /**
  * Company Selector.
  *
- * Dropdown component for
- * selecting a company.
+ * Modern company selector
+ * used in the Company
+ * Explorer page.
  */
+
+import { Building2, CheckCircle2 } from "lucide-react";
+
+import {
+    Card,
+    CardContent
+} from "@/components/ui/card";
 
 import {
     Select,
@@ -19,7 +27,6 @@ import {
     CompanyOption
 } from "@/types/company";
 
-
 interface CompanySelectorProps {
 
     companies: CompanyOption[];
@@ -31,7 +38,6 @@ interface CompanySelectorProps {
     ) => void;
 
 }
-
 
 export default function CompanySelector({
 
@@ -45,63 +51,137 @@ export default function CompanySelector({
 
     return (
 
-        <div className="space-y-2">
+        <Card className="mb-8 border-border bg-card shadow-sm">
 
-            <label
-                className="text-sm font-medium text-slate-300"
-            >
-                Company
-            </label>
+            <CardContent className="p-6">
 
-            <Select
+                {/* ------------------------------------------ */}
+                {/* Header */}
+                {/* ------------------------------------------ */}
 
-                value={value}
+                <div className="mb-6 flex items-start gap-4">
 
-                onValueChange={onChange}
+                    <div className="rounded-xl bg-primary/10 p-3">
 
-            >
+                        <Building2 className="h-6 w-6 text-primary" />
 
-                <SelectTrigger
-                    className="w-[320px]"
-                >
+                    </div>
 
-                    <SelectValue
-                        placeholder="Select a company"
-                    />
+                    <div>
 
-                </SelectTrigger>
+                        <h2 className="text-xl font-semibold">
 
-                <SelectContent>
+                            Select Company
+
+                        </h2>
+
+                        <p className="mt-1 text-sm leading-6 text-muted-foreground">
+
+                            Explore financial performance, AI research,
+                            company news and business insights for any
+                            NIFTY 50 company.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+                {/* ------------------------------------------ */}
+                {/* Company Selector */}
+                {/* ------------------------------------------ */}
+
+                <div>
+
+                    <label className="mb-2 block text-sm font-medium text-muted-foreground">
+
+                        Company
+
+                    </label>
+
+                    <Select
+
+                        value={value}
+
+                        onValueChange={onChange}
+
+                    >
+
+                        <SelectTrigger className="h-12 w-full rounded-xl transition-all focus:ring-2 focus:ring-primary">
+
+                            <SelectValue
+
+                                placeholder="Select a NIFTY 50 company"
+
+                            />
+
+                        </SelectTrigger>
+
+                        <SelectContent>
+
+                            {
+
+                                companies.map(
+
+                                    (company) => (
+
+                                        <SelectItem
+
+                                            key={company.value}
+
+                                            value={company.value}
+
+                                        >
+
+                                            {company.label}
+
+                                        </SelectItem>
+
+                                    )
+
+                                )
+
+                            }
+
+                        </SelectContent>
+
+                    </Select>
 
                     {
 
-                        companies.map(
+                        value && (
 
-                            (company) => (
+                            <div className="mt-4 flex items-center gap-2 rounded-lg border border-green-500/20 bg-green-500/10 px-4 py-3">
 
-                                <SelectItem
+                                <CheckCircle2 className="h-5 w-5 text-green-500" />
 
-                                    key={company.value}
+                                <p className="text-sm">
 
-                                    value={company.value}
+                                    Showing AI insights for{" "}
 
-                                >
+                                    <span className="font-semibold text-foreground">
 
-                                    {company.label}
+                                        {companies.find(
 
-                                </SelectItem>
+                                            company => company.value === value
 
-                            )
+                                        )?.label ?? value}
+
+                                    </span>
+
+                                </p>
+
+                            </div>
 
                         )
 
                     }
 
-                </SelectContent>
+                </div>
 
-            </Select>
+            </CardContent>
 
-        </div>
+        </Card>
 
     );
 

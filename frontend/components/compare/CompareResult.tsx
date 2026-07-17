@@ -9,20 +9,30 @@
  */
 
 import Markdown from "@/components/common/Markdown";
+import SectionCard from "@/components/common/SectionCard";
+import EmptyState from "@/components/common/EmptyState";
+import LoadingState from "@/components/common/LoadingState";
+
+import InsightBanner from "@/components/dashboard/InsightBanner";
+import InfoTile from "@/components/dashboard/InfoTile";
 
 import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle
-} from "@/components/ui/card";
 
-import {
-    Skeleton
-} from "@/components/ui/skeleton";
+    BarChart3,
 
+    Brain,
+
+    Newspaper,
+
+    Trophy
+
+} from "lucide-react";
 
 interface CompareResultProps {
+
+    companyOne: string;
+
+    companyTwo: string;
 
     loading: boolean;
 
@@ -30,8 +40,11 @@ interface CompareResultProps {
 
 }
 
-
 export default function CompareResult({
+
+    companyOne,
+
+    companyTwo,
 
     loading,
 
@@ -45,23 +58,7 @@ export default function CompareResult({
 
     if (loading) {
 
-        return (
-
-            <div className="mt-6 space-y-4">
-
-                <Skeleton className="h-6 w-52" />
-
-                <Skeleton className="h-4 w-full" />
-
-                <Skeleton className="h-4 w-full" />
-
-                <Skeleton className="h-4 w-5/6" />
-
-                <Skeleton className="h-4 w-4/6" />
-
-            </div>
-
-        );
+        return <LoadingState />;
 
     }
 
@@ -73,27 +70,13 @@ export default function CompareResult({
 
         return (
 
-            <Card className="mt-6">
+            <EmptyState
 
-                <CardContent className="p-6">
+                title="Ready to Compare"
 
-                    <p className="text-slate-400">
+                description="Choose two companies to generate an AI-powered comparison across finance, research and news."
 
-                        Select two companies and click
-
-                        <span className="font-semibold">
-
-                            {" "}Compare
-
-                        </span>
-
-                        {" "}to generate an AI comparison.
-
-                    </p>
-
-                </CardContent>
-
-            </Card>
+            />
 
         );
 
@@ -105,25 +88,67 @@ export default function CompareResult({
 
     return (
 
-        <Card className="mt-6 border-slate-700 bg-slate-900/60 shadow-lg">
+        <div className="space-y-8">
 
-            <CardHeader>
+            <InsightBanner
 
-                <CardTitle className="text-3xl">
+                title="Comparison Complete"
 
-                    Comparison Result
+                description={`AI-generated comparison between ${companyOne} and ${companyTwo} using Finance, Research and News agents.`}
 
-                </CardTitle>
+            />
 
-                <p className="text-slate-400">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
 
-                    AI-generated comparison between the selected companies.
+                <InfoTile
 
-                </p>
+                    icon={<BarChart3 className="h-6 w-6" />}
 
-            </CardHeader>
+                    title="Finance"
 
-            <CardContent>
+                    subtitle="Stock performance comparison"
+
+                />
+
+                <InfoTile
+
+                    icon={<Brain className="h-6 w-6" />}
+
+                    title="Research"
+
+                    subtitle="Business strategy & products"
+
+                />
+
+                <InfoTile
+
+                    icon={<Newspaper className="h-6 w-6" />}
+
+                    title="News"
+
+                    subtitle="Latest updates & sentiment"
+
+                />
+
+                <InfoTile
+
+                    icon={<Trophy className="h-6 w-6" />}
+
+                    title="AI Verdict"
+
+                    subtitle="Overall comparison summary"
+
+                />
+
+            </div>
+
+            <SectionCard
+
+                title="Detailed AI Comparison"
+
+                description={`Comprehensive comparison report for ${companyOne} and ${companyTwo}.`}
+
+            >
 
                 <Markdown
 
@@ -131,9 +156,9 @@ export default function CompareResult({
 
                 />
 
-            </CardContent>
+            </SectionCard>
 
-        </Card>
+        </div>
 
     );
 
