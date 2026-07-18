@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.router.agent import router
 
 
+
 app = FastAPI(
     title="Agent Service"
 )

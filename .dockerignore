@@ -1,0 +1,62 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore
+
+# Environment
+.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Documentation
+*.docx
+
+# Docker
+Dockerfile.airflow
+
+# Node (future frontend)
+node_modules/
+
+# Build artifacts
+dist/
+build/
+
+# ChromaDB
+services/research-service/chroma_db/
+*.sqlite3
+*.db
+
+# Evaluation outputs
+services/research-service/evaluation_results.csv
+services/research-service/evaluation_summary.csv
+
+# Temporary Office files
+~$*.docx
+
+# Tree output
+tree.txt
