@@ -2,24 +2,12 @@ from pathlib import Path
 
 from pydantic_settings import (
     BaseSettings,
-    SettingsConfigDict
+    SettingsConfigDict,
 )
 
-
-ENV_FILE = (
-    Path(__file__).resolve().parents[4]
-    / ".env"
-)
-
-print(
-    "ENV FILE:",
-    ENV_FILE
-)
-
-print(
-    "EXISTS:",
-    ENV_FILE.exists()
-)
+# Optional local .env file.
+# If it doesn't exist, Pydantic reads from OS environment variables.
+ENV_FILE = Path(".env")
 
 
 class Settings(BaseSettings):
@@ -36,29 +24,15 @@ class Settings(BaseSettings):
     ALPHA_VANTAGE_API_KEY: str
 
     GROQ_API_KEY: str
-    
+
     NEO4J_URI: str
     NEO4J_USERNAME: str
     NEO4J_PASSWORD: str
 
     model_config = SettingsConfigDict(
-        env_file=str(ENV_FILE),
-        extra="ignore"
+        env_file=str(ENV_FILE) if ENV_FILE.exists() else None,
+        extra="ignore",
     )
 
 
 settings = Settings()
-
-print(
-    "HOST =",
-    settings.POSTGRES_HOST
-)
-
-print(
-    "PORT =",
-    settings.POSTGRES_PORT
-)
-print(
-    "GROQ KEY =",
-    settings.GROQ_API_KEY[:20] + "..."
-)

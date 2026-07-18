@@ -1,10 +1,11 @@
 from pathlib import Path
-from pydantic_settings import BaseSettings, SettingsConfigDict
 
-DOCKER_ENV = Path("/opt/airflow/.env")
-LOCAL_ENV = Path(__file__).resolve().parents[4] / ".env"
+from pydantic_settings import (
+    BaseSettings,
+    SettingsConfigDict,
+)
 
-ENV_FILE = DOCKER_ENV if DOCKER_ENV.exists() else LOCAL_ENV
+ENV_FILE = Path(".env")
 
 
 class Settings(BaseSettings):
@@ -15,10 +16,17 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str
 
     ALPHA_VANTAGE_API_KEY: str
-    MARKETAUX_API_KEY: str
+
+    GROQ_API_KEY: str
+
+    NEO4J_URI: str
+    NEO4J_USERNAME: str
+    NEO4J_PASSWORD: str
 
     model_config = SettingsConfigDict(
-        env_file=str(ENV_FILE),
-        extra="ignore"
+        env_file=str(ENV_FILE) if ENV_FILE.exists() else None,
+        extra="ignore",
     )
+
+
 settings = Settings()
