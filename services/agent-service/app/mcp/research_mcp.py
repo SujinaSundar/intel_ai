@@ -9,6 +9,7 @@ Research Service through REST APIs.
 """
 
 import requests
+from app.database.config import settings
 
 
 class ResearchMCP:
@@ -19,7 +20,7 @@ class ResearchMCP:
     Research Service.
     """
 
-    BASE_URL = "http://127.0.0.1:8002"
+    BASE_URL = settings.RESEARCH_SERVICE_URL
 
     def answer_question(
         self,

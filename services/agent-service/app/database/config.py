@@ -28,11 +28,10 @@ class Settings(BaseSettings):
     NEO4J_URI: str
     NEO4J_USERNAME: str
     NEO4J_PASSWORD: str
+    RESEARCH_SERVICE_URL: str
 
     model_config = SettingsConfigDict(
         env_file=str(ENV_FILE) if ENV_FILE.exists() else None,
         extra="ignore",
     )
-
-
 settings = Settings()
