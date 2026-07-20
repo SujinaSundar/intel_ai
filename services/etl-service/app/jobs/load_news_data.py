@@ -212,16 +212,12 @@ def main():
                     # ---------------------------------
 
                     existing = (
-
-                        db.query(
-                            NewsMetadata
+                        db.query(NewsMetadata).filter(
+                            (NewsMetadata.title == title) |
+                            (NewsMetadata.url == article_url)
                         )
-                        .filter(NewsMetadata.title==title)|(NewsMetadata.url == article_url)
-
                         .first()
-
                     )
-
                     if existing:
 
                         continue

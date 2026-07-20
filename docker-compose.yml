@@ -58,6 +58,24 @@ services:
 
     restart: unless-stopped
 
+  sentiment-worker:
+    build:
+      context: .
+      dockerfile: services/etl-service/Dockerfile
+
+    container_name: intel-ai-sentiment-worker
+
+    env_file:
+      - .env.docker
+
+    command: >
+      uv run python -m app.jobs.sentiment_worker
+
+    depends_on:
+      - postgres
+
+    restart: unless-stopped
+
   agent:
     build:
       context: .

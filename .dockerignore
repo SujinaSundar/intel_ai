@@ -60,3 +60,43 @@ services/research-service/evaluation_summary.csv
 
 # Tree output
 tree.txt
+# Python
+**/__pycache__/
+**/*.py[cod]
+**/.pytest_cache/
+
+# Virtual environments
+.venv/
+**/.venv/
+venv/
+**/venv/
+env/
+**/env/
+
+# Frontend
+frontend/.next/
+frontend/node_modules/
+
+# Chroma
+services/research-service/chroma_db/
+
+# Reports (optional if not needed in image)
+services/research-service/app/database/reports/
+
+# Git
+.git/
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+**/*.log
+
+# Environment
+.env
+.env.*
+
+# Build
+dist/
+build/

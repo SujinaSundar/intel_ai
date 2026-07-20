@@ -40,16 +40,17 @@ class SectorAgent:
 
     def answer(
         self,
+        question: str,
         sector: str
     ) -> dict:
         """
-        Default response.
-
-        Returns a summary
-        of the given sector.
+        Handle sector-related
+        questions.
 
         Parameters
         ----------
+        question : str
+
         sector : str
 
         Returns
@@ -57,9 +58,146 @@ class SectorAgent:
         dict
         """
 
-        return self.summarize(
-            sector
-        )
+        question = question.lower()
+
+        recommendation_keywords = [
+
+            "best",
+            "good",
+            "top",
+            "recommend",
+            "recommendation",
+            "performing",
+            "leader",
+            "strong",
+            "strongest"
+
+        ]
+
+        company_keywords = [
+
+            "company",
+            "companies",
+            "list",
+            "which companies"
+
+        ]
+
+        news_keywords = [
+
+            "news",
+            "headline",
+            "headlines",
+            "latest"
+
+        ]
+
+        finance_keywords = [
+
+            "stock",
+            "price",
+            "financial",
+            "finance",
+            "market",
+            "performance"
+
+        ]
+
+        # ---------------------------------------------
+        # Best Company Recommendation
+        # ---------------------------------------------
+
+        if any(
+            keyword in question
+            for keyword in recommendation_keywords
+        ):
+
+            return {
+
+                "intent": "recommendation",
+
+                **self.mcp.get_sector_summary(
+                    sector
+                )
+
+            }
+
+        # ---------------------------------------------
+        # Company Listing
+        # ---------------------------------------------
+
+        if any(
+            keyword in question
+            for keyword in company_keywords
+        ):
+
+            return {
+
+                "intent": "companies",
+
+                "sector": sector,
+
+                "companies": self.companies(
+                    sector
+                )
+
+            }
+
+        # ---------------------------------------------
+        # Sector News
+        # ---------------------------------------------
+
+        if any(
+            keyword in question
+            for keyword in news_keywords
+        ):
+
+            return {
+
+                "intent": "news",
+
+                "sector": sector,
+
+                "news": self.mcp.get_sector_news(
+                    sector
+                )
+
+            }
+
+        # ---------------------------------------------
+        # Sector Finance
+        # ---------------------------------------------
+
+        if any(
+            keyword in question
+            for keyword in finance_keywords
+        ):
+
+            return {
+
+                "intent": "finance",
+
+                "sector": sector,
+
+                "finance": self.mcp.get_sector_finance(
+                    sector
+                )
+
+            }
+
+        # ---------------------------------------------
+        # Default Sector Summary
+        # ---------------------------------------------
+
+        return {
+
+            "intent": "summary",
+
+            **self.summarize(
+                sector
+            )
+
+        }
 
     # -----------------------------------------------------
     # Sector Summary

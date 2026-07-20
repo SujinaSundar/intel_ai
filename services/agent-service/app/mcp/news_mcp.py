@@ -11,19 +11,18 @@ from app.database.connection import SessionLocal
 from app.database.models import (
     Company,
     NewsMetadata,
-    SentimentScore
+    SentimentScore,
 )
 
 
 class NewsMCP:
+    """
+    News MCP.
 
-    def __init__(self):
-
-        self.db = SessionLocal()
-
-    def __del__(self):
-
-        self.db.close()
+    Provides news retrieval
+    tools for company news
+    and sentiment analysis.
+    """
 
     # -----------------------------------------------------
     # Private Helper
@@ -31,12 +30,13 @@ class NewsMCP:
 
     def _get_company(
         self,
-        company_name: str
+        db,
+        company_name: str,
     ):
 
         return (
 
-            self.db.query(
+            db.query(
                 Company
             )
 
@@ -55,54 +55,70 @@ class NewsMCP:
     def get_latest_news(
         self,
         company_name: str,
-        limit: int = 5
+        limit: int = 5,
     ):
 
-        company = self._get_company(company_name)
+        db = SessionLocal()
 
-        if company is None:
+        try:
 
-            return {
-                "error": "Company not found"
-            }
-
-        news = (
-
-            self.db.query(
-                NewsMetadata
+            company = self._get_company(
+                db,
+                company_name,
             )
 
-            .filter(
-                NewsMetadata.company_id == company.id
+            if company is None:
+
+                return {
+                    "error": "Company not found"
+                }
+
+            news = (
+
+                db.query(
+                    NewsMetadata
+                )
+
+                .filter(
+                    NewsMetadata.company_id == company.id
+                )
+
+                .order_by(
+                    NewsMetadata.published_date.desc()
+                )
+
+                .limit(limit)
+
+                .all()
+
             )
 
-            .order_by(
-                NewsMetadata.published_date.desc()
-            )
+            return [
 
-            .limit(limit)
+                {
 
-            .all()
+                    "title": row.title,
 
-        )
+                    "source": row.source,
 
-        return [
+                    "published_date": row.published_date,
 
-            {
+                    "url": row.url
 
-                "title": row.title,
+                }
 
-                "source": row.source,
+                for row in news
 
-                "published_date": row.published_date,
+            ]
 
-                "url": row.url
+        except Exception:
 
-            }
+            db.rollback()
+            raise
 
-            for row in news
+        finally:
 
-        ]
+            db.close()
 
     # -----------------------------------------------------
     # Company News
@@ -110,74 +126,89 @@ class NewsMCP:
 
     def get_company_news(
         self,
-        company_name: str
+        company_name: str,
     ):
 
         return self.get_latest_news(
             company_name,
-            limit=10
+            limit=10,
         )
-
     # -----------------------------------------------------
     # Latest Sentiment
     # -----------------------------------------------------
 
     def get_latest_sentiment(
         self,
-        company_name: str
+        company_name: str,
     ):
 
-        company = self._get_company(company_name)
+        db = SessionLocal()
 
-        if company is None:
+        try:
+
+            company = self._get_company(
+                db,
+                company_name,
+            )
+
+            if company is None:
+
+                return {
+                    "error": "Company not found"
+                }
+
+            result = (
+
+                db.query(
+                    NewsMetadata,
+                    SentimentScore,
+                )
+
+                .join(
+                    SentimentScore,
+                    NewsMetadata.id == SentimentScore.news_id,
+                )
+
+                .filter(
+                    SentimentScore.company_id == company.id
+                )
+
+                .order_by(
+                    NewsMetadata.published_date.desc()
+                )
+
+                .first()
+
+            )
+
+            if result is None:
+
+                return {
+                    "error": "No sentiment found"
+                }
+
+            news, sentiment = result
 
             return {
-                "error": "Company not found"
+
+                "title": news.title,
+
+                "published_date": news.published_date,
+
+                "sentiment": sentiment.sentiment_label,
+
+                "confidence": sentiment.confidence_score,
+
             }
 
-        result = (
+        except Exception:
 
-            self.db.query(
-                NewsMetadata,
-                SentimentScore
-            )
+            db.rollback()
+            raise
 
-            .join(
-                SentimentScore,
-                NewsMetadata.id == SentimentScore.news_id
-            )
+        finally:
 
-            .filter(
-                SentimentScore.company_id == company.id
-            )
-
-            .order_by(
-                NewsMetadata.published_date.desc()
-            )
-
-            .first()
-
-        )
-
-        if result is None:
-
-            return {
-                "error": "No sentiment found"
-            }
-
-        news, sentiment = result
-
-        return {
-
-            "title": news.title,
-
-            "published_date": news.published_date,
-
-            "sentiment": sentiment.sentiment_label,
-
-            "confidence": sentiment.confidence_score
-
-        }
+            db.close()
 
     # -----------------------------------------------------
     # Positive News
@@ -186,62 +217,78 @@ class NewsMCP:
     def get_positive_news(
         self,
         company_name: str,
-        limit: int = 5
+        limit: int = 5,
     ):
 
-        company = self._get_company(company_name)
+        db = SessionLocal()
 
-        if company is None:
+        try:
 
-            return []
-
-        rows = (
-
-            self.db.query(
-                NewsMetadata,
-                SentimentScore
+            company = self._get_company(
+                db,
+                company_name,
             )
 
-            .join(
-                SentimentScore,
-                NewsMetadata.id == SentimentScore.news_id
+            if company is None:
+
+                return []
+
+            rows = (
+
+                db.query(
+                    NewsMetadata,
+                    SentimentScore,
+                )
+
+                .join(
+                    SentimentScore,
+                    NewsMetadata.id == SentimentScore.news_id,
+                )
+
+                .filter(
+                    SentimentScore.company_id == company.id
+                )
+
+                .filter(
+                    SentimentScore.sentiment_label == "positive"
+                )
+
+                .order_by(
+                    NewsMetadata.published_date.desc()
+                )
+
+                .limit(limit)
+
+                .all()
+
             )
 
-            .filter(
-                SentimentScore.company_id == company.id
-            )
+            return [
 
-            .filter(
-                SentimentScore.sentiment_label == "positive"
-            )
+                {
 
-            .order_by(
-                NewsMetadata.published_date.desc()
-            )
+                    "title": news.title,
 
-            .limit(limit)
+                    "source": news.source,
 
-            .all()
+                    "published_date": news.published_date,
 
-        )
+                    "confidence": sentiment.confidence_score,
 
-        return [
+                }
 
-            {
+                for news, sentiment in rows
 
-                "title": news.title,
+            ]
 
-                "source": news.source,
+        except Exception:
 
-                "published_date": news.published_date,
+            db.rollback()
+            raise
 
-                "confidence": sentiment.confidence_score
+        finally:
 
-            }
-
-            for news, sentiment in rows
-
-        ]
+            db.close()
 
     # -----------------------------------------------------
     # Negative News
@@ -250,63 +297,78 @@ class NewsMCP:
     def get_negative_news(
         self,
         company_name: str,
-        limit: int = 5
+        limit: int = 5,
     ):
 
-        company = self._get_company(company_name)
+        db = SessionLocal()
 
-        if company is None:
+        try:
 
-            return []
-
-        rows = (
-
-            self.db.query(
-                NewsMetadata,
-                SentimentScore
+            company = self._get_company(
+                db,
+                company_name,
             )
 
-            .join(
-                SentimentScore,
-                NewsMetadata.id == SentimentScore.news_id
+            if company is None:
+
+                return []
+
+            rows = (
+
+                db.query(
+                    NewsMetadata,
+                    SentimentScore,
+                )
+
+                .join(
+                    SentimentScore,
+                    NewsMetadata.id == SentimentScore.news_id,
+                )
+
+                .filter(
+                    SentimentScore.company_id == company.id
+                )
+
+                .filter(
+                    SentimentScore.sentiment_label == "negative"
+                )
+
+                .order_by(
+                    NewsMetadata.published_date.desc()
+                )
+
+                .limit(limit)
+
+                .all()
+
             )
 
-            .filter(
-                SentimentScore.company_id == company.id
-            )
+            return [
 
-            .filter(
-                SentimentScore.sentiment_label == "negative"
-            )
+                {
 
-            .order_by(
-                NewsMetadata.published_date.desc()
-            )
+                    "title": news.title,
 
-            .limit(limit)
+                    "source": news.source,
 
-            .all()
+                    "published_date": news.published_date,
 
-        )
+                    "confidence": sentiment.confidence_score,
 
-        return [
+                }
 
-            {
+                for news, sentiment in rows
 
-                "title": news.title,
+            ]
 
-                "source": news.source,
+        except Exception:
 
-                "published_date": news.published_date,
+            db.rollback()
+            raise
 
-                "confidence": sentiment.confidence_score
+        finally:
 
-            }
-
-            for news, sentiment in rows
-
-        ]
-
+            db.close()
     # -----------------------------------------------------
     # Search News
     # -----------------------------------------------------
@@ -314,56 +376,72 @@ class NewsMCP:
     def search_news(
         self,
         company_name: str,
-        keyword: str
+        keyword: str,
     ):
 
-        company = self._get_company(company_name)
+        db = SessionLocal()
 
-        if company is None:
+        try:
 
-            return []
-
-        rows = (
-
-            self.db.query(
-                NewsMetadata
+            company = self._get_company(
+                db,
+                company_name,
             )
 
-            .filter(
-                NewsMetadata.company_id == company.id
-            )
+            if company is None:
 
-            .filter(
-                NewsMetadata.title.ilike(
-                    f"%{keyword}%"
+                return []
+
+            rows = (
+
+                db.query(
+                    NewsMetadata
                 )
+
+                .filter(
+                    NewsMetadata.company_id == company.id
+                )
+
+                .filter(
+                    NewsMetadata.title.ilike(
+                        f"%{keyword}%"
+                    )
+                )
+
+                .order_by(
+                    NewsMetadata.published_date.desc()
+                )
+
+                .all()
+
             )
 
-            .order_by(
-                NewsMetadata.published_date.desc()
-            )
+            return [
 
-            .all()
+                {
 
-        )
+                    "title": row.title,
 
-        return [
+                    "source": row.source,
 
-            {
+                    "published_date": row.published_date,
 
-                "title": row.title,
+                    "url": row.url
 
-                "source": row.source,
+                }
 
-                "published_date": row.published_date,
+                for row in rows
 
-                "url": row.url
+            ]
 
-            }
+        except Exception:
 
-            for row in rows
+            db.rollback()
+            raise
 
-        ]
+        finally:
+
+            db.close()
 
     # -----------------------------------------------------
     # News Summary
@@ -371,119 +449,145 @@ class NewsMCP:
 
     def get_news_summary(
         self,
-        company_name: str
+        company_name: str,
     ):
 
-        company = self._get_company(company_name)
+        db = SessionLocal()
 
-        if company is None:
+        try:
+
+            company = self._get_company(
+                db,
+                company_name,
+            )
+
+            if company is None:
+
+                return {
+                    "error": "Company not found"
+                }
+
+            total_news = (
+
+                db.query(
+                    NewsMetadata
+                )
+
+                .filter(
+                    NewsMetadata.company_id == company.id
+                )
+
+                .count()
+
+            )
+
+            positive = (
+
+                db.query(
+                    func.count(
+                        SentimentScore.id
+                    )
+                )
+
+                .filter(
+                    SentimentScore.company_id == company.id
+                )
+
+                .filter(
+                    SentimentScore.sentiment_label == "positive"
+                )
+
+                .scalar()
+
+            )
+
+            negative = (
+
+                db.query(
+                    func.count(
+                        SentimentScore.id
+                    )
+                )
+
+                .filter(
+                    SentimentScore.company_id == company.id
+                )
+
+                .filter(
+                    SentimentScore.sentiment_label == "negative"
+                )
+
+                .scalar()
+
+            )
+
+            neutral = (
+
+                db.query(
+                    func.count(
+                        SentimentScore.id
+                    )
+                )
+
+                .filter(
+                    SentimentScore.company_id == company.id
+                )
+
+                .filter(
+                    SentimentScore.sentiment_label == "neutral"
+                )
+
+                .scalar()
+
+            )
+
+            latest_news = (
+
+                db.query(
+                    NewsMetadata
+                )
+
+                .filter(
+                    NewsMetadata.company_id == company.id
+                )
+
+                .order_by(
+                    NewsMetadata.published_date.desc()
+                )
+
+                .first()
+
+            )
 
             return {
-                "error": "Company not found"
+
+                "company": company.company_name,
+
+                "total_news": total_news,
+
+                "positive_news": positive,
+
+                "negative_news": negative,
+
+                "neutral_news": neutral,
+
+                "latest_update": (
+
+                    latest_news.published_date
+
+                    if latest_news
+
+                    else None
+
+                )
+
             }
 
-        total_news = (
+        except Exception:
 
-            self.db.query(
-                NewsMetadata
-            )
+            db.rollback()
+            raise
 
-            .filter(
-                NewsMetadata.company_id == company.id
-            )
+        finally:
 
-            .count()
-
-        )
-
-        positive = (
-
-            self.db.query(
-                func.count(SentimentScore.id)
-            )
-
-            .filter(
-                SentimentScore.company_id == company.id
-            )
-
-            .filter(
-                SentimentScore.sentiment_label == "positive"
-            )
-
-            .scalar()
-
-        )
-
-        negative = (
-
-            self.db.query(
-                func.count(SentimentScore.id)
-            )
-
-            .filter(
-                SentimentScore.company_id == company.id
-            )
-
-            .filter(
-                SentimentScore.sentiment_label == "negative"
-            )
-
-            .scalar()
-
-        )
-
-        neutral = (
-
-            self.db.query(
-                func.count(SentimentScore.id)
-            )
-
-            .filter(
-                SentimentScore.company_id == company.id
-            )
-
-            .filter(
-                SentimentScore.sentiment_label == "neutral"
-            )
-
-            .scalar()
-
-        )
-
-        latest_news = (
-
-            self.db.query(
-                NewsMetadata
-            )
-
-            .filter(
-                NewsMetadata.company_id == company.id
-            )
-
-            .order_by(
-                NewsMetadata.published_date.desc()
-            )
-
-            .first()
-
-        )
-
-        return {
-
-            "company": company.company_name,
-
-            "total_news": total_news,
-
-            "positive_news": positive,
-
-            "negative_news": negative,
-
-            "neutral_news": neutral,
-
-            "latest_update": (
-                latest_news.published_date
-                if latest_news
-                else None
-            )
-
-        }
+            db.close()

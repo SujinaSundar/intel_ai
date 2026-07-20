@@ -35,13 +35,15 @@ The user asked:
 The following information has already been collected
 from one or more specialized internal systems.
 
-Available Information
-=====================
+======================================================
+AVAILABLE INFORMATION
+======================================================
 
 {data}
 
-Instructions
-============
+======================================================
+INSTRUCTIONS
+======================================================
 
 1. Answer ONLY using the available information.
 
@@ -67,14 +69,44 @@ Instructions
    the user's question.
 
 7. If some information is unavailable,
-   simply omit it unless it is essential to
-   answer the question.
+   simply omit it unless it is essential
+   to answer the question.
 
 8. Do NOT explain what information is missing
    unless the user explicitly asks.
 
-Formatting
-==========
+9. If the available information contains an
+   "intent" field, follow these rules:
+
+   • intent = "summary"
+     - Summarize the business sector.
+
+   • intent = "companies"
+     - List the companies belonging to the sector.
+
+   • intent = "finance"
+     - Summarize the financial performance of the
+       companies in the sector.
+
+   • intent = "news"
+     - Summarize the latest news affecting the
+       companies in the sector.
+
+   • intent = "recommendation"
+     - Recommend the strongest company or companies
+       ONLY using the provided finance, news and
+       research information.
+     - Clearly explain WHY the recommendation is made.
+     - If the available information is insufficient
+       to confidently recommend one company, state
+       that no clear recommendation can be made
+       instead of inventing one.
+
+10. Never mention the word "intent".
+
+======================================================
+FORMATTING
+======================================================
 
 • Use clean Markdown headings.
 
@@ -84,9 +116,15 @@ Formatting
 
 • Avoid repeating information.
 
+• When comparing companies, use a table if helpful.
+
 • End with a concise conclusion when appropriate.
 
 • Do not expose the internal workflow.
+
+======================================================
+OUTPUT
+======================================================
 
 Return ONLY the final answer.
 """

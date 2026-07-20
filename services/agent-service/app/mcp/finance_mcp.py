@@ -8,155 +8,189 @@ for the Trading Research Agent.
 from app.database.connection import SessionLocal
 from app.database.models import (
     Company,
-    StockPrice
+    StockPrice,
 )
 
 
 class FinanceMCP:
+    """
+    Finance MCP.
+
+    Provides stock market
+    retrieval tools.
+    """
 
     def __init__(self):
+        """
+        No persistent database session.
 
-        self.db = SessionLocal()
+        A new SQLAlchemy session is
+        created for every request.
+        """
+        pass
 
-    def __del__(self):
-
-        self.db.close()
+    # ---------------------------------------------------------
+    # Helpers
+    # ---------------------------------------------------------
 
     def _get_company(
         self,
-        company_name: str
+        db,
+        company_name: str,
     ):
+        """
+        Retrieve company by name.
+        """
 
         return (
-
-            self.db.query(
-                Company
-            )
-
+            db.query(Company)
             .filter(
                 Company.company_name == company_name
             )
-
             .first()
-
         )
+
+    # ---------------------------------------------------------
+    # Latest Price
+    # ---------------------------------------------------------
 
     def get_latest_price(
         self,
-        company_name: str
+        company_name: str,
     ):
 
-        company = self._get_company(
-            company_name
-        )
+        db = SessionLocal()
 
-        if company is None:
+        try:
+
+            company = self._get_company(
+                db,
+                company_name,
+            )
+
+            if company is None:
+
+                return {
+                    "error": "Company not found"
+                }
+
+            latest = (
+                db.query(StockPrice)
+                .filter(
+                    StockPrice.company_id == company.id
+                )
+                .order_by(
+                    StockPrice.trade_date.desc()
+                )
+                .first()
+            )
+
+            if latest is None:
+
+                return {
+                    "error": "No stock data found"
+                }
 
             return {
-                "error": "Company not found"
+
+                "company": company.company_name,
+
+                "trade_date": latest.trade_date,
+
+                "open": latest.open_price,
+
+                "high": latest.high_price,
+
+                "low": latest.low_price,
+
+                "close": latest.close_price,
+
+                "volume": latest.volume,
+
             }
 
-        latest = (
+        except Exception:
 
-            self.db.query(
-                StockPrice
-            )
+            db.rollback()
+            raise
 
-            .filter(
-                StockPrice.company_id == company.id
-            )
+        finally:
 
-            .order_by(
-                StockPrice.trade_date.desc()
-            )
+            db.close()
 
-            .first()
-
-        )
-
-        if latest is None:
-
-            return {
-                "error": "No stock data found"
-            }
-
-        return {
-
-            "company": company.company_name,
-
-            "trade_date": latest.trade_date,
-
-            "open": latest.open_price,
-
-            "high": latest.high_price,
-
-            "low": latest.low_price,
-
-            "close": latest.close_price,
-
-            "volume": latest.volume
-
-        }
+    # ---------------------------------------------------------
+    # Price History
+    # ---------------------------------------------------------
 
     def get_price_history(
         self,
         company_name: str,
-        limit: int = 30
+        limit: int = 30,
     ):
 
-        company = self._get_company(
-            company_name
-        )
+        db = SessionLocal()
 
-        if company is None:
+        try:
 
-            return []
-
-        rows = (
-
-            self.db.query(
-                StockPrice
+            company = self._get_company(
+                db,
+                company_name,
             )
 
-            .filter(
-                StockPrice.company_id == company.id
+            if company is None:
+
+                return []
+
+            rows = (
+                db.query(StockPrice)
+                .filter(
+                    StockPrice.company_id == company.id
+                )
+                .order_by(
+                    StockPrice.trade_date.desc()
+                )
+                .limit(limit)
+                .all()
             )
 
-            .order_by(
-                StockPrice.trade_date.desc()
-            )
+            return [
 
-            .limit(limit)
+                {
 
-            .all()
+                    "date": row.trade_date,
 
-        )
+                    "open": row.open_price,
 
-        return [
+                    "high": row.high_price,
 
-            {
+                    "low": row.low_price,
 
-                "date": row.trade_date,
+                    "close": row.close_price,
 
-                "open": row.open_price,
+                    "volume": row.volume,
 
-                "high": row.high_price,
+                }
 
-                "low": row.low_price,
+                for row in rows
 
-                "close": row.close_price,
+            ]
 
-                "volume": row.volume
+        except Exception:
 
-            }
+            db.rollback()
+            raise
 
-            for row in rows
+        finally:
 
-        ]
+            db.close()
+
+    # ---------------------------------------------------------
+    # Latest Volume
+    # ---------------------------------------------------------
 
     def get_latest_volume(
         self,
-        company_name: str
+        company_name: str,
     ):
 
         latest = self.get_latest_price(
@@ -173,13 +207,17 @@ class FinanceMCP:
 
             "trade_date": latest["trade_date"],
 
-            "volume": latest["volume"]
+            "volume": latest["volume"],
 
         }
 
+    # ---------------------------------------------------------
+    # Stock Summary
+    # ---------------------------------------------------------
+
     def get_stock_summary(
         self,
-        company_name: str
+        company_name: str,
     ):
 
         latest = self.get_latest_price(
@@ -191,11 +229,8 @@ class FinanceMCP:
             return latest
 
         day_change = (
-
             latest["close"]
-
             - latest["open"]
-
         )
 
         percent_change = 0
@@ -203,11 +238,8 @@ class FinanceMCP:
         if latest["open"] != 0:
 
             percent_change = (
-
                 day_change
-
                 / latest["open"]
-
             ) * 100
 
         return {
@@ -228,12 +260,12 @@ class FinanceMCP:
 
             "day_change": round(
                 day_change,
-                2
+                2,
             ),
 
             "percent_change": round(
                 percent_change,
-                2
-            )
+                2,
+            ),
 
         }
