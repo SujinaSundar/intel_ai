@@ -50,19 +50,30 @@ class WorkflowNodes:
             state["question"]
         )
 
+        print("=" * 80)
+        print("SUPERVISOR ROUTE")
+        print(route)
+        print("=" * 80)
+
         if not route or "error" in route:
 
-            state["route"] = {
-                "error": "Unable to determine the appropriate agent."
+            state["agent_response"] = {
+                "error": route.get(
+                    "error",
+                    "Unable to determine the appropriate agent."
+                ) if route else "Supervisor returned no route."
             }
+
+            state["final_response"] = state["agent_response"]["error"]
+
+            state["route"] = None
 
             return state
 
         state["route"] = route
 
         return state
-
-    # -----------------------------------------------------
+       # -----------------------------------------------------
     # Finance Node
     # -----------------------------------------------------
 
@@ -87,8 +98,11 @@ class WorkflowNodes:
             return state
 
         state["agent_response"] = self.supervisor.finance.answer(
-            question=state["question"],
             company_name=company,
+            intent=route.get("intent"),
+            trade_date=route.get("trade_date"),
+            limit=route.get("limit"),
+            question=state["question"],
         )
 
         return state
@@ -129,28 +143,25 @@ class WorkflowNodes:
     # -----------------------------------------------------
 
     def research_node(
-        self,
-        state: AgentState
+    self,
+    state: AgentState
     ) -> AgentState:
-        """
-        Execute Research Agent.
-        """
+
+        print("=" * 80)
+        print("INSIDE RESEARCH NODE")
+        print("Question:", state["question"])
+        print("=" * 80)
 
         route = state["route"]
 
-        question = route.get("question")
-
-        if not question:
-
-            state["agent_response"] = {
-                "error": "Research question missing."
-            }
-
-            return state
-
-        state["agent_response"] = self.supervisor.research.answer(
-            question
+        question = route.get(
+            "question",
+            state["question"]
         )
+
+        state["agent_response"] = self.supervisor.research.answer(question)
+
+        print("Research Response:", state["agent_response"])
 
         return state
 

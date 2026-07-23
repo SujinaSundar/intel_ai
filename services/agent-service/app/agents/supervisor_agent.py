@@ -98,32 +98,40 @@ class SupervisorAgent:
         dict
         """
 
-        prompt = get_supervisor_prompt(
-            question
-        )
+        prompt = get_supervisor_prompt(question)
 
-        response = generate_answer(
-            prompt
-        )
+        print("=" * 80)
+        print("SUPERVISOR PROMPT")
+        print(prompt)
+        print("=" * 80)
+
+        response = generate_answer(prompt)
+
+        print("=" * 80)
+        print("RAW LLM RESPONSE")
+        print(response)
+        print("=" * 80)
 
         try:
+            decision = json.loads(response)
 
-            decision = json.loads(
-                response
-            )
+            print("=" * 80)
+            print("PARSED DECISION")
+            print(decision)
+            print("=" * 80)
 
-        except Exception:
+        except Exception as e:
+
+            print("=" * 80)
+            print("JSON PARSE ERROR")
+            print(e)
+            print("RAW RESPONSE")
+            print(response)
+            print("=" * 80)
 
             return {
-
-                "error":
-
-                    "Invalid routing response.",
-
-                "response":
-
-                    response
-
+                "error": "Invalid routing response.",
+                "response": response
             }
 
         return decision

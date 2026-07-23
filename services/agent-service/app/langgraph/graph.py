@@ -53,48 +53,37 @@ class AgentWorkflow:
         """
         Decide the next
         LangGraph node.
-
-        Parameters
-        ----------
-        state : AgentState
-
-        Returns
-        -------
-        str
         """
 
-        route = state["route"]
+        route = state.get("route")
+
+        print("=" * 80)
+        print("LANGGRAPH ROUTE")
+        print(route)
+        print("=" * 80)
 
         if route is None:
-
+            print("ERROR: Route is None")
             return END
 
-        agent = route.get(
-            "agent"
-        )
+        agent = route.get("agent")
 
-        if agent == "Finance":
+        mapping = {
+            "Finance": "finance",
+            "News": "news",
+            "Research": "research",
+            "Comparison": "comparison",
+            "Sector": "sector",
+        }
 
-            return "finance"
+        next_node = mapping.get(agent)
 
-        elif agent == "News":
+        if next_node is None:
+            print(f"ERROR: Unknown agent received: {agent}")
+            return END
 
-            return "news"
-
-        elif agent == "Research":
-
-            return "research"
-
-        elif agent == "Comparison":
-
-            return "comparison"
-
-        elif agent == "Sector":
-
-            return "sector"
-
-        return END
-        # -----------------------------------------------------
+        return next_node
+    # -----------------------------------------------------
     # Build Workflow
     # -----------------------------------------------------
 
@@ -196,7 +185,9 @@ class AgentWorkflow:
 
                 "comparison": "comparison",
 
-                "sector": "sector"
+                "sector": "sector",
+
+                END: END,
 
             }
 

@@ -51,7 +51,6 @@ class NewsMCP:
     # -----------------------------------------------------
     # Latest News
     # -----------------------------------------------------
-
     def get_latest_news(
         self,
         company_name: str,
@@ -73,10 +72,16 @@ class NewsMCP:
                     "error": "Company not found"
                 }
 
-            news = (
+            rows = (
 
                 db.query(
-                    NewsMetadata
+                    NewsMetadata,
+                    SentimentScore,
+                )
+
+                .outerjoin(
+                    SentimentScore,
+                    NewsMetadata.id == SentimentScore.news_id,
                 )
 
                 .filter(
@@ -97,23 +102,46 @@ class NewsMCP:
 
                 {
 
-                    "title": row.title,
+                    "title": news.title,
 
-                    "source": row.source,
+                    "source": news.source,
 
-                    "published_date": row.published_date,
+                    "published_date": news.published_date,
 
-                    "url": row.url
+                    "url": news.url,
+
+                    "sentiment": (
+
+                        sentiment.sentiment_label
+
+                        if sentiment
+
+                        else "Not Available"
+
+                    ),
+
+                    "confidence": (
+
+                        round(
+                            sentiment.confidence_score * 100,
+                            2,
+                        )
+
+                        if sentiment
+
+                        else None
+
+                    ),
 
                 }
 
-                for row in news
-
+                for news, sentiment in rows
             ]
 
         except Exception:
 
             db.rollback()
+
             raise
 
         finally:
@@ -446,11 +474,10 @@ class NewsMCP:
     # -----------------------------------------------------
     # News Summary
     # -----------------------------------------------------
-
     def get_news_summary(
-        self,
-        company_name: str,
-    ):
+    self,
+    company_name: str,
+):
 
         db = SessionLocal()
 
@@ -559,9 +586,20 @@ class NewsMCP:
 
             )
 
+            if positive >= negative and positive >= neutral:
+                overall_sentiment = "Positive"
+
+            elif negative >= positive and negative >= neutral:
+                overall_sentiment = "Negative"
+
+            else:
+                overall_sentiment = "Neutral"
+
             return {
 
                 "company": company.company_name,
+
+                "overall_sentiment": overall_sentiment,
 
                 "total_news": total_news,
 
@@ -586,8 +624,10 @@ class NewsMCP:
         except Exception:
 
             db.rollback()
+
             raise
 
         finally:
 
             db.close()
+    

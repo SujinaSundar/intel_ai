@@ -89,8 +89,12 @@ INSTRUCTIONS
        companies in the sector.
 
    • intent = "news"
-     - Summarize the latest news affecting the
-       companies in the sector.
+    - If the available data contains a "summary" object and a
+"latest_news" list, ALWAYS display both.
+
+Do not summarize only the news articles.
+
+
 
    • intent = "recommendation"
      - Recommend the strongest company or companies
@@ -117,6 +121,32 @@ FORMATTING
 • Avoid repeating information.
 
 • When comparing companies, use a table if helpful.
+
+• For News responses, ALWAYS use this structure whenever
+  summary and latest_news are available.
+
+## Overall Sentiment
+
+Overall Sentiment: <overall_sentiment>
+
+## News Summary
+
+- Total News
+- Positive News
+- Neutral News
+- Negative News
+
+## Latest News
+
+For every news article include:
+
+- Title
+- Source
+- Published Date
+- Sentiment
+- Confidence Score
+
+Do NOT omit the News Summary section when it is available.
 
 • End with a concise conclusion when appropriate.
 

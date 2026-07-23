@@ -19,108 +19,82 @@ class FinanceAgent:
 
         self.finance = FinanceMCP()
 
+    # ---------------------------------------------------------
+    # Main Router
+    # ---------------------------------------------------------
+
     def answer(
         self,
-        question: str,
-        company_name: str
+        company_name: str,
+        intent: str,
+        trade_date=None,
+        limit: int | None = None,
+        question: str = "",
     ):
-        """
-        Route the finance question
-        to the appropriate MCP tool.
-        """
 
-        question = question.lower()
-
-        # ---------------------------------
-        # Price History
-        # ---------------------------------
-
-        if any(
-            keyword in question
-            for keyword in [
-                "history",
-                "historical",
-                "price history",
-                "past prices"
-            ]
-        ):
-
-            return self.price_history(
-                company_name
-            )
-
-        # ---------------------------------
-        # Trading Volume
-        # ---------------------------------
-
-        if any(
-            keyword in question
-            for keyword in [
-                "volume",
-                "trading volume"
-            ]
-        ):
-
-            return self.latest_volume(
-                company_name
-            )
-
-        # ---------------------------------
-        # Stock Summary
-        # ---------------------------------
-
-        if any(
-            keyword in question
-            for keyword in [
-                "summary",
-                "performance"
-            ]
-        ):
-
-            return self.stock_summary(
-                company_name
-            )
-
-        # ---------------------------------
-        # Latest Price
-        # ---------------------------------
-
-        if any(
-            keyword in question
-            for keyword in [
-                "price",
-                "stock price",
-                "open",
-                "close",
-                "high",
-                "low"
-            ]
-        ):
+        if intent == "latest_price":
 
             return self.latest_price(
                 company_name
             )
 
-        # ---------------------------------
-        # Default
-        # ---------------------------------
+        elif intent == "price_by_date":
 
-        return self.stock_summary(
-            company_name
-        )
+            return self.price_by_date(
+                company_name,
+                trade_date,
+            )
+
+        elif intent == "price_history":
+
+            return self.price_history(
+                company_name,
+                limit or 5,
+            )
+
+        elif intent == "latest_volume":
+
+            return self.latest_volume(
+                company_name,
+            )
+
+        elif intent == "stock_summary":
+
+            return self.stock_summary(
+                company_name,
+            )
+
+        return {
+            "error": f"Unknown finance intent: {intent}"
+        }
+
+    # ---------------------------------------------------------
+    # MCP Wrappers
+    # ---------------------------------------------------------
 
     def latest_price(
         self,
-        company_name: str
+        company_name: str,
     ):
 
         return self.finance.get_latest_price(
             company_name
         )
 
+    def price_by_date(
+        self,
+        company_name: str,
+        trade_date,
+    ):
+
+        return self.finance.get_price_by_date(
+            company_name,
+            trade_date,
+        )
+
     def stock_summary(
         self,
-        company_name: str
+        company_name: str,
     ):
 
         return self.finance.get_stock_summary(
@@ -129,7 +103,7 @@ class FinanceAgent:
 
     def latest_volume(
         self,
-        company_name: str
+        company_name: str,
     ):
 
         return self.finance.get_latest_volume(
@@ -139,10 +113,10 @@ class FinanceAgent:
     def price_history(
         self,
         company_name: str,
-        limit: int = 5
+        limit: int = 5,
     ):
 
         return self.finance.get_price_history(
             company_name,
-            limit
+            limit,
         )

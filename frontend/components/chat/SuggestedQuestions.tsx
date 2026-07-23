@@ -61,13 +61,13 @@ const questions = [
 
     {
 
-        title: "Latest news about Reliance",
+        title: "Latest news about Infosys",
 
         subtitle: "Summarize recent company news and market sentiment.",
 
         icon: Newspaper,
 
-        question: "Latest news about Reliance"
+        question: "Latest news about Infosys"
 
     },
 

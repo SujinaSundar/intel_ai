@@ -43,15 +43,34 @@ Finance
 
 Use for:
 
+Use for:
+
 - Current stock price
+- Stock price on a specific date
 - Open price
 - Close price
 - High
 - Low
 - Volume
 - Price history
+- Historical prices
 - Market performance
 - Trading statistics
+
+For Finance requests, identify:
+
+- company
+- intent
+- trade_date (if mentioned)
+- limit (if requesting last N days)
+
+Valid Finance intents:
+
+- latest_price
+- price_by_date
+- price_history
+- latest_volume
+- stock_summary
 
 ------------------------------------------------------
 
@@ -152,6 +171,14 @@ ROUTING RULES
 4. Never return Markdown.
 
 5. Choose exactly ONE agent.
+For Finance requests:
+
+- Return the appropriate Finance intent.
+- If the user asks for the latest price, use "latest_price".
+- If the user asks for the stock price on a specific date, use "price_by_date" and return "trade_date" in YYYY-MM-DD format.
+- If the user asks for the last N days or price history, use "price_history" and return "limit".
+- If the user asks for trading volume, use "latest_volume".
+- If the user asks for a stock overview or performance summary, use "stock_summary".
 
 ======================================================
 OUTPUT FORMAT
@@ -159,11 +186,54 @@ OUTPUT FORMAT
 
 Finance
 
+Latest Price
+
 {{
     "agent": "Finance",
-    "company": "Infosys"
+    "company": "Infosys",
+    "intent": "latest_price"
 }}
 
+----------------------------
+
+Price on Specific Date
+
+{{
+    "agent": "Finance",
+    "company": "Infosys",
+    "intent": "price_by_date",
+    "trade_date": "2026-07-14"
+}}
+
+----------------------------
+
+Price History
+
+{{
+    "agent": "Finance",
+    "company": "Infosys",
+    "intent": "price_history",
+    "limit": 5
+}}
+
+----------------------------
+
+Latest Trading Volume
+
+{{
+    "agent": "Finance",
+    "company": "Infosys",
+    "intent": "latest_volume"
+}}
+----------------------------
+
+Stock Summary
+
+{{
+    "agent": "Finance",
+    "company": "Infosys",
+    "intent": "stock_summary"
+}}
 ----------------------------
 
 News

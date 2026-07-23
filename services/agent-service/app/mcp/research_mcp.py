@@ -41,7 +41,11 @@ class ResearchMCP:
         """
 
         try:
-
+            print("=" * 80)
+            print("Calling Research Service")
+            print("URL:", f"{self.BASE_URL}/research/ask")
+            print("Question:", question)
+            print("=" * 80)
             response = requests.post(
 
                 f"{self.BASE_URL}/research/ask",
@@ -53,7 +57,8 @@ class ResearchMCP:
                 timeout=60
 
             )
-
+            print("Status Code:", response.status_code)
+            print("Response:", response.text)
             response.raise_for_status()
 
             return response.json()

@@ -1,6 +1,5 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import MainLayout from "@/components/layout/MainLayout";
 
 export const metadata: Metadata = {
   title: "Intel AI Trading Research Assistant",
@@ -14,9 +13,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
-        <MainLayout>{children}</MainLayout>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

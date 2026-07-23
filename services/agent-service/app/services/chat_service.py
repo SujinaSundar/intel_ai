@@ -10,7 +10,6 @@ from app.langgraph.workflow import (
     WorkflowRunner
 )
 
-
 # ---------------------------------------------------------
 # Workflow Runner
 # ---------------------------------------------------------
@@ -23,8 +22,9 @@ workflow = WorkflowRunner()
 # ---------------------------------------------------------
 
 def ask_question(
-    question: str
-) -> str:
+    question: str,
+    user_id: int,
+):
     """
     Execute the LangGraph
     workflow.
@@ -34,6 +34,9 @@ def ask_question(
     question : str
         User research question.
 
+    user_id : int
+        Authenticated user ID.
+
     Returns
     -------
     str
@@ -41,8 +44,6 @@ def ask_question(
         by the LangGraph workflow.
     """
 
-    return workflow.run(
+    print(f"Executing workflow for User ID: {user_id}")
 
-        question
-
-    )
+    return workflow.run(question)

@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     NEO4J_USERNAME: str
     NEO4J_PASSWORD: str
     RESEARCH_SERVICE_URL: str
+    
+    JWT_SECRET_KEY: str
+    JWT_ALGORITHM: str = "HS256"
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
     model_config = SettingsConfigDict(
         env_file=str(ENV_FILE) if ENV_FILE.exists() else None,

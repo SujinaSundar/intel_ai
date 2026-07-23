@@ -127,32 +127,56 @@ class NewsAgent:
     # -----------------------------------------------------
 
     def latest_news(
-        self,
-        company_name: str
+    self,
+    company_name: str
     ):
         """
-        Get latest news.
+        Get latest news together
+        with sentiment summary.
         """
 
-        return self.news.get_latest_news(
+        summary = self.news.get_news_summary(
             company_name
         )
 
+        latest_news = self.news.get_latest_news(
+            company_name
+        )
+
+        return {
+
+            "summary": summary,
+
+            "latest_news": latest_news
+
+        }
     # -----------------------------------------------------
     # Latest Sentiment
     # -----------------------------------------------------
 
     def latest_sentiment(
-        self,
-        company_name: str
+    self,
+    company_name: str
     ):
         """
-        Get latest sentiment.
+        Get sentiment analysis.
         """
 
-        return self.news.get_latest_sentiment(
+        summary = self.news.get_news_summary(
             company_name
         )
+
+        latest = self.news.get_latest_sentiment(
+            company_name
+        )
+
+        return {
+
+            "summary": summary,
+
+            "latest_sentiment": latest
+
+        }
 
     # -----------------------------------------------------
     # Positive News
