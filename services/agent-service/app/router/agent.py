@@ -6,12 +6,11 @@ for the Trading
 Research Agent.
 """
 
-import traceback
+import logging
 
 from fastapi import (
     APIRouter,
     Depends,
-    HTTPException,
 )
 
 from app.auth.dependencies import get_current_user
@@ -20,9 +19,9 @@ from app.schemas.chat import (
     ChatRequest,
     ChatResponse,
 )
-from app.services.chat_service import (
-    ask_question,
-)
+from app.services.chat_service import ask_question
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     tags=["Agent"]
@@ -47,54 +46,38 @@ def ask(
     Requires JWT authentication.
     """
 
-    try:
+    logger.info(
+        "Processing chat request | user_id=%s | email=%s",
+        current_user.id,
+        current_user.email,
+    )
 
-        print("=" * 80)
-        print("Authenticated User")
-        print(f"User ID    : {current_user.id}")
-        print(f"User Name  : {current_user.name}")
-        print(f"User Email : {current_user.email}")
-        print("=" * 80)
+    answer = ask_question(
+        question=request.question,
+        user_id=current_user.id,
+    )
 
-        answer = ask_question(
-            question=request.question,
-            user_id=current_user.id,
-        )
+    logger.info(
+        "Chat request completed successfully | user_id=%s",
+        current_user.id,
+    )
 
-        return ChatResponse(
-            answer=answer
-        )
-
-    except Exception as error:
-
-        print("=" * 100)
-        print("AGENT SERVICE ERROR")
-        traceback.print_exc()
-        print("ERROR:", repr(error))
-        print("=" * 100)
-
-        raise HTTPException(
-            status_code=500,
-            detail=str(error),
-        )
+    return ChatResponse(
+        answer=answer
+    )
 
 
 # ---------------------------------------------------------
 # Health Check
 # ---------------------------------------------------------
 
-@router.get(
-    "/health",
-)
+@router.get("/health")
 def health_check():
     """
-    Agent Service
-    health check.
-
-    Returns
-    -------
-    dict
+    Agent Service health check.
     """
+
+    logger.info("Health check endpoint accessed.")
 
     return {
         "service": "Agent Service",

@@ -133,6 +133,24 @@ services:
 
     restart: unless-stopped
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+
+    container_name: intel-ai-frontend
+
+    ports:
+      - "3000:3000"
+
+    environment:
+      NEXT_PUBLIC_AGENT_API: http://localhost:8000
+
+    depends_on:
+      - agent
+
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   neo4j_data:

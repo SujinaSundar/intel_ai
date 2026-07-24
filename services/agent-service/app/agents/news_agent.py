@@ -6,9 +6,15 @@ requests for the
 Trading Research Agent.
 """
 
-from app.mcp.news_mcp import (
-    NewsMCP
+import logging
+from typing import Any
+
+from app.exceptions.custom_exceptions import (
+    InvalidRequestException,
 )
+from app.mcp.news_mcp import NewsMCP
+
+logger = logging.getLogger(__name__)
 
 
 class NewsAgent:
@@ -20,30 +26,71 @@ class NewsAgent:
     news and sentiment.
     """
 
-    def __init__(
-        self
-    ):
+    def __init__(self) -> None:
         """
         Initialize News MCP.
         """
 
+        logger.info(
+            "Initializing News Agent."
+        )
+
         self.news = NewsMCP()
 
     # -----------------------------------------------------
-    # Default Response
+    # Main Router
     # -----------------------------------------------------
 
     def answer(
         self,
         question: str,
-        company_name: str
-    ):
+        company_name: str,
+    ) -> dict[str, Any]:
         """
         Route the user question
-        to the appropriate News MCP.
+        to the appropriate
+        News MCP method.
+
+        Parameters
+        ----------
+        question : str
+            User question.
+
+        company_name : str
+            Company name.
+
+        Returns
+        -------
+        dict[str, Any]
+            News response.
         """
 
+        if not company_name.strip():
+
+            logger.warning(
+                "Empty company name received."
+            )
+
+            raise InvalidRequestException(
+                "Company name cannot be empty."
+            )
+
+        if not question.strip():
+
+            logger.warning(
+                "Empty question received."
+            )
+
+            raise InvalidRequestException(
+                "Question cannot be empty."
+            )
+
         question = question.lower()
+
+        logger.info(
+            "Processing news request | company=%s",
+            company_name,
+        )
 
         # ---------------------------------
         # Search News
@@ -65,9 +112,14 @@ class NewsAgent:
 
             if keyword:
 
+                logger.info(
+                    "Searching news | keyword=%s",
+                    keyword,
+                )
+
                 return self.search(
                     company_name,
-                    keyword
+                    keyword,
                 )
 
         # ---------------------------------
@@ -75,6 +127,10 @@ class NewsAgent:
         # ---------------------------------
 
         if "positive" in question:
+
+            logger.info(
+                "Fetching positive news."
+            )
 
             return self.positive_news(
                 company_name
@@ -86,6 +142,10 @@ class NewsAgent:
 
         if "negative" in question:
 
+            logger.info(
+                "Fetching negative news."
+            )
+
             return self.negative_news(
                 company_name
             )
@@ -95,6 +155,10 @@ class NewsAgent:
         # ---------------------------------
 
         if "sentiment" in question:
+
+            logger.info(
+                "Fetching latest sentiment."
+            )
 
             return self.latest_sentiment(
                 company_name
@@ -110,6 +174,10 @@ class NewsAgent:
             or "news" in question
         ):
 
+            logger.info(
+                "Fetching latest news."
+            )
+
             return self.latest_news(
                 company_name
             )
@@ -117,6 +185,10 @@ class NewsAgent:
         # ---------------------------------
         # Default
         # ---------------------------------
+
+        logger.info(
+            "Returning news summary."
+        )
 
         return self.summary(
             company_name
@@ -127,55 +199,55 @@ class NewsAgent:
     # -----------------------------------------------------
 
     def latest_news(
-    self,
-    company_name: str
-    ):
+        self,
+        company_name: str,
+    ) -> dict[str, Any]:
         """
-        Get latest news together
-        with sentiment summary.
+        Retrieve latest news
+        together with summary.
         """
 
-        summary = self.news.get_news_summary(
-            company_name
-        )
-
-        latest_news = self.news.get_latest_news(
-            company_name
+        logger.info(
+            "Retrieving latest news | company=%s",
+            company_name,
         )
 
         return {
-
-            "summary": summary,
-
-            "latest_news": latest_news
-
+            "summary": self.news.get_news_summary(
+                company_name
+            ),
+            "latest_news": self.news.get_latest_news(
+                company_name
+            ),
         }
+
     # -----------------------------------------------------
     # Latest Sentiment
     # -----------------------------------------------------
 
     def latest_sentiment(
-    self,
-    company_name: str
-    ):
+        self,
+        company_name: str,
+    ) -> dict[str, Any]:
         """
-        Get sentiment analysis.
+        Retrieve latest
+        sentiment analysis.
         """
 
-        summary = self.news.get_news_summary(
-            company_name
-        )
-
-        latest = self.news.get_latest_sentiment(
-            company_name
+        logger.info(
+            "Retrieving latest sentiment | company=%s",
+            company_name,
         )
 
         return {
-
-            "summary": summary,
-
-            "latest_sentiment": latest
-
+            "summary": self.news.get_news_summary(
+                company_name
+            ),
+            "latest_sentiment": (
+                self.news.get_latest_sentiment(
+                    company_name
+                )
+            ),
         }
 
     # -----------------------------------------------------
@@ -184,11 +256,16 @@ class NewsAgent:
 
     def positive_news(
         self,
-        company_name: str
-    ):
+        company_name: str,
+    ) -> list[dict[str, Any]]:
         """
-        Get positive news.
+        Retrieve positive news.
         """
+
+        logger.info(
+            "Retrieving positive news | company=%s",
+            company_name,
+        )
 
         return self.news.get_positive_news(
             company_name
@@ -200,11 +277,16 @@ class NewsAgent:
 
     def negative_news(
         self,
-        company_name: str
-    ):
+        company_name: str,
+    ) -> list[dict[str, Any]]:
         """
-        Get negative news.
+        Retrieve negative news.
         """
+
+        logger.info(
+            "Retrieving negative news | company=%s",
+            company_name,
+        )
 
         return self.news.get_negative_news(
             company_name
@@ -216,11 +298,17 @@ class NewsAgent:
 
     def summary(
         self,
-        company_name: str
-    ):
+        company_name: str,
+    ) -> dict[str, Any]:
         """
-        Get news summary.
+        Retrieve company
+        news summary.
         """
+
+        logger.info(
+            "Retrieving news summary | company=%s",
+            company_name,
+        )
 
         return self.news.get_news_summary(
             company_name
@@ -233,15 +321,27 @@ class NewsAgent:
     def search(
         self,
         company_name: str,
-        keyword: str
-    ):
+        keyword: str,
+    ) -> list[dict[str, Any]]:
         """
         Search company news.
         """
 
+        if not keyword.strip():
+
+            raise InvalidRequestException(
+                "Keyword cannot be empty."
+            )
+
+        logger.info(
+            "Searching company news | company=%s | keyword=%s",
+            company_name,
+            keyword,
+        )
+
         return self.news.search_news(
             company_name,
-            keyword
+            keyword,
         )
 
     # -----------------------------------------------------
@@ -249,16 +349,19 @@ class NewsAgent:
     # -----------------------------------------------------
 
     def health_check(
-        self
-    ):
+        self,
+    ) -> dict[str, str]:
         """
-        Check Agent status.
+        Check News Agent health.
         """
+
+        logger.info(
+            "News Agent health check."
+        )
 
         return {
-
-            "news_agent":
-
-                "Available"
-
+            "news_agent": "Available"
         }
+
+
+news_agent = NewsAgent()

@@ -8,8 +8,24 @@ This MCP communicates with the
 Research Service through REST APIs.
 """
 
+import logging
+from typing import Any
+
 import requests
+from requests.exceptions import (
+    ConnectionError,
+    HTTPError,
+    RequestException,
+    Timeout,
+)
+
 from app.database.config import settings
+from app.exceptions.custom_exceptions import (
+    InvalidRequestException,
+    LLMServiceException,
+)
+
+logger = logging.getLogger(__name__)
 
 
 class ResearchMCP:
@@ -24,8 +40,8 @@ class ResearchMCP:
 
     def answer_question(
         self,
-        question: str
-    ) -> dict:
+        question: str,
+    ) -> dict[str, Any]:
         """
         Answer a research question.
 
@@ -36,88 +52,146 @@ class ResearchMCP:
 
         Returns
         -------
-        dict
+        dict[str, Any]
             Hybrid GraphRAG response.
+
+        Raises
+        ------
+        InvalidRequestException
+            If the question is empty.
+
+        LLMServiceException
+            If the Research Service
+            is unavailable or returns
+            an unexpected response.
         """
 
-        try:
-            print("=" * 80)
-            print("Calling Research Service")
-            print("URL:", f"{self.BASE_URL}/research/ask")
-            print("Question:", question)
-            print("=" * 80)
-            response = requests.post(
+        if not question or not question.strip():
 
-                f"{self.BASE_URL}/research/ask",
-
-                json={
-                    "question": question
-                },
-
-                timeout=60
-
+            logger.warning(
+                "Empty research question received."
             )
-            print("Status Code:", response.status_code)
-            print("Response:", response.text)
+
+            raise InvalidRequestException(
+                "Question cannot be empty."
+            )
+
+        url = f"{self.BASE_URL}/research/ask"
+
+        logger.info(
+            "Calling Research Service | url=%s",
+            url,
+        )
+
+        try:
+
+            response = requests.post(
+                url,
+                json={
+                    "question": question,
+                },
+                timeout=60,
+            )
+
             response.raise_for_status()
+
+            logger.info(
+                "Research Service responded successfully."
+            )
 
             return response.json()
 
-        except requests.exceptions.ConnectionError:
+        except ConnectionError as error:
 
-            return {
+            logger.exception(
+                "Unable to connect to Research Service."
+            )
 
-                "error":
-                    "Research Service is not running."
+            raise LLMServiceException(
+                "Research Service is not running."
+            ) from error
 
-            }
+        except Timeout as error:
 
-        except requests.exceptions.HTTPError:
+            logger.exception(
+                "Research Service request timed out."
+            )
 
-            return {
+            raise LLMServiceException(
+                "Research Service request timed out."
+            ) from error
 
-                "error":
-                    f"HTTP Error: {response.status_code}"
+        except HTTPError as error:
 
-            }
+            logger.exception(
+                "Research Service returned HTTP %s.",
+                response.status_code,
+            )
 
-        except Exception as error:
+            raise LLMServiceException(
+                f"Research Service returned HTTP "
+                f"{response.status_code}."
+            ) from error
 
-            return {
+        except RequestException as error:
 
-                "error":
-                    str(error)
+            logger.exception(
+                "Unexpected request error."
+            )
 
-            }
+            raise LLMServiceException(
+                "Failed to communicate with "
+                "Research Service."
+            ) from error
 
     def health_check(
-        self
-    ) -> dict:
+        self,
+    ) -> dict[str, Any]:
         """
-        Check Research Service status.
+        Check Research Service health.
 
         Returns
         -------
-        dict
-            Service health.
+        dict[str, Any]
+            Service health information.
+
+        Raises
+        ------
+        LLMServiceException
+            If the health endpoint
+            cannot be reached.
         """
+
+        url = f"{self.BASE_URL}/"
+
+        logger.info(
+            "Checking Research Service health."
+        )
 
         try:
 
             response = requests.get(
-
-                f"{self.BASE_URL}/"
-
+                url,
+                timeout=10,
             )
 
             response.raise_for_status()
 
+            logger.info(
+                "Research Service is healthy."
+            )
+
             return response.json()
 
-        except Exception:
+        except RequestException as error:
 
-            return {
+            logger.exception(
+                "Research Service health check failed."
+            )
 
-                "status": "Unavailable"
+            raise LLMServiceException(
+                "Research Service is unavailable."
+            ) from error
 
-            }
+
+research_mcp = ResearchMCP()

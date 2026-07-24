@@ -6,11 +6,14 @@ used by the LangGraph
 orchestration.
 """
 
-from app.langgraph.state import AgentState
+import logging
+from typing import Any
 
 from app.agents.supervisor_agent import SupervisorAgent
-
+from app.langgraph.state import AgentState
 from app.response.response_generator import ResponseGenerator
+
+logger = logging.getLogger(__name__)
 
 
 class WorkflowNodes:
@@ -23,14 +26,42 @@ class WorkflowNodes:
     workflow state.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Initialize workflow
         components.
         """
 
+        logger.info(
+            "Initializing workflow nodes."
+        )
+
         self.supervisor = SupervisorAgent()
         self.generator = ResponseGenerator()
+
+    # -----------------------------------------------------
+    # Helper
+    # -----------------------------------------------------
+
+    @staticmethod
+    def _set_error(
+        state: AgentState,
+        message: str,
+    ) -> AgentState:
+        """
+        Populate workflow state
+        with an error response.
+        """
+
+        logger.error(message)
+
+        state["agent_response"] = {
+            "error": message
+        }
+
+        state["final_response"] = message
+
+        return state
 
     # -----------------------------------------------------
     # Router Node
@@ -38,52 +69,59 @@ class WorkflowNodes:
 
     def router_node(
         self,
-        state: AgentState
+        state: AgentState,
     ) -> AgentState:
         """
-        Route the user
-        question using
-        the Supervisor.
+        Route the user question
+        using the Supervisor.
         """
+
+        logger.info(
+            "Executing router node."
+        )
 
         route = self.supervisor.route(
             state["question"]
         )
 
-        print("=" * 80)
-        print("SUPERVISOR ROUTE")
-        print(route)
-        print("=" * 80)
+        logger.info(
+            "Supervisor route: %s",
+            route,
+        )
 
         if not route or "error" in route:
 
-            state["agent_response"] = {
-                "error": route.get(
-                    "error",
-                    "Unable to determine the appropriate agent."
-                ) if route else "Supervisor returned no route."
-            }
-
-            state["final_response"] = state["agent_response"]["error"]
-
-            state["route"] = None
-
-            return state
+            return self._set_error(
+                state,
+                (
+                    route.get(
+                        "error",
+                        "Unable to determine the appropriate agent.",
+                    )
+                    if route
+                    else "Supervisor returned no route."
+                ),
+            )
 
         state["route"] = route
 
         return state
-       # -----------------------------------------------------
+
+    # -----------------------------------------------------
     # Finance Node
     # -----------------------------------------------------
 
     def finance_node(
         self,
-        state: AgentState
+        state: AgentState,
     ) -> AgentState:
         """
         Execute Finance Agent.
         """
+
+        logger.info(
+            "Executing finance node."
+        )
 
         route = state["route"]
 
@@ -91,18 +129,19 @@ class WorkflowNodes:
 
         if not company:
 
-            state["agent_response"] = {
-                "error": "Company name missing."
-            }
+            return self._set_error(
+                state,
+                "Company name missing.",
+            )
 
-            return state
-
-        state["agent_response"] = self.supervisor.finance.answer(
-            company_name=company,
-            intent=route.get("intent"),
-            trade_date=route.get("trade_date"),
-            limit=route.get("limit"),
-            question=state["question"],
+        state["agent_response"] = (
+            self.supervisor.finance.answer(
+                company_name=company,
+                intent=route.get("intent"),
+                trade_date=route.get("trade_date"),
+                limit=route.get("limit"),
+                question=state["question"],
+            )
         )
 
         return state
@@ -113,11 +152,15 @@ class WorkflowNodes:
 
     def news_node(
         self,
-        state: AgentState
+        state: AgentState,
     ) -> AgentState:
         """
         Execute News Agent.
         """
+
+        logger.info(
+            "Executing news node."
+        )
 
         route = state["route"]
 
@@ -125,15 +168,16 @@ class WorkflowNodes:
 
         if not company:
 
-            state["agent_response"] = {
-                "error": "Company name missing."
-            }
+            return self._set_error(
+                state,
+                "Company name missing.",
+            )
 
-            return state
-
-        state["agent_response"] = self.supervisor.news.answer(
-            question=state["question"],
-            company_name=company,
+        state["agent_response"] = (
+            self.supervisor.news.answer(
+                question=state["question"],
+                company_name=company,
+            )
         )
 
         return state
@@ -143,25 +187,33 @@ class WorkflowNodes:
     # -----------------------------------------------------
 
     def research_node(
-    self,
-    state: AgentState
+        self,
+        state: AgentState,
     ) -> AgentState:
+        """
+        Execute Research Agent.
+        """
 
-        print("=" * 80)
-        print("INSIDE RESEARCH NODE")
-        print("Question:", state["question"])
-        print("=" * 80)
+        logger.info(
+            "Executing research node."
+        )
 
         route = state["route"]
 
         question = route.get(
             "question",
-            state["question"]
+            state["question"],
         )
 
-        state["agent_response"] = self.supervisor.research.answer(question)
+        state["agent_response"] = (
+            self.supervisor.research.answer(
+                question
+            )
+        )
 
-        print("Research Response:", state["agent_response"])
+        logger.info(
+            "Research node completed."
+        )
 
         return state
 
@@ -171,28 +223,38 @@ class WorkflowNodes:
 
     def comparison_node(
         self,
-        state: AgentState
+        state: AgentState,
     ) -> AgentState:
         """
         Execute Comparison Agent.
         """
 
+        logger.info(
+            "Executing comparison node."
+        )
+
         route = state["route"]
 
-        company_one = route.get("company_one")
-        company_two = route.get("company_two")
+        company_one = route.get(
+            "company_one"
+        )
+
+        company_two = route.get(
+            "company_two"
+        )
 
         if not company_one or not company_two:
 
-            state["agent_response"] = {
-                "error": "Comparison requires two company names."
-            }
+            return self._set_error(
+                state,
+                "Comparison requires two company names.",
+            )
 
-            return state
-
-        state["agent_response"] = self.supervisor.comparison.answer(
-            company_one,
-            company_two,
+        state["agent_response"] = (
+            self.supervisor.comparison.answer(
+                company_one,
+                company_two,
+            )
         )
 
         return state
@@ -203,11 +265,15 @@ class WorkflowNodes:
 
     def sector_node(
         self,
-        state: AgentState
+        state: AgentState,
     ) -> AgentState:
         """
         Execute Sector Agent.
         """
+
+        logger.info(
+            "Executing sector node."
+        )
 
         route = state["route"]
 
@@ -215,20 +281,21 @@ class WorkflowNodes:
 
         question = route.get(
             "question",
-            state["question"]
+            state["question"],
         )
 
         if not sector:
 
-            state["agent_response"] = {
-                "error": "Sector name missing."
-            }
+            return self._set_error(
+                state,
+                "Sector name missing.",
+            )
 
-            return state
-
-        state["agent_response"] = self.supervisor.sector.answer(
-            question=question,
-            sector=sector,
+        state["agent_response"] = (
+            self.supervisor.sector.answer(
+                question=question,
+                sector=sector,
+            )
         )
 
         return state
@@ -239,26 +306,46 @@ class WorkflowNodes:
 
     def response_node(
         self,
-        state: AgentState
+        state: AgentState,
     ) -> AgentState:
         """
         Generate the final
-        response.
+        natural language response.
         """
+
+        logger.info(
+            "Executing response node."
+        )
 
         response_data = state["agent_response"]
 
-        if isinstance(response_data, dict) and "error" in response_data:
+        if (
+            isinstance(response_data, dict)
+            and "error" in response_data
+        ):
 
-            state["final_response"] = response_data["error"]
+            logger.warning(
+                "Skipping response generation due to agent error."
+            )
+
+            state["final_response"] = (
+                response_data["error"]
+            )
 
             return state
 
-        response = self.generator.generate(
-            question=state["question"],
-            data=response_data,
+        state["final_response"] = (
+            self.generator.generate(
+                question=state["question"],
+                data=response_data,
+            )
         )
 
-        state["final_response"] = response
+        logger.info(
+            "Response generation completed."
+        )
 
         return state
+
+
+workflow_nodes = WorkflowNodes()

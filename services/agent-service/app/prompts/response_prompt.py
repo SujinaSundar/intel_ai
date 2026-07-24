@@ -7,9 +7,11 @@ a natural, professional answer.
 """
 
 
+from typing import Any
+
 def get_response_prompt(
     question: str,
-    data: dict
+    data: dict[str, Any],
 ) -> str:
     """
     Build response prompt.
@@ -39,6 +41,7 @@ from one or more specialized internal systems.
 AVAILABLE INFORMATION
 ======================================================
 
+```json
 {data}
 
 ======================================================
@@ -88,11 +91,11 @@ INSTRUCTIONS
      - Summarize the financial performance of the
        companies in the sector.
 
-   • intent = "news"
-    - If the available data contains a "summary" object and a
-"latest_news" list, ALWAYS display both.
-
-Do not summarize only the news articles.
+   •intent = "news"
+  - If both "summary" and "latest_news" exist,
+    always display both sections.
+  - Never omit the summary when it is available.
+  - Do not summarize only the individual articles.
 
 
 

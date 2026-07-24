@@ -1,3 +1,14 @@
+"""
+Database configuration.
+
+Creates the SQLAlchemy
+engine and provides
+database sessions for
+the application.
+"""
+
+import logging
+from collections.abc import Generator
 from urllib.parse import quote_plus
 
 from sqlalchemy import create_engine
@@ -5,30 +16,70 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.database.config import settings
 
-password = quote_plus(settings.POSTGRES_PASSWORD)
+logger = logging.getLogger(__name__)
+
+# -----------------------------------------------------
+# Database URL
+# -----------------------------------------------------
+
+password = quote_plus(
+    settings.POSTGRES_PASSWORD
+)
 
 DATABASE_URL = (
-    f"postgresql://{settings.POSTGRES_USER}:{password}"
-    f"@{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}"
+    f"postgresql://"
+    f"{settings.POSTGRES_USER}:"
+    f"{password}@"
+    f"{settings.POSTGRES_HOST}:"
+    f"{settings.POSTGRES_PORT}/"
+    f"{settings.POSTGRES_DB}"
 )
 
-print(DATABASE_URL)
+# -----------------------------------------------------
+# SQLAlchemy Engine
+# -----------------------------------------------------
 
-engine = create_engine(DATABASE_URL)
+engine = create_engine(
+    DATABASE_URL,
+    pool_pre_ping=True,
+    pool_recycle=3600,
+    pool_size=10,
+    max_overflow=20,
+)
+
+logger.info(
+    "Database engine initialized."
+)
+
+# -----------------------------------------------------
+# Session Factory
+# -----------------------------------------------------
 
 SessionLocal = sessionmaker(
+    bind=engine,
     autocommit=False,
     autoflush=False,
-    bind=engine
 )
 
+# -----------------------------------------------------
+# Database Dependency
+# -----------------------------------------------------
 
-def get_db():
+
+def get_db() -> Generator[Session, None, None]:
     """
-    FastAPI dependency that provides a database session.
+    Provide a database session.
+
+    Yields
+    ------
+    Session
+        SQLAlchemy database session.
     """
-    db: Session = SessionLocal()
+
+    db = SessionLocal()
+
     try:
         yield db
+
     finally:
         db.close()
