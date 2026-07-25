@@ -12,21 +12,28 @@ Store in ChromaDB
 Mark as Embedded
 """
 
-from app.database.connection import SessionLocal
+import logging
 
+from sqlalchemy.exc import SQLAlchemyError
+
+from app.database.connection import SessionLocal
 from app.database.models import (
+    Company,
     DocumentChunk,
     ResearchReport,
-    Company
 )
-
 from app.embeddings.embedding_model import (
-    embedding_model
+    embedding_model,
+)
+from app.exceptions.custom_exceptions import (
+    DatabaseException,
+    ExternalAPIException,
+)
+from app.vector_store.chroma_service import (
+    collection,
 )
 
-from app.vector_store.chroma_service import (
-    collection
-)
+logger = logging.getLogger(__name__)
 
 
 def generate_embeddings() -> None:
@@ -39,80 +46,80 @@ def generate_embeddings() -> None:
 
     try:
 
-        rows = (
+        logger.info(
+            "Fetching non-embedded document chunks."
+        )
 
+        rows = (
             db.query(
                 DocumentChunk,
                 ResearchReport,
-                Company
+                Company,
             )
-
             .join(
                 ResearchReport,
-                DocumentChunk.report_id == ResearchReport.id
+                DocumentChunk.report_id == ResearchReport.id,
             )
-
             .join(
                 Company,
-                ResearchReport.company_id == Company.id
+                ResearchReport.company_id == Company.id,
             )
-
             .filter(
-                DocumentChunk.is_embedded == False
+                DocumentChunk.is_embedded.is_(False)
             )
-
             .all()
-
         )
 
         if not rows:
 
-            print(
-                "No chunks found."
+            logger.info(
+                "No document chunks found for embedding."
             )
 
             return
 
-        print(
-            f"Found {len(rows)} chunks."
+        logger.info(
+            "Found %d document chunks.",
+            len(rows),
         )
 
         texts = [
-
             chunk.chunk_text
-
-            for chunk, report, company in rows
-
+            for chunk, _, _ in rows
         ]
 
-        print(
-            "Generating embeddings..."
+        logger.info(
+            "Generating embeddings."
         )
 
-        embeddings = embedding_model.encode(
+        try:
 
-            texts,
+            embeddings = embedding_model.encode(
+                texts,
+                batch_size=32,
+                show_progress_bar=True,
+            )
 
-            batch_size=32,
+        except Exception as error:
 
-            show_progress_bar=True
+            logger.exception(
+                "Embedding generation failed."
+            )
 
-        )
+            raise ExternalAPIException(
+                f"Embedding generation failed: {error}"
+            ) from error
 
         batch_size = 5000
 
-        print(
-            "Storing embeddings in ChromaDB..."
+        logger.info(
+            "Storing embeddings in ChromaDB."
         )
 
         for i in range(
-
             0,
-
             len(rows),
-
-            batch_size
-
+            batch_size,
         ):
 
             batch_rows = rows[
@@ -128,55 +135,36 @@ def generate_embeddings() -> None:
             ]
 
             collection.add(
-
                 ids=[
-
                     str(chunk.id)
-
                     for chunk, _, _ in batch_rows
-
                 ],
-
                 embeddings=batch_embeddings.tolist(),
-
                 documents=batch_texts,
-
                 metadatas=[
-
                     {
-
                         "company_id": company.id,
-
                         "company_name": company.company_name,
-
                         "report_id": report.id,
-
                         "report_type": report.report_type,
-
                         "year": report.year,
-
-                        "chunk_number": chunk.chunk_number
-
+                        "chunk_number": chunk.chunk_number,
                     }
-
                     for chunk, report, company in batch_rows
-
-                ]
-
+                ],
             )
 
-            print(
-
-                f"Inserted "
-
-                f"{min(i + batch_size, len(rows))}"
-
-                f"/{len(rows)} chunks"
-
+            logger.info(
+                "Inserted %d/%d chunks.",
+                min(
+                    i + batch_size,
+                    len(rows),
+                ),
+                len(rows),
             )
 
-        print(
-            "Updating PostgreSQL..."
+        logger.info(
+            "Updating PostgreSQL embedding status."
         )
 
         for chunk, _, _ in rows:
@@ -185,21 +173,29 @@ def generate_embeddings() -> None:
 
         db.commit()
 
-        print(
+        logger.info(
             "Embedding generation completed successfully."
         )
 
-    except Exception as error:
+    except SQLAlchemyError as error:
 
         db.rollback()
 
-        print(
-            f"Error generating embeddings: {error}"
+        logger.exception(
+            "Database error during embedding generation."
         )
+
+        raise DatabaseException(
+            f"Embedding generation database error: {error}"
+        ) from error
 
     finally:
 
         db.close()
+
+        logger.info(
+            "Database session closed."
+        )
 
 
 if __name__ == "__main__":

@@ -36,9 +36,6 @@ class ComparisonMCP:
     """
 
     def __init__(self) -> None:
-        """
-        Initialize MCPs.
-        """
 
         logger.info(
             "Initializing Comparison MCP."
@@ -57,9 +54,6 @@ class ComparisonMCP:
         company_one: str,
         company_two: str,
     ) -> None:
-        """
-        Validate company names.
-        """
 
         if not company_one or not company_one.strip():
 
@@ -82,9 +76,6 @@ class ComparisonMCP:
         company_one: str,
         company_two: str,
     ) -> dict[str, Any]:
-        """
-        Compare financial data.
-        """
 
         self._validate_companies(
             company_one,
@@ -111,13 +102,10 @@ class ComparisonMCP:
     # -----------------------------------------------------
 
     def compare_news(
-        self,
-        company_one: str,
-        company_two: str,
+    self,
+    company_one: str,
+    company_two: str,
     ) -> dict[str, Any]:
-        """
-        Compare company news.
-        """
 
         self._validate_companies(
             company_one,
@@ -130,6 +118,20 @@ class ComparisonMCP:
             company_two,
         )
 
+        company_one_news = (
+            self.news.get_company_news(
+                company_one
+            )
+            or []
+        )
+
+        company_two_news = (
+            self.news.get_company_news(
+                company_two
+            )
+            or []
+        )
+
         return {
             "company_one": {
                 "summary": self.news.get_news_summary(
@@ -138,9 +140,7 @@ class ComparisonMCP:
                 "sentiment": self.news.get_latest_sentiment(
                     company_one
                 ),
-                "latest_news": self.news.get_company_news(
-                    company_one
-                ),
+                "latest_news": company_one_news[:3],
             },
             "company_two": {
                 "summary": self.news.get_news_summary(
@@ -149,9 +149,7 @@ class ComparisonMCP:
                 "sentiment": self.news.get_latest_sentiment(
                     company_two
                 ),
-                "latest_news": self.news.get_company_news(
-                    company_two
-                ),
+                "latest_news": company_two_news[:3],
             },
         }
 
@@ -160,13 +158,10 @@ class ComparisonMCP:
     # -----------------------------------------------------
 
     def compare_research(
-        self,
-        company_one: str,
-        company_two: str,
+    self,
+    company_one: str,
+    company_two: str,
     ) -> dict[str, Any]:
-        """
-        Compare company research.
-        """
 
         self._validate_companies(
             company_one,
@@ -179,12 +174,50 @@ class ComparisonMCP:
             company_two,
         )
 
+        research_one = self.research.answer_question(
+            (
+                f"Provide a concise research summary of "
+                f"{company_one} in under 150 words covering "
+                f"business, financial performance, growth "
+                f"strategy and risks."
+            )
+        )
+
+        research_two = self.research.answer_question(
+            (
+                f"Provide a concise research summary of "
+                f"{company_two} in under 150 words covering "
+                f"business, financial performance, growth "
+                f"strategy and risks."
+            )
+        )
+
         return {
-            "company_one": self.research.answer_question(
-                f"Summarize {company_one}"
+            "company_one": (
+                research_one.get(
+                    "answer",
+                    "",
+                )
+                if isinstance(
+                    research_one,
+                    dict,
+                )
+                else str(
+                    research_one or ""
+                )
             ),
-            "company_two": self.research.answer_question(
-                f"Summarize {company_two}"
+            "company_two": (
+                research_two.get(
+                    "answer",
+                    "",
+                )
+                if isinstance(
+                    research_two,
+                    dict,
+                )
+                else str(
+                    research_two or ""
+                )
             ),
         }
 
@@ -197,9 +230,6 @@ class ComparisonMCP:
         company_one: str,
         company_two: str,
     ) -> dict[str, Any]:
-        """
-        Compare two companies.
-        """
 
         self._validate_companies(
             company_one,
@@ -253,9 +283,6 @@ class ComparisonMCP:
     def health_check(
         self,
     ) -> dict[str, Any]:
-        """
-        Check MCP availability.
-        """
 
         logger.info(
             "Comparison MCP health check."

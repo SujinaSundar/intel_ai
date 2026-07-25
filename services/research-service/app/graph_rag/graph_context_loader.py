@@ -14,37 +14,58 @@ Stock Data
 Combined Context
 """
 
-from app.database.connection import SessionLocal
+import logging
 
+from sqlalchemy.exc import SQLAlchemyError
+
+from app.database.connection import SessionLocal
 from app.database.models import (
     Company,
     SentimentScore,
-    StockPrice
+    StockPrice,
+)
+from app.exceptions.custom_exceptions import (
+    CompanyNotFoundException,
+    DatabaseException,
+    InvalidRequestException,
+)
+from app.graph_rag.graph_retriever import (
+    retrieve_graph_context,
 )
 
-from app.graph_rag.graph_retriever import (
-    retrieve_graph_context
-)
+logger = logging.getLogger(__name__)
 
 
 def build_graph_context(
-    company_name: str
+    company_name: str,
 ) -> dict:
     """
-    Build graph context.
+    Build graph context for a company.
 
     Parameters
     ----------
     company_name : str
+        Company name.
 
     Returns
     -------
     dict
+        Graph context, sentiment, and stock data.
     """
+
+    if not company_name or not company_name.strip():
+        raise InvalidRequestException(
+            "Company name cannot be empty."
+        )
 
     db = SessionLocal()
 
     try:
+
+        logger.info(
+            "Building graph context for company: %s",
+            company_name,
+        )
 
         company = (
             db.query(
@@ -52,7 +73,7 @@ def build_graph_context(
             )
             .filter(
                 Company.company_name.ilike(
-                    company_name
+                    f"%{company_name}%"
                 )
             )
             .first()
@@ -60,10 +81,22 @@ def build_graph_context(
 
         if company is None:
 
-            return {}
+            logger.warning(
+                "Company not found: %s",
+                company_name,
+            )
+
+            raise CompanyNotFoundException(
+                company_name
+            )
 
         graph_documents = retrieve_graph_context(
-            company_name
+            company.company_name
+        )
+
+        logger.info(
+            "Retrieved %d graph documents.",
+            len(graph_documents),
         )
 
         sentiment = (
@@ -111,15 +144,30 @@ def build_graph_context(
                 f"Volume: {stock.volume}"
             )
 
+        logger.info(
+            "Graph context built successfully."
+        )
+
         return {
-
             "graph_documents": graph_documents,
-
             "sentiment": sentiment_text,
-
-            "stock": stock_text
+            "stock": stock_text,
         }
+
+    except SQLAlchemyError as error:
+
+        logger.exception(
+            "Database error while building graph context."
+        )
+
+        raise DatabaseException(
+            f"Failed to build graph context: {error}"
+        ) from error
 
     finally:
 
         db.close()
+
+        logger.info(
+            "Database session closed."
+        )

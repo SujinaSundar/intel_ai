@@ -15,49 +15,13 @@ FinBERT Sentiment Pipeline
 sentiment_scores
         ↓
 news_metadata.is_processed = TRUE
-
-Purpose
--------
-Runs continuously as a background service and periodically
-checks for newly ingested news articles that have not yet
-been processed by the FinBERT sentiment model.
-
-Only articles where:
-
-    is_processed = FALSE
-
-are analyzed.
-
-This makes the pipeline incremental and ensures that each
-article is processed exactly once.
-
-Deployment
-----------
-Designed to run as a dedicated Docker service:
-
-    intel-ai-sentiment-worker
-
-which is independent of:
-
-- Airflow
-- FastAPI Agent
-- PostgreSQL
-- Neo4j
-
-This separation ensures that failures in sentiment analysis
-do not interrupt news ingestion or research workflows.
 """
 
-import logging
 import time
 
+from app.core.logger import logger
 from app.jobs.generate_sentiment import process_news_sentiment
 
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s | %(levelname)s | %(message)s"
-)
 
 POLL_INTERVAL = 60  # seconds
 
@@ -69,28 +33,38 @@ def run() -> None:
     Every POLL_INTERVAL seconds the worker scans for
     unprocessed news articles and invokes the FinBERT
     sentiment pipeline.
-
-    The worker runs indefinitely until the process is
-    terminated.
     """
 
-    logging.info("Sentiment worker started.")
+    logger.info("=" * 80)
+    logger.info("Starting Sentiment Worker")
+    logger.info("Polling Interval : %d seconds", POLL_INTERVAL)
+    logger.info("=" * 80)
 
     while True:
 
         try:
 
+            logger.info("Checking for unprocessed news articles...")
+
             process_news_sentiment()
+
+            logger.info(
+                "Sentiment processing cycle completed successfully."
+            )
 
         except Exception:
 
-            logging.exception(
-                "Unexpected error while processing sentiment."
+            logger.exception(
+                "Unexpected error during sentiment processing."
             )
+
+        logger.info(
+            "Sleeping for %d seconds before next polling cycle.",
+            POLL_INTERVAL,
+        )
 
         time.sleep(POLL_INTERVAL)
 
 
 if __name__ == "__main__":
-
     run()

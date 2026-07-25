@@ -94,12 +94,19 @@ class ResearchMCP:
             )
 
             response.raise_for_status()
+            result = response.json()
 
             logger.info(
+                "Research Service response:\n%s",
+                result,
+            )
+
+            return result
+            """logger.info(
                 "Research Service responded successfully."
             )
 
-            return response.json()
+            return response.json()"""
 
         except ConnectionError as error:
 

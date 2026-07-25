@@ -52,8 +52,8 @@ class Settings(BaseSettings):
     # External APIs
     # -------------------------------------------------
 
-    ALPHA_VANTAGE_API_KEY: str
-
+    MARKETAUX_API_KEY: str
+    
     GROQ_API_KEY: str
 
     # -------------------------------------------------

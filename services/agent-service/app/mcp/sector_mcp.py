@@ -132,13 +132,21 @@ class SectorMCP:
             sector
         )
 
-        return [
-            self.finance.get_stock_summary(
-                company
-            )
-            for company in companies
-        ]
+        finance = []
 
+        for company in companies:
+            try:
+                finance.append(
+                    self.finance.get_stock_summary(company)
+                )
+            except Exception as ex:
+                logger.warning(
+                    "Skipping finance for %s: %s",
+                    company,
+                    ex,
+                )
+
+        return finance
     # -----------------------------------------------------
     # News
     # -----------------------------------------------------
@@ -162,19 +170,29 @@ class SectorMCP:
             sector
         )
 
-        return [
-            {
-                "company": company,
-                "summary": self.news.get_news_summary(
-                    company
-                ),
-                "sentiment": self.news.get_latest_sentiment(
-                    company
-                ),
-            }
-            for company in companies
-        ]
+        news = []
 
+        for company in companies:
+            try:
+                news.append(
+                    {
+                        "company": company,
+                        "summary": self.news.get_news_summary(
+                            company
+                        ),
+                        "sentiment": self.news.get_latest_sentiment(
+                            company
+                        ),
+                    }
+                )
+            except Exception as ex:
+                logger.warning(
+                    "Skipping news for %s: %s",
+                    company,
+                    ex,
+                )
+
+        return news
     # -----------------------------------------------------
     # Research
     # -----------------------------------------------------
@@ -198,15 +216,42 @@ class SectorMCP:
             sector
         )
 
-        return [
-            {
-                "company": company,
-                "research": self.research.answer_question(
-                    f"Summarize {company}"
-                ),
-            }
-            for company in companies
-        ]
+        research = []
+
+        for company in companies:
+
+            try:
+
+                result = self.research.answer_question(
+                    (
+                        f"Provide a concise research summary "
+                        f"of {company} in under 150 words "
+                        f"covering business, financial "
+                        f"performance, growth strategy "
+                        f"and risks."
+                    )
+                )
+
+                research.append(
+                    {
+                        "company": company,
+                        "research": (
+                            result.get("answer", "")
+                            if isinstance(result, dict)
+                            else str(result or "")
+                        ),
+                    }
+                )
+
+            except Exception as ex:
+
+                logger.warning(
+                    "Skipping research for %s: %s",
+                    company,
+                    ex,
+                )
+
+        return research
 
     # -----------------------------------------------------
     # Sector Summary

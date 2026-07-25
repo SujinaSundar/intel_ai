@@ -1,27 +1,85 @@
+"""
+Schemas for stock price data.
+"""
+
 from datetime import date
-from pydantic import BaseModel
+
+from pydantic import BaseModel, Field
 
 
 class StockPriceCreate(BaseModel):
-    company_id: int
-    trade_date: date
-    open_price: float
-    high_price: float
-    low_price: float
-    close_price: float
-    volume: int
+    """
+    Request model for creating
+    stock price data.
+    """
+
+    company_id: int = Field(
+        description="Company identifier."
+    )
+
+    trade_date: date = Field(
+        description="Trading date."
+    )
+
+    open_price: float = Field(
+        description="Opening stock price."
+    )
+
+    high_price: float = Field(
+        description="Highest stock price."
+    )
+
+    low_price: float = Field(
+        description="Lowest stock price."
+    )
+
+    close_price: float = Field(
+        description="Closing stock price."
+    )
+
+    volume: int = Field(
+        description="Trading volume."
+    )
 
 
 class StockPriceResponse(BaseModel):
-    id: int
-    company_id: int
-    trade_date: date
-    open_price: float
-    high_price: float
-    low_price: float
-    close_price: float
-    volume: int
+    """
+    Response model for
+    stock price data.
+    """
+
+    id: int = Field(
+        description="Stock price record identifier."
+    )
+
+    company_id: int = Field(
+        description="Company identifier."
+    )
+
+    trade_date: date = Field(
+        description="Trading date."
+    )
+
+    open_price: float = Field(
+        description="Opening stock price."
+    )
+
+    high_price: float = Field(
+        description="Highest stock price."
+    )
+
+    low_price: float = Field(
+        description="Lowest stock price."
+    )
+
+    close_price: float = Field(
+        description="Closing stock price."
+    )
+
+    volume: int = Field(
+        description="Trading volume."
+    )
 
     model_config = {
-        "from_attributes": True
+        "from_attributes": True,
     }

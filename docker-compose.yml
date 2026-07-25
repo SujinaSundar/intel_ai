@@ -114,25 +114,6 @@ services:
 
     restart: unless-stopped
 
-  news:
-    build:
-      context: .
-      dockerfile: services/news-service/Dockerfile
-
-    container_name: intel-ai-news
-
-    ports:
-      - "8002:8002"
-
-    env_file:
-      - .env.docker
-
-    depends_on:
-      - postgres
-      - neo4j
-
-    restart: unless-stopped
-
   frontend:
     build:
       context: ./frontend
