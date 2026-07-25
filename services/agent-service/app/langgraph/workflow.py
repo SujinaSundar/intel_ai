@@ -6,9 +6,16 @@ around the LangGraph
 workflow.
 """
 
-from app.langgraph.graph import (
-    AgentWorkflow
+import logging
+
+from app.exceptions.custom_exceptions import (
+    InvalidRequestException,
 )
+from app.langgraph.graph import (
+    AgentWorkflow,
+)
+
+logger = logging.getLogger(__name__)
 
 
 class WorkflowRunner:
@@ -19,31 +26,87 @@ class WorkflowRunner:
     LangGraph workflow.
     """
 
-    def __init__(
-        self
-    ):
+    def __init__(self) -> None:
         """
-        Initialize workflow.
+        Initialize the
+        LangGraph workflow.
         """
+
+        logger.info(
+            "Initializing Workflow Runner."
+        )
 
         self.workflow = AgentWorkflow()
 
     def run(
         self,
-        question: str
+        question: str,
     ) -> str:
         """
-        Execute workflow.
+        Execute the LangGraph
+        workflow.
 
         Parameters
         ----------
         question : str
+            User question.
 
         Returns
         -------
         str
+            Final response generated
+            by the workflow.
+
+        Raises
+        ------
+        InvalidRequestException
+            If the question is empty.
         """
 
-        return self.workflow.run(
+        if not question or not question.strip():
+
+            logger.warning(
+                "Empty workflow question received."
+            )
+
+            raise InvalidRequestException(
+                "Question cannot be empty."
+            )
+
+        logger.info(
+            "Executing workflow."
+        )
+
+        response = self.workflow.run(
             question
         )
+
+        logger.info(
+            "Workflow completed successfully."
+        )
+
+        return response
+
+    def health_check(
+        self,
+    ) -> dict[str, str]:
+        """
+        Check Workflow Runner
+        health status.
+
+        Returns
+        -------
+        dict[str, str]
+            Workflow status.
+        """
+
+        logger.info(
+            "Workflow Runner health check."
+        )
+
+        return {
+            "workflow_runner": "Available"
+        }
+
+
+workflow_runner = WorkflowRunner()

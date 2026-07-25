@@ -2,29 +2,44 @@
 Hybrid GraphRAG Pipeline.
 """
 
+import logging
 import time
 
+from app.exceptions.custom_exceptions import (
+    InvalidRequestException,
+)
 from app.graph_rag.company_extractor import (
-    extract_company
+    extract_company,
 )
-
 from app.hybrid_graph_rag.hybrid_graph_context_builder import (
-    build_hybrid_graph_context
+    build_hybrid_graph_context,
 )
-
 from app.hybrid_graph_rag.hybrid_graph_prompt import (
-    build_hybrid_graph_prompt
+    build_hybrid_graph_prompt,
+)
+from app.llm.llm_service import (
+    generate_answer,
 )
 
-from app.llm.llm_service import (
-    generate_answer
-)
+logger = logging.getLogger(__name__)
+
+
 def needs_market_context(
-    question: str
+    question: str,
 ) -> bool:
     """
     Determine whether market data should
     be included in the Hybrid GraphRAG context.
+
+    Parameters
+    ----------
+    question : str
+        User question.
+
+    Returns
+    -------
+    bool
+        True if market data should be included.
     """
 
     keywords = {
@@ -40,7 +55,7 @@ def needs_market_context(
         "target",
         "valuation",
         "returns",
-        "performance"
+        "performance",
     }
 
     question = question.lower()
@@ -50,82 +65,71 @@ def needs_market_context(
         for keyword in keywords
     )
 
+
 def ask_hybrid_graph_question(
-    question: str
+    question: str,
 ) -> dict:
     """
-    Execute Hybrid GraphRAG pipeline.
+    Execute the Hybrid GraphRAG pipeline.
 
     Parameters
     ----------
     question : str
+        User research question.
 
     Returns
     -------
     dict
+        Hybrid GraphRAG response.
     """
 
-    # -----------------------------------
-    # Company Extraction
-    # -----------------------------------
+    logger.info("Starting Hybrid GraphRAG pipeline.")
+    logger.info("Question: %s", question)
 
-    company_name = extract_company(
-        question
-    )
+    # -------------------------------------------------
+    # Company Extraction
+    # -------------------------------------------------
+
+    company_name = extract_company(question)
 
     if company_name is None:
+        logger.warning(
+            "Unable to identify company from question."
+        )
+        raise InvalidRequestException(
+            "Unable to identify a company from the question."
+        )
 
-        return {
+    logger.info(
+        "Detected company: %s",
+        company_name,
+    )
 
-            "pipeline": "Hybrid GraphRAG",
-
-            "question": question,
-
-            "company_name": None,
-
-            "answer": "Company not found in question.",
-
-            "documents": [],
-
-            "metadata": [],
-
-            "graph_context": [],
-
-            "sentiment": None,
-
-            "stock": None,
-
-            "retrieval_time": 0.0,
-
-            "num_chunks": 0,
-
-            "num_triples": 0
-
-        }
-
-    # -----------------------------------
+    # -------------------------------------------------
     # Hybrid Graph Retrieval
-    # -----------------------------------
+    # -------------------------------------------------
+
+    logger.info("Building Hybrid Graph context.")
 
     start_time = time.perf_counter()
 
     context = build_hybrid_graph_context(
-
         question=question,
-
-        company_name=company_name
-
+        company_name=company_name,
     )
 
     retrieval_time = (
-
         time.perf_counter() - start_time
-
     )
 
-# -----------------------------------
-# Optional Market Context
-# -----------------------------------
+    logger.info(
+        "Context built successfully in %.3f seconds.",
+        retrieval_time,
+    )
+
+    # -------------------------------------------------
+    # Optional Market Context
+    # -------------------------------------------------
 
     if needs_market_context(question):
 
@@ -144,67 +148,51 @@ def ask_hybrid_graph_question(
     else:
 
         sentiment_text = ""
-
         stock_text = ""
 
-    # -----------------------------------
-    # Prompt
-    # -----------------------------------
+    # -------------------------------------------------
+    # Prompt Construction
+    # -------------------------------------------------
+
+    logger.info("Building LLM prompt.")
 
     prompt = build_hybrid_graph_prompt(
-
         question=question,
-
         documents=context["documents"],
-
         graph_documents=context["graph_documents"],
-
         sentiment_text=sentiment_text,
-
-        stock_text=stock_text
-
+        stock_text=stock_text,
     )
 
-    # -----------------------------------
-    # LLM
-    # -----------------------------------
+    # -------------------------------------------------
+    # LLM Generation
+    # -------------------------------------------------
 
-    answer = generate_answer(
-        prompt
-    )
+    logger.info("Generating response from LLM.")
 
-    # -----------------------------------
-    # Return
-    # -----------------------------------
+    answer = generate_answer(prompt)
+
+    logger.info("Hybrid GraphRAG completed successfully.")
+
+    # -------------------------------------------------
+    # Response
+    # -------------------------------------------------
 
     return {
-
         "pipeline": "Hybrid GraphRAG",
-
         "question": question,
-
         "company_name": company_name,
-
         "answer": answer,
-
         "documents": context["documents"],
-
         "metadata": context["metadata"],
-
         "graph_context": context["graph_documents"],
-
         "sentiment": context["sentiment"],
-
         "stock": context["stock"],
-
         "retrieval_time": retrieval_time,
-
         "num_chunks": len(
             context["documents"]
         ),
-
         "num_triples": len(
             context["graph_documents"]
-        )
-
+        ),
     }

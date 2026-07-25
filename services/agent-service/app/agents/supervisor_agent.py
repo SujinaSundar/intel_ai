@@ -12,69 +12,48 @@ handle a question.
 """
 
 import json
+import logging
+from typing import Any
 
-from app.llm.llm_service import (
-    generate_answer
+from app.agents.comparison_agent import ComparisonAgent
+from app.agents.finance_agent import FinanceAgent
+from app.agents.news_agent import NewsAgent
+from app.agents.research_agent import ResearchAgent
+from app.agents.sector_agent import SectorAgent
+from app.exceptions.custom_exceptions import (
+    InvalidRequestException,
+    LLMServiceException,
 )
+from app.llm.llm_service import generate_answer
+from app.prompts.supervisor_prompt import get_supervisor_prompt
+from app.response.response_generator import ResponseGenerator
 
-from app.prompts.supervisor_prompt import (
-    get_supervisor_prompt
-)
-
-from app.response.response_generator import (
-    ResponseGenerator
-)
-
-from app.agents.finance_agent import (
-    FinanceAgent
-)
-
-from app.agents.news_agent import (
-    NewsAgent
-)
-
-from app.agents.research_agent import (
-    ResearchAgent
-)
-
-from app.agents.comparison_agent import (
-    ComparisonAgent
-)
-
-from app.agents.sector_agent import (
-    SectorAgent
-)
+logger = logging.getLogger(__name__)
 
 
 class SupervisorAgent:
     """
     Supervisor Agent.
 
-    Uses an LLM to
-    determine which
-    Agent should
-    answer a user's
-    request.
+    Uses an LLM to determine
+    which domain Agent should
+    answer a user's request.
     """
 
-    def __init__(
-        self
-    ):
+    def __init__(self) -> None:
         """
-        Initialize all
-        domain Agents.
+        Initialize all domain agents.
         """
+
+        logger.info(
+            "Initializing Supervisor Agent."
+        )
 
         self.finance = FinanceAgent()
-
         self.news = NewsAgent()
-
         self.research = ResearchAgent()
-
         self.comparison = ComparisonAgent()
-
         self.sector = SectorAgent()
-
         self.generator = ResponseGenerator()
 
     # -----------------------------------------------------
@@ -83,58 +62,94 @@ class SupervisorAgent:
 
     def route(
         self,
-        question: str
-    ) -> dict:
+        question: str,
+    ) -> dict[str, Any]:
         """
-        Route a question
-        using the LLM.
+        Route a question using the LLM.
 
         Parameters
         ----------
         question : str
+            User question.
 
         Returns
         -------
-        dict
+        dict[str, Any]
+            Parsed routing decision.
+
+        Raises
+        ------
+        InvalidRequestException
+            If the question is empty.
+
+        LLMServiceException
+            If routing fails.
         """
 
-        prompt = get_supervisor_prompt(question)
+        if not question or not question.strip():
 
-        print("=" * 80)
-        print("SUPERVISOR PROMPT")
-        print(prompt)
-        print("=" * 80)
+            logger.warning(
+                "Empty question received."
+            )
 
-        response = generate_answer(prompt)
+            raise InvalidRequestException(
+                "Question cannot be empty."
+            )
 
-        print("=" * 80)
-        print("RAW LLM RESPONSE")
-        print(response)
-        print("=" * 80)
+        prompt = get_supervisor_prompt(
+            question
+        )
+
+        logger.info(
+            "Routing question using Supervisor LLM."
+        )
+
+        logger.debug(
+            "Supervisor Prompt:\n%s",
+            prompt,
+        )
 
         try:
-            decision = json.loads(response)
 
-            print("=" * 80)
-            print("PARSED DECISION")
-            print(decision)
-            print("=" * 80)
+            response = generate_answer(
+                prompt
+            )
 
-        except Exception as e:
+            logger.debug(
+                "Raw LLM Response:\n%s",
+                response,
+            )
 
-            print("=" * 80)
-            print("JSON PARSE ERROR")
-            print(e)
-            print("RAW RESPONSE")
-            print(response)
-            print("=" * 80)
+            decision = json.loads(
+                response
+            )
 
-            return {
-                "error": "Invalid routing response.",
-                "response": response
-            }
+            logger.info(
+                "Routing successful | agent=%s",
+                decision.get("agent"),
+            )
 
-        return decision
+            return decision
+
+        except json.JSONDecodeError as error:
+
+            logger.exception(
+                "Failed to parse LLM routing response."
+            )
+
+            raise LLMServiceException(
+                "Invalid routing response received from LLM."
+            ) from error
+
+        except Exception as error:
+
+            logger.exception(
+                "Supervisor routing failed."
+            )
+
+            raise LLMServiceException(
+                "Unable to determine routing decision."
+            ) from error
 
     # -----------------------------------------------------
     # Execute Request
@@ -142,7 +157,7 @@ class SupervisorAgent:
 
     def run(
         self,
-        question: str
+        question: str,
     ) -> str:
         """
         Execute a user request.
@@ -150,37 +165,39 @@ class SupervisorAgent:
         Parameters
         ----------
         question : str
+            User question.
 
         Returns
         -------
         str
-            Final response.
+            Final formatted response.
         """
+
+        logger.info(
+            "Executing Supervisor workflow."
+        )
 
         decision = self.route(
             question
         )
-
-        if "error" in decision:
-
-            return decision["error"]
 
         agent = decision.get(
             "agent"
         )
 
         result = None
-
         # -------------------------------------------------
         # Finance
         # -------------------------------------------------
 
         if agent == "Finance":
 
+            logger.info(
+                "Routing to Finance Agent."
+            )
+
             result = self.finance.answer(
-
                 decision["company"]
-
             )
 
         # -------------------------------------------------
@@ -189,10 +206,12 @@ class SupervisorAgent:
 
         elif agent == "News":
 
+            logger.info(
+                "Routing to News Agent."
+            )
+
             result = self.news.answer(
-
                 decision["company"]
-
             )
 
         # -------------------------------------------------
@@ -201,10 +220,12 @@ class SupervisorAgent:
 
         elif agent == "Research":
 
+            logger.info(
+                "Routing to Research Agent."
+            )
+
             result = self.research.answer(
-
                 decision["question"]
-
             )
 
         # -------------------------------------------------
@@ -213,12 +234,13 @@ class SupervisorAgent:
 
         elif agent == "Comparison":
 
+            logger.info(
+                "Routing to Comparison Agent."
+            )
+
             result = self.comparison.answer(
-
                 decision["company_one"],
-
-                decision["company_two"]
-
+                decision["company_two"],
             )
 
         # -------------------------------------------------
@@ -227,26 +249,36 @@ class SupervisorAgent:
 
         elif agent == "Sector":
 
+            logger.info(
+                "Routing to Sector Agent."
+            )
+
             result = self.sector.answer(
-
                 decision["sector"]
-
             )
 
         else:
 
-            return "Unknown agent selected."
+            logger.error(
+                "Unknown agent received from LLM | agent=%s",
+                agent,
+            )
 
-        # -------------------------------------------------
-        # Generate Final Response
-        # -------------------------------------------------
+            raise LLMServiceException(
+                f"Unknown agent '{agent}' selected."
+            )
+
+        logger.info(
+            "Generating final response."
+        )
 
         final_response = self.generator.generate(
-
             question,
+            result,
+        )
 
-            result
-
+        logger.info(
+            "Supervisor workflow completed successfully."
         )
 
         return final_response
@@ -256,40 +288,33 @@ class SupervisorAgent:
     # -----------------------------------------------------
 
     def health_check(
-        self
-    ) -> dict:
+        self,
+    ) -> dict[str, Any]:
         """
-        Check all Agents.
+        Check the health of all
+        dependent agents.
 
         Returns
         -------
-        dict
+        dict[str, Any]
+            Health status of all
+            registered agents.
         """
 
+        logger.info(
+            "Running Supervisor health check."
+        )
+
         return {
-
-            "finance":
-
-                self.finance.health_check(),
-
-            "news":
-
-                self.news.health_check(),
-
-            "research":
-
-                self.research.health_check(),
-
-            "comparison":
-
-                self.comparison.health_check(),
-
-            "sector":
-
-                self.sector.health_check(),
-
-            "response_generator":
-
+            "finance": self.finance.health_check(),
+            "news": self.news.health_check(),
+            "research": self.research.health_check(),
+            "comparison": self.comparison.health_check(),
+            "sector": self.sector.health_check(),
+            "response_generator": (
                 self.generator.health_check()
-
+            ),
         }
+
+
+supervisor_agent = SupervisorAgent()

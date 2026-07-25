@@ -43,8 +43,6 @@ Finance
 
 Use for:
 
-Use for:
-
 - Current stock price
 - Stock price on a specific date
 - Open price
@@ -148,7 +146,49 @@ Examples
 - Recommend companies from the energy sector.
 - Top companies in the IT sector.
 - Compare companies within a sector.
+Extract:
 
+- sector
+- question
+
+The "sector" field is REQUIRED for every Sector request.
+
+Infer the sector name from the user's question whenever possible.
+
+Examples:
+
+Question:
+Which banking company is performing well?
+
+Return:
+
+{{
+    "agent": "Sector",
+    "sector": "Banking",
+    "question": "Which banking company is performing well?"
+}}
+
+Question:
+Recommend companies from the energy sector.
+
+Return:
+
+{{
+    "agent": "Sector",
+    "sector": "Energy",
+    "question": "Recommend companies from the energy sector."
+}}
+
+Question:
+Tell me about the IT sector.
+
+Return:
+
+{{
+    "agent": "Sector",
+    "sector": "IT",
+    "question": "Tell me about the IT sector."
+}}
 IMPORTANT
 
 Sector questions DO NOT require

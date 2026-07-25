@@ -10,9 +10,15 @@ all retrieval tasks to the
 Research MCP.
 """
 
-from app.mcp.research_mcp import (
-    ResearchMCP
+import logging
+from typing import Any
+
+from app.exceptions.custom_exceptions import (
+    InvalidRequestException,
 )
+from app.mcp.research_mcp import ResearchMCP
+
+logger = logging.getLogger(__name__)
 
 
 class ResearchAgent:
@@ -24,13 +30,15 @@ class ResearchAgent:
     from company reports.
     """
 
-    def __init__(
-        self
-    ):
+    def __init__(self) -> None:
         """
         Initialize the
         Research MCP.
         """
+
+        logger.info(
+            "Initializing Research Agent."
+        )
 
         self.mcp = ResearchMCP()
 
@@ -40,23 +48,40 @@ class ResearchAgent:
 
     def answer(
         self,
-        question: str
-    ) -> dict:
+        question: str,
+    ) -> dict[str, Any]:
         """
-        Default response.
-
-        Answers a research
-        question using the
-        Research MCP.
+        Answer a research question.
 
         Parameters
         ----------
         question : str
+            User research question.
 
         Returns
         -------
-        dict
+        dict[str, Any]
+            Research response.
+
+        Raises
+        ------
+        InvalidRequestException
+            If the question is empty.
         """
+
+        if not question or not question.strip():
+
+            logger.warning(
+                "Empty research question received."
+            )
+
+            raise InvalidRequestException(
+                "Question cannot be empty."
+            )
+
+        logger.info(
+            "Processing research request."
+        )
 
         return self.mcp.answer_question(
             question
@@ -67,14 +92,22 @@ class ResearchAgent:
     # -----------------------------------------------------
 
     def health_check(
-        self
-    ) -> dict:
+        self,
+    ) -> dict[str, Any]:
         """
-        Check Research MCP.
+        Check Research MCP health.
 
         Returns
         -------
-        dict
+        dict[str, Any]
+            Research MCP health status.
         """
 
+        logger.info(
+            "Research Agent health check."
+        )
+
         return self.mcp.health_check()
+
+
+research_agent = ResearchAgent()

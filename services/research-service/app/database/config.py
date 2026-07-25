@@ -19,13 +19,17 @@ class Settings(BaseSettings):
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
 
-    ALPHA_VANTAGE_API_KEY: str
+    MARKETAUX_API_KEY: str
 
     GROQ_API_KEY: str
 
     NEO4J_URI: str
     NEO4J_USERNAME: str
     NEO4J_PASSWORD: str
+    
+    CHROMA_DB_PATH: str = "chroma_db"
+
+    CHROMA_COLLECTION_NAME: str = "financial_reports"
 
     model_config = SettingsConfigDict(
         env_file=ENV_FILE,

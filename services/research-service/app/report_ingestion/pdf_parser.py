@@ -6,9 +6,14 @@ import re
 
 import fitz
 
+from app.exceptions.custom_exceptions import (
+    ExternalAPIException,
+    InvalidRequestException,
+)
+
 
 def extract_pdf_text(
-    pdf_path: str
+    pdf_path: str,
 ) -> str:
     """
     Extract and clean text from a PDF.
@@ -16,7 +21,7 @@ def extract_pdf_text(
     Parameters
     ----------
     pdf_path : str
-        PDF location.
+        PDF file path.
 
     Returns
     -------
@@ -24,87 +29,91 @@ def extract_pdf_text(
         Cleaned PDF text.
     """
 
-    text = ""
-
-    document = fitz.open(
-        pdf_path
-    )
+    if not pdf_path or not pdf_path.strip():
+        raise InvalidRequestException(
+            "PDF path cannot be empty."
+        )
 
     try:
 
-        for page in document:
+        text = ""
 
-            page_text = page.get_text()
+        with fitz.open(pdf_path) as document:
 
-            lines = page_text.split(
-                "\n"
-            )
+            for page in document:
 
-            clean_lines = []
+                page_text = page.get_text()
 
-            for line in lines:
-
-                line = line.strip()
-
-                # Empty lines
-                if not line:
-                    continue
-
-                # Page numbers
-                if re.fullmatch(
-                    r"\d+",
-                    line
-                ):
-                    continue
-
-                # Remove patterns like:
-                # | 34 |
-                # 34 |
-                # | 34
-                if re.fullmatch(
-                    r"\|?\s*\d+\s*\|?",
-                    line
-                ):
-                    continue
-
-                # URLs
-                if (
-                    line.startswith("http")
-                    or "www." in line
-                ):
-                    continue
-
-                # Annual report headers
-                if (
-                    "Annual Report" in line
-                    or "Integrated Annual Report" in line
-                ):
-                    continue
-
-                # Remove very short noise
-                if len(line) < 4:
-                    continue
-
-                # Normalize spaces
-                line = re.sub(
-                    r"\s+",
-                    " ",
-                    line
+                lines = page_text.split(
+                    "\n"
                 )
 
-                clean_lines.append(
-                    line
+                clean_lines = []
+
+                for line in lines:
+
+                    line = line.strip()
+
+                    # Empty lines
+                    if not line:
+                        continue
+
+                    # Page numbers
+                    if re.fullmatch(
+                        r"\d+",
+                        line,
+                    ):
+                        continue
+
+                    # Remove patterns like:
+                    # | 34 |
+                    # 34 |
+                    # | 34
+                    if re.fullmatch(
+                        r"\|?\s*\d+\s*\|?",
+                        line,
+                    ):
+                        continue
+
+                    # URLs
+                    if (
+                        line.startswith("http")
+                        or "www." in line
+                    ):
+                        continue
+
+                    # Annual report headers
+                    if (
+                        "Annual Report" in line
+                        or "Integrated Annual Report"
+                        in line
+                    ):
+                        continue
+
+                    # Remove very short noise
+                    if len(line) < 4:
+                        continue
+
+                    # Normalize whitespace
+                    line = re.sub(
+                        r"\s+",
+                        " ",
+                        line,
+                    )
+
+                    clean_lines.append(
+                        line
+                    )
+
+                text += (
+                    "\n".join(clean_lines)
+                    + "\n"
                 )
 
-            page_clean_text = "\n".join(
-                clean_lines
-            )
+        return text
 
-            text += page_clean_text
-            text += "\n"
+    except Exception as error:
 
-    finally:
-
-        document.close()
-
-    return text
+        raise ExternalAPIException(
+            f"Failed to extract PDF text: {error}"
+        ) from error

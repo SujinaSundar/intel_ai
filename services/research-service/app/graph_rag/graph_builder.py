@@ -1,14 +1,24 @@
 """
-Graph builder.
+Graph Builder.
 
-Creates nodes and relationships in Neo4j.
+Creates and manages nodes and
+relationships in Neo4j.
 """
 
+import logging
 import re
 
-from app.graph_rag.neo4j_service import (
-    get_driver
+from neo4j.exceptions import Neo4jError
+
+from app.exceptions.custom_exceptions import (
+    DatabaseException,
+    InvalidRequestException,
 )
+from app.graph_rag.neo4j_service import (
+    get_driver,
+)
+
+logger = logging.getLogger(__name__)
 
 
 def normalize_label(label: str) -> str:
@@ -19,153 +29,243 @@ def normalize_label(label: str) -> str:
     or special characters.
     """
 
+    if not label.strip():
+        return "Entity"
+
     label = label.strip()
 
     label = label.replace(" ", "_")
-
     label = label.replace("-", "_")
 
     label = re.sub(
         r"[^A-Za-z0-9_]",
         "",
-        label
+        label,
     )
 
-    if not label:
-
-        label = "Entity"
-
-    return label
+    return label or "Entity"
 
 
 def create_node(
     label: str,
-    name: str
-):
+    name: str,
+) -> None:
     """
-    Create graph node.
+    Create a graph node.
     """
 
-    if not name:
-
-        return
+    if not name.strip():
+        raise InvalidRequestException(
+            "Node name cannot be empty."
+        )
 
     label = normalize_label(label)
 
+    logger.info(
+        "Creating node '%s' with label '%s'.",
+        name,
+        label,
+    )
+
     driver = get_driver()
 
-    with driver.session() as session:
+    try:
 
-        session.run(
+        with driver.session() as session:
 
-            f"""
-            MERGE (n:{label} {{
-                name:$name
-            }})
+            session.run(
+                f"""
+                MERGE (n:{label} {{
+                    name:$name
+                }}
 
-            ON CREATE SET
+                )
 
-                n.created_at=datetime(),
+                ON CREATE SET
+                    n.created_at=datetime(),
+                    n.label=$label
+                """,
+                name=name,
+                label=label,
+            )
 
-                n.label=$label
-            """,
+    except Neo4jError as error:
 
-            name=name,
-
-            label=label
+        logger.exception(
+            "Failed to create node."
         )
+
+        raise DatabaseException(
+            f"Neo4j node creation failed: {error}"
+        ) from error
 
 
 def create_relationship(
     source: str,
     relationship: str,
-    target: str
-):
+    target: str,
+) -> None:
     """
-    Create relationship.
+    Create a relationship between
+    two existing nodes.
     """
 
-    if not source or not target:
+    if not source.strip():
+        raise InvalidRequestException(
+            "Source node cannot be empty."
+        )
 
-        return
+    if not target.strip():
+        raise InvalidRequestException(
+            "Target node cannot be empty."
+        )
 
     relationship = normalize_label(
         relationship
     ).upper()
 
+    logger.info(
+        "Creating relationship %s -> %s (%s).",
+        source,
+        target,
+        relationship,
+    )
+
     driver = get_driver()
 
-    with driver.session() as session:
+    try:
 
-        session.run(
+        with driver.session() as session:
 
-            f"""
-            MATCH (a {{name:$source}})
-            MATCH (b {{name:$target}})
+            session.run(
+                f"""
+                MATCH (a {{name:$source}})
+                MATCH (b {{name:$target}})
 
-            MERGE (a)-[r:{relationship}]->(b)
+                MERGE (a)-[r:{relationship}]->(b)
 
-            ON CREATE SET
+                ON CREATE SET
+                    r.created_at=datetime()
+                """,
+                source=source,
+                target=target,
+            )
 
-                r.created_at=datetime()
-            """,
+    except Neo4jError as error:
 
-            source=source,
-
-            target=target
+        logger.exception(
+            "Failed to create relationship."
         )
 
+        raise DatabaseException(
+            f"Neo4j relationship creation failed: {error}"
+        ) from error
 
-def clear_graph():
+
+def clear_graph() -> None:
     """
-    Delete graph.
+    Delete all nodes and relationships.
+    """
+
+    logger.warning(
+        "Clearing Neo4j graph."
+    )
+
+    driver = get_driver()
+
+    try:
+
+        with driver.session() as session:
+
+            session.run(
+                """
+                MATCH (n)
+                DETACH DELETE n
+                """
+            )
+
+    except Neo4jError as error:
+
+        logger.exception(
+            "Failed to clear graph."
+        )
+
+        raise DatabaseException(
+            f"Failed to clear graph: {error}"
+        ) from error
+
+
+def get_node_count() -> int:
+    """
+    Return the number of nodes.
     """
 
     driver = get_driver()
 
-    with driver.session() as session:
+    try:
 
-        session.run(
+        with driver.session() as session:
 
-            """
-            MATCH (n)
+            result = session.run(
+                """
+                MATCH (n)
+                RETURN count(n) AS count
+                """
+            )
 
-            DETACH DELETE n
-            """
+            count = result.single()["count"]
+
+            logger.info(
+                "Node count: %d",
+                count,
+            )
+
+            return count
+
+    except Neo4jError as error:
+
+        logger.exception(
+            "Failed to retrieve node count."
         )
 
+        raise DatabaseException(
+            f"Failed to retrieve node count: {error}"
+        ) from error
 
-def get_node_count():
+
+def get_relationship_count() -> int:
+    """
+    Return the number of relationships.
+    """
 
     driver = get_driver()
 
-    with driver.session() as session:
+    try:
 
-        result = session.run(
+        with driver.session() as session:
 
-            """
-            MATCH (n)
+            result = session.run(
+                """
+                MATCH ()-[r]->()
+                RETURN count(r) AS count
+                """
+            )
 
-            RETURN count(n) AS count
-            """
+            count = result.single()["count"]
+
+            logger.info(
+                "Relationship count: %d",
+                count,
+            )
+
+            return count
+
+    except Neo4jError as error:
+
+        logger.exception(
+            "Failed to retrieve relationship count."
         )
 
-        return result.single()["count"]
-
-
-def get_relationship_count():
-
-    driver = get_driver()
-
-    with driver.session() as session:
-
-        result = session.run(
-
-            """
-            MATCH ()-[r]->()
-
-            RETURN count(r) AS count
-            """
-        )
-
-        return result.single()["count"]
+        raise DatabaseException(
+            f"Failed to retrieve relationship count: {error}"
+        ) from error

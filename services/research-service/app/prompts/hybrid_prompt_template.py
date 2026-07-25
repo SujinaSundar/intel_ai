@@ -1,66 +1,76 @@
 """
-Hybrid RAG prompt template.
+Hybrid GraphRAG prompt template.
 """
 
 
 def build_hybrid_prompt(
     question: str,
     documents: list[str],
+    graph_context: list[str],
     sentiment_text: str,
     stock_text: str
 ) -> str:
     """
-    Build prompt for Hybrid RAG.
+    Build prompt for Hybrid GraphRAG.
     """
 
-    report_context = "\n\n".join(
-        documents
-    )
+    report_context = "\n\n".join(documents)
+
+    graph_info = "\n".join(graph_context)
 
     prompt = f"""
-You are a financial research assistant.
+You are an expert financial research analyst.
 
-Use ONLY the information provided below.
+Answer the user's question ONLY using the information provided below.
 
+========================
 REPORT CONTEXT
---------------
+========================
 {report_context}
 
+========================
+GRAPH KNOWLEDGE
+========================
+{graph_info}
+
+========================
 NEWS SENTIMENT
---------------
+========================
 {sentiment_text}
 
+========================
 STOCK DATA
-----------
+========================
 {stock_text}
 
+========================
 QUESTION
---------
+========================
 {question}
 
-You are a financial research assistant.
+Instructions:
 
-Use ONLY the information provided below.
+1. Use the REPORT CONTEXT as the primary source of information.
+2. Use GRAPH KNOWLEDGE to enrich the answer with company relationships, products, subsidiaries, partnerships, founders, and business entities.
+3. Use NEWS SENTIMENT only to discuss recent market sentiment if it is relevant.
+4. Use STOCK DATA only to mention recent trading performance when appropriate.
+5. Do not use external knowledge.
+6. Do not invent facts.
+7. If information is unavailable, explicitly say so.
 
-Use the report context, sentiment information, and stock data to answer the question.
+When summarizing a company, include (only if available):
 
-Provide a balanced analysis.
+- Company overview
+- Core business
+- Products and services
+- Business segments
+- Financial highlights
+- AI / Digital initiatives
+- Partnerships and subsidiaries
+- Risks
+- Future outlook
 
-Discuss strengths and risks only if they are supported by the provided context.
-
-Do not use external knowledge.
-
-Do not assume facts, risks, strengths, or recommendations that are not mentioned in the context.
-
-Do not make definitive investment recommendations.
-
-If information is unavailable in the context, explicitly state that the information is unavailable.
-
-If the context is insufficient to answer the question, reply:
-
-"I don't have enough information."
-
-Provide concise and factual answers.
+Provide a professional equity research style response.
 """
 
     return prompt

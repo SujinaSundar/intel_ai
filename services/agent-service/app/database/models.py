@@ -1,71 +1,163 @@
-from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    Float,
-    Date,
-    DateTime,
-    Text,
-    ForeignKey,
-    BigInteger,
-    Boolean,
-    UniqueConstraint
-)
+"""
+Database models.
+
+Defines all database tables
+used by the Trading
+Research Agent.
+"""
+
 from datetime import datetime
 
-from sqlalchemy.orm import declarative_base
+from sqlalchemy import (
+    BigInteger,
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
+from sqlalchemy.orm import (
+    declarative_base,
+    relationship,
+)
 
 Base = declarative_base()
 
 
-# --------------------
+# -----------------------------------------------------
 # Company
-# --------------------
+# -----------------------------------------------------
+
 
 class Company(Base):
+    """
+    Company master table.
+    """
 
     __tablename__ = "companies"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(
+        Integer,
+        primary_key=True,
+    )
 
-    company_name = Column(String, nullable=False)
+    company_name = Column(
+        String(200),
+        nullable=False,
+        index=True,
+    )
 
-    ticker = Column(String, nullable=False)
+    ticker = Column(
+        String(20),
+        nullable=False,
+        unique=True,
+        index=True,
+    )
 
-    sector = Column(String, nullable=False)
+    sector = Column(
+        String(100),
+        nullable=False,
+        index=True,
+    )
+
+    stock_prices = relationship(
+        "StockPrice",
+        back_populates="company",
+        cascade="all, delete-orphan",
+    )
+
+    news = relationship(
+        "NewsMetadata",
+        back_populates="company",
+        cascade="all, delete-orphan",
+    )
+
+    sentiments = relationship(
+        "SentimentScore",
+        back_populates="company",
+        cascade="all, delete-orphan",
+    )
+
+    research_reports = relationship(
+        "ResearchReport",
+        back_populates="company",
+        cascade="all, delete-orphan",
+    )
 
 
-# --------------------
+# -----------------------------------------------------
 # Stock Price
-# --------------------
+# -----------------------------------------------------
+
 
 class StockPrice(Base):
+    """
+    Historical stock prices.
+    """
 
     __tablename__ = "stock_prices"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(
+        Integer,
+        primary_key=True,
+    )
 
     company_id = Column(
         Integer,
-        ForeignKey("companies.id")
+        ForeignKey(
+            "companies.id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+        index=True,
     )
 
-    trade_date = Column(Date)
+    trade_date = Column(
+        Date,
+        nullable=False,
+        index=True,
+    )
 
-    open_price = Column(Float)
+    open_price = Column(
+        Float,
+        nullable=False,
+    )
 
-    high_price = Column(Float)
+    high_price = Column(
+        Float,
+        nullable=False,
+    )
 
-    low_price = Column(Float)
+    low_price = Column(
+        Float,
+        nullable=False,
+    )
 
-    close_price = Column(Float)
+    close_price = Column(
+        Float,
+        nullable=False,
+    )
 
-    volume = Column(BigInteger)
+    volume = Column(
+        BigInteger,
+        nullable=False,
+    )
+
+    company = relationship(
+        "Company",
+        back_populates="stock_prices",
+    )
 
 
-# --------------------
+# -----------------------------------------------------
 # News Metadata
-# --------------------
+# -----------------------------------------------------
+
 
 class NewsMetadata(Base):
     """
@@ -76,78 +168,139 @@ class NewsMetadata(Base):
 
     id = Column(
         Integer,
-        primary_key=True
+        primary_key=True,
     )
 
     company_id = Column(
         Integer,
-        ForeignKey("companies.id")
+        ForeignKey(
+            "companies.id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+        index=True,
     )
 
     title = Column(
-        Text
+        Text,
+        nullable=False,
     )
 
     source = Column(
-        String
+        String(255),
+        nullable=False,
     )
 
     url = Column(
         Text,
-        unique=True
+        unique=True,
+        nullable=False,
     )
 
     published_date = Column(
-        DateTime
+        DateTime,
+        nullable=False,
+        index=True,
     )
 
     is_processed = Column(
         Boolean,
-        default=False
+        default=False,
+        nullable=False,
     )
+
+    company = relationship(
+        "Company",
+        back_populates="news",
+    )
+
+    sentiment = relationship(
+        "SentimentScore",
+        back_populates="news",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
+# -----------------------------------------------------
+# Sentiment Score
+# -----------------------------------------------------
 
 
 class SentimentScore(Base):
     """
-    Stores sentiment generated from news.
-    One news article corresponds to one sentiment row.
+    Stores sentiment generated
+    from news articles.
+
+    One news article has
+    one sentiment score.
     """
 
     __tablename__ = "sentiment_scores"
 
     id = Column(
         Integer,
-        primary_key=True
+        primary_key=True,
     )
 
     news_id = Column(
         Integer,
-        ForeignKey("news_metadata.id"),
+        ForeignKey(
+            "news_metadata.id",
+            ondelete="CASCADE",
+        ),
         unique=True,
-        nullable=False
+        nullable=False,
+        index=True,
     )
 
     company_id = Column(
         Integer,
-        ForeignKey("companies.id")
+        ForeignKey(
+            "companies.id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+        index=True,
     )
 
     sentiment_label = Column(
-        String,
-        nullable=False
+        String(50),
+        nullable=False,
     )
 
     confidence_score = Column(
         Float,
-        nullable=False
+        nullable=False,
     )
 
     created_at = Column(
         DateTime,
-        default=datetime.utcnow
+        default=datetime.utcnow,
+        nullable=False,
     )
-    
+
+    company = relationship(
+        "Company",
+        back_populates="sentiments",
+    )
+
+    news = relationship(
+        "NewsMetadata",
+        back_populates="sentiment",
+    )
+
+
+# -----------------------------------------------------
+# Research Report
+# -----------------------------------------------------
+
+
 class ResearchReport(Base):
+    """
+    Stores research reports
+    such as annual reports,
+    quarterly reports and
+    other company documents.
+    """
 
     __tablename__ = "research_reports"
 
@@ -157,85 +310,125 @@ class ResearchReport(Base):
             "report_type",
             "year",
             "quarter",
-            name="uq_report"
+            name="uq_report",
         ),
     )
 
     id = Column(
         Integer,
-        primary_key=True
+        primary_key=True,
     )
 
     company_id = Column(
         Integer,
-        ForeignKey("companies.id"),
-        nullable=False
+        ForeignKey(
+            "companies.id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+        index=True,
     )
 
     report_type = Column(
-        String,
-        nullable=False
+        String(50),
+        nullable=False,
     )
 
     year = Column(
         Integer,
-        nullable=False
+        nullable=False,
+        index=True,
     )
 
     quarter = Column(
-        String,
-        nullable=True
+        String(10),
+        nullable=True,
     )
 
     pdf_path = Column(
         Text,
-        nullable=False
+        nullable=False,
     )
 
     created_at = Column(
         DateTime,
-        default=datetime.utcnow
+        default=datetime.utcnow,
+        nullable=False,
+    )
+
+    company = relationship(
+        "Company",
+        back_populates="research_reports",
+    )
+
+    document_chunks = relationship(
+        "DocumentChunk",
+        back_populates="report",
+        cascade="all, delete-orphan",
     )
 
 
+# -----------------------------------------------------
+# Document Chunk
+# -----------------------------------------------------
+
+
 class DocumentChunk(Base):
+    """
+    Stores chunked text
+    extracted from research
+    reports.
+    """
 
     __tablename__ = "document_chunks"
 
     id = Column(
         Integer,
-        primary_key=True
+        primary_key=True,
     )
 
     report_id = Column(
         Integer,
-        ForeignKey("research_reports.id"),
-        nullable=False
+        ForeignKey(
+            "research_reports.id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+        index=True,
     )
 
     chunk_number = Column(
         Integer,
-        nullable=False
+        nullable=False,
     )
 
     chunk_text = Column(
         Text,
-        nullable=False
+        nullable=False,
     )
 
     is_embedded = Column(
         Boolean,
         default=False,
-        nullable=False
+        nullable=False,
     )
 
     created_at = Column(
         DateTime,
-        default=datetime.utcnow
+        default=datetime.utcnow,
+        nullable=False,
     )
-# --------------------
+
+    report = relationship(
+        "ResearchReport",
+        back_populates="document_chunks",
+    )
+
+
+# -----------------------------------------------------
 # Users
-# --------------------
+# -----------------------------------------------------
+
 
 class User(Base):
     """
@@ -246,33 +439,34 @@ class User(Base):
 
     id = Column(
         Integer,
-        primary_key=True
+        primary_key=True,
     )
 
     name = Column(
         String(100),
-        nullable=False
+        nullable=False,
     )
 
     email = Column(
         String(255),
         unique=True,
         nullable=False,
-        index=True
+        index=True,
     )
 
     password_hash = Column(
         String(255),
-        nullable=False
+        nullable=False,
     )
 
     is_active = Column(
         Boolean,
         default=True,
-        nullable=False
+        nullable=False,
     )
 
     created_at = Column(
         DateTime,
-        default=datetime.utcnow
+        default=datetime.utcnow,
+        nullable=False,
     )

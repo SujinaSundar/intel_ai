@@ -16,20 +16,28 @@ Chunk Text
 Save Chunks
 """
 
+import logging
+
+from sqlalchemy.exc import SQLAlchemyError
+
 from app.database.connection import SessionLocal
-
 from app.database.models import (
+    DocumentChunk,
     ResearchReport,
-    DocumentChunk
 )
-
-from app.report_ingestion.pdf_parser import (
-    extract_pdf_text
+from app.exceptions.custom_exceptions import (
+    DatabaseException,
+    ExternalAPIException,
+    InvalidRequestException,
 )
-
 from app.report_ingestion.chunker import (
-    split_into_chunks
+    split_into_chunks,
 )
+from app.report_ingestion.pdf_parser import (
+    extract_pdf_text,
+)
+
+logger = logging.getLogger(__name__)
 
 
 def load_report(
@@ -37,24 +45,24 @@ def load_report(
     report_type: str,
     year: int,
     pdf_path: str,
-    quarter: str | None = None
+    quarter: str | None = None,
 ) -> None:
     """
-    Load annual or quarterly report.
+    Load an annual or quarterly report.
 
     Parameters
     ----------
     company_id : int
-        Company id.
+        Company identifier.
 
     report_type : str
-        annual or quarterly.
+        Report type (annual or quarterly).
 
     year : int
         Financial year.
 
     pdf_path : str
-        PDF location.
+        PDF file path.
 
     quarter : str | None
         Quarter information.
@@ -64,44 +72,91 @@ def load_report(
     None
     """
 
+    if company_id <= 0:
+        raise InvalidRequestException(
+            "Invalid company id."
+        )
+
+    if not pdf_path.strip():
+        raise InvalidRequestException(
+            "PDF path cannot be empty."
+        )
+
     db = SessionLocal()
 
     try:
 
-        # Check whether report already exists
+        logger.info(
+            "Loading %s report for company %d (%d).",
+            report_type,
+            company_id,
+            year,
+        )
+
+        # -----------------------------------
+        # Check Existing Report
+        # -----------------------------------
+
         existing_report = (
             db.query(ResearchReport)
             .filter(
                 ResearchReport.company_id == company_id,
                 ResearchReport.report_type == report_type,
                 ResearchReport.year == year,
-                ResearchReport.quarter == quarter
+                ResearchReport.quarter == quarter,
             )
             .first()
         )
 
         if existing_report:
 
-            print(
-                f"Report already exists "
-                f"(Company {company_id}, "
-                f"{report_type}, {year})."
+            logger.info(
+                "Report already exists for company %d.",
+                company_id,
             )
 
             return
 
-        # Extract text
-        text = extract_pdf_text(
-            pdf_path
+        # -----------------------------------
+        # Extract PDF Text
+        # -----------------------------------
+
+        try:
+
+            text = extract_pdf_text(
+                pdf_path
+            )
+
+            chunks = split_into_chunks(
+                text
+            )
+
+        except Exception as error:
+
+            logger.exception(
+                "Failed to process PDF: %s",
+                pdf_path,
+            )
+
+            raise ExternalAPIException(
+                f"Failed to process PDF: {error}"
+            ) from error
+
+        logger.info(
+            "Generated %d chunks.",
+            len(chunks),
         )
 
-        # Save metadata
+        # -----------------------------------
+        # Save Report Metadata
+        # -----------------------------------
+
         report = ResearchReport(
             company_id=company_id,
             report_type=report_type,
             year=year,
             quarter=quarter,
-            pdf_path=pdf_path
+            pdf_path=pdf_path,
         )
 
         db.add(report)
@@ -110,42 +165,48 @@ def load_report(
 
         db.refresh(report)
 
-        # Generate chunks
-        chunks = split_into_chunks(
-            text
+        logger.info(
+            "Research report created with id %d.",
+            report.id,
         )
 
-        print(
-            f"Generated {len(chunks)} chunks."
-        )
+        # -----------------------------------
+        # Store Chunks
+        # -----------------------------------
 
-        # Store chunks
         for index, chunk in enumerate(chunks):
 
-            document_chunk = DocumentChunk(
-                report_id=report.id,
-                chunk_number=index,
-                chunk_text=chunk
-            )
-
             db.add(
-                document_chunk
+                DocumentChunk(
+                    report_id=report.id,
+                    chunk_number=index,
+                    chunk_text=chunk,
+                )
             )
 
         db.commit()
 
-        print(
-            f"{len(chunks)} chunks inserted successfully."
+        logger.info(
+            "%d chunks stored successfully.",
+            len(chunks),
         )
 
-    except Exception as error:
+    except SQLAlchemyError as error:
 
         db.rollback()
 
-        print(
-            f"Error loading report: {error}"
+        logger.exception(
+            "Database error while loading report."
         )
+
+        raise DatabaseException(
+            f"Failed to load report: {error}"
+        ) from error
 
     finally:
 
         db.close()
+
+        logger.info(
+            "Database session closed."
+        )

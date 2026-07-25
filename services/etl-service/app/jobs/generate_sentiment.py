@@ -16,17 +16,16 @@ sentiment_scores
 Update news_metadata.is_processed=True
 """
 
-from app.database.connection import (
-    SessionLocal
-)
+from sqlalchemy import text
 
+from app.core.logger import logger
+from app.database.connection import SessionLocal
 from app.database.models import (
     NewsMetadata,
-    SentimentScore
+    SentimentScore,
 )
-
 from app.sentiment.sentiment_service import (
-    predict_sentiment
+    predict_sentiment,
 )
 
 
@@ -36,82 +35,67 @@ def process_news_sentiment() -> None:
     and store sentiment scores.
     """
 
-    print()
-    print("=" * 80)
-    print("STARTING SENTIMENT PIPELINE")
-    print("=" * 80)
+    logger.info("=" * 80)
+    logger.info("Starting Sentiment Pipeline")
+    logger.info("=" * 80)
 
     db = SessionLocal()
-    from sqlalchemy import text
 
-    print("=" * 80)
-
-    print(
-        "Database:",
-        db.execute(
-            text("SELECT current_database()")
-        ).scalar()
-    )
-
-    print(
-        "Total News:",
-        db.execute(
-            text("SELECT COUNT(*) FROM news_metadata")
-        ).scalar()
-    )
-
-    print(
-        "Unprocessed:",
-        db.execute(
-            text(
-                "SELECT COUNT(*) FROM news_metadata WHERE is_processed = FALSE"
-            )
-        ).scalar()
-    )
-
-    print("=" * 80)
     try:
 
+        database_name = db.execute(
+            text("SELECT current_database()")
+        ).scalar()
+
+        total_news = db.execute(
+            text("SELECT COUNT(*) FROM news_metadata")
+        ).scalar()
+
+        unprocessed_news = db.execute(
+            text(
+                "SELECT COUNT(*) FROM news_metadata "
+                "WHERE is_processed = FALSE"
+            )
+        ).scalar()
+
+        logger.info("Database              : %s", database_name)
+        logger.info("Total News Articles   : %d", total_news)
+        logger.info("Unprocessed Articles  : %d", unprocessed_news)
+
         news_articles = (
-
-            db.query(
-                NewsMetadata
-            )
-
-            .filter(
-                NewsMetadata.is_processed == False
-            )
-
+            db.query(NewsMetadata)
+            .filter(NewsMetadata.is_processed == False)
             .all()
-
         )
 
-        print(
-            f"Found {len(news_articles)} unprocessed articles."
+        logger.info(
+            "Found %d unprocessed articles.",
+            len(news_articles),
         )
 
         if not news_articles:
 
-            print(
-                "No new articles found."
+            logger.info(
+                "No new articles found. Sentiment pipeline finished."
             )
 
             return
 
         processed = 0
-
         skipped = 0
 
         for article in news_articles:
 
             try:
 
-                print()
+                logger.info(
+                    "Processing News ID=%s",
+                    article.id,
+                )
 
-                print("-" * 80)
-
-                print(
-                    f"Processing: {article.title}"
+                logger.debug(
+                    "Title: %s",
+                    article.title,
                 )
 
                 # -----------------------------------
@@ -119,17 +103,11 @@ def process_news_sentiment() -> None:
                 # -----------------------------------
 
                 existing = (
-
-                    db.query(
-                        SentimentScore
-                    )
-
+                    db.query(SentimentScore)
                     .filter(
                         SentimentScore.news_id == article.id
                     )
-
                     .first()
-
                 )
 
                 if existing:
@@ -140,8 +118,9 @@ def process_news_sentiment() -> None:
 
                     skipped += 1
 
-                    print(
-                        "Already processed."
+                    logger.debug(
+                        "Sentiment already exists for News ID=%s",
+                        article.id,
                     )
 
                     continue
@@ -150,12 +129,14 @@ def process_news_sentiment() -> None:
                 # Predict sentiment
                 # -----------------------------------
 
-                label, confidence = (
+                label, confidence = predict_sentiment(
+                    article.title
+                )
 
-                    predict_sentiment(
-                        article.title
-                    )
-
+                logger.info(
+                    "Predicted Sentiment=%s Confidence=%.4f",
+                    label,
+                    confidence,
                 )
 
                 # -----------------------------------
@@ -163,20 +144,13 @@ def process_news_sentiment() -> None:
                 # -----------------------------------
 
                 sentiment = SentimentScore(
-
                     news_id=article.id,
-
                     company_id=article.company_id,
-
                     sentiment_label=label,
-
-                    confidence_score=confidence
-
+                    confidence_score=confidence,
                 )
 
-                db.add(
-                    sentiment
-                )
+                db.add(sentiment)
 
                 article.is_processed = True
 
@@ -184,53 +158,43 @@ def process_news_sentiment() -> None:
 
                 processed += 1
 
-                print(
-                    f"Label      : {label}"
+                logger.info(
+                    "Saved sentiment for News ID=%s",
+                    article.id,
                 )
 
-                print(
-                    f"Confidence : {confidence:.4f}"
-                )
-
-            except Exception as error:
+            except Exception:
 
                 db.rollback()
 
-                print()
-
-                print(
-                    f"Failed article ID {article.id}"
+                logger.exception(
+                    "Failed to process News ID=%s",
+                    article.id,
                 )
 
-                print(
-                    error
-                )
+        logger.info("=" * 80)
+        logger.info("Sentiment Pipeline Summary")
+        logger.info("Processed : %d", processed)
+        logger.info("Skipped   : %d", skipped)
+        logger.info("Total     : %d", len(news_articles))
+        logger.info("=" * 80)
 
-        print()
+    except Exception:
 
-        print("=" * 80)
-        print("PIPELINE SUMMARY")
-        print("=" * 80)
+        db.rollback()
 
-        print(
-            f"Processed : {processed}"
+        logger.exception(
+            "Sentiment pipeline failed."
         )
 
-        print(
-            f"Skipped   : {skipped}"
-        )
-
-        print(
-            f"Total     : {len(news_articles)}"
-        )
-
-        print("=" * 80)
+        raise
 
     finally:
 
         db.close()
 
+        logger.info("Database session closed.")
+
 
 if __name__ == "__main__":
-
     process_news_sentiment()

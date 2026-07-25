@@ -6,10 +6,29 @@ structured agent responses into
 a natural, professional answer.
 """
 
+import json
+from datetime import date, datetime
+from decimal import Decimal
+from typing import Any
+
+
+def _json_default(obj: Any) -> Any:
+    """
+    Fallback serializer for objects json.dumps
+    can't handle natively (dates, Decimals, etc).
+    """
+    if isinstance(obj, (date, datetime)):
+        return obj.isoformat()
+    if isinstance(obj, Decimal):
+        return float(obj)
+    raise TypeError(
+        f"Object of type {type(obj).__name__} is not JSON serializable"
+    )
+
 
 def get_response_prompt(
     question: str,
-    data: dict
+    data: dict[str, Any],
 ) -> str:
     """
     Build response prompt.
@@ -39,118 +58,148 @@ from one or more specialized internal systems.
 AVAILABLE INFORMATION
 ======================================================
 
-{data}
+```json
+{json.dumps(data, indent=2, ensure_ascii=False, default=_json_default)}
+```
 
 ======================================================
 INSTRUCTIONS
 ======================================================
 
-1. Answer ONLY using the available information.
+Answer ONLY using the available information.
+Never invent facts.
+Never use outside knowledge.
 
-2. Never invent facts.
+Never mention internal systems such as:
+- Finance Agent
+- Research Agent
+- News Agent
+- Comparison Agent
+- Sector Agent
+- Graph Context
+- Document Context
+- Market Context
 
-3. Never use outside knowledge.
+Never mention the word "intent" or expose the internal
+workflow in any response, regardless of intent type.
 
-4. Never mention internal systems such as:
-   - Finance
-   - Research
-   - News
-   - Comparison
-   - Sector
-   - Agent
-   - Graph Context
-   - Document Context
-   - Market Context
+Present the information as one natural,
+professional response.
 
-5. Present the information as one natural,
-   professional response.
+For company comparisons:
 
-6. Include only information that helps answer
-   the user's question.
+- Compare the financial performance of both companies.
+- Compare the latest news and market sentiment.
+- Compare the research summaries, including:
+  - business model
+  - financial performance
+  - growth strategy
+  - competitive strengths
+  - key risks
+- Highlight similarities and differences.
+- Conclude with an overall comparison based only on the available information.
 
-7. If some information is unavailable,
-   simply omit it unless it is essential
-   to answer the question.
+For sector analysis:
 
-8. Do NOT explain what information is missing
-   unless the user explicitly asks.
+- Begin with a brief overview of the sector.
+- Summarize the financial performance of the companies.
+- Summarize the overall news and sentiment.
+- Include the research summary for every company whenever it is available.
+- Highlight common trends, opportunities and risks across the sector.
+- End with an overall sector outlook using only the available information.
 
-9. If the available information contains an
-   "intent" field, follow these rules:
+Include only information that helps answer
+the user's question.
 
-   • intent = "summary"
-     - Summarize the business sector.
+If some information is unavailable,
+simply omit it unless it is essential
+to answer the question.
 
-   • intent = "companies"
-     - List the companies belonging to the sector.
+Do NOT explain what information is missing
+unless the user explicitly asks.
 
-   • intent = "finance"
-     - Summarize the financial performance of the
-       companies in the sector.
+If the available information contains an
+"intent" field, follow these rules:
 
-   • intent = "news"
-    - If the available data contains a "summary" object and a
-"latest_news" list, ALWAYS display both.
+- intent = "summary"
+  Summarize the business sector.
 
-Do not summarize only the news articles.
+- intent = "companies"
+  List the companies belonging to the sector.
 
+- intent = "finance"
+  Summarize the financial performance of the
+  companies in the sector.
 
+- intent = "news"
+  If both "summary" and "latest_news" exist,
+  always display both sections.
+  Never omit the summary when it is available.
+  Do not summarize only the individual articles.
 
-   • intent = "recommendation"
-     - Recommend the strongest company or companies
-       ONLY using the provided finance, news and
-       research information.
-     - Clearly explain WHY the recommendation is made.
-     - If the available information is insufficient
-       to confidently recommend one company, state
-       that no clear recommendation can be made
-       instead of inventing one.
+- intent = "recommendation"
+  Recommend the strongest company or companies
+  ONLY using the provided finance, news and
+  research information.
+  Clearly explain WHY the recommendation is made.
+  If the available information is insufficient
+  to confidently recommend one company, state
+  that no clear recommendation can be made
+  instead of inventing one.
 
-10. Never mention the word "intent".
+If the "intent" field is missing, absent, or does not
+match any of the above values, answer the user's
+question directly using whatever available information
+is relevant, following the same formatting and
+sourcing rules below.
 
 ======================================================
 FORMATTING
 ======================================================
 
-• Use clean Markdown headings.
+- Use clean Markdown headings.
 
-• Use bullet points where appropriate.
+- Use bullet points where appropriate.
 
-• Keep paragraphs short.
+- Keep paragraphs short.
 
-• Avoid repeating information.
+- Avoid repeating information.
 
-• When comparing companies, use a table if helpful.
+For company comparison responses, ALWAYS include these sections when available:
 
-• For News responses, ALWAYS use this structure whenever
-  summary and latest_news are available.
+## Financial Comparison
 
-## Overall Sentiment
+## News & Market Sentiment
 
-Overall Sentiment: <overall_sentiment>
+## Research Comparison
 
-## News Summary
+## Overall Conclusion
 
-- Total News
-- Positive News
-- Neutral News
-- Negative News
+- For News responses, ALWAYS use this structure whenever
+  summary and latest_news are available:
 
-## Latest News
+  ## Overall Sentiment
+  Overall Sentiment: <overall_sentiment>
 
-For every news article include:
+  ## News Summary
+  - Total News
+  - Positive News
+  - Neutral News
+  - Negative News
 
-- Title
-- Source
-- Published Date
-- Sentiment
-- Confidence Score
+  ## Latest News
+  For every news article include:
+  - Title
+  - Source
+  - Published Date
+  - Sentiment
+  - Confidence Score
 
-Do NOT omit the News Summary section when it is available.
+  Do NOT omit the News Summary section when it is available.
 
-• End with a concise conclusion when appropriate.
+- End with a concise conclusion when appropriate.
 
-• Do not expose the internal workflow.
+- Do not expose the internal workflow.
 
 ======================================================
 OUTPUT

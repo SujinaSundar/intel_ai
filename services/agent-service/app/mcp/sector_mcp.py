@@ -11,45 +11,32 @@ MCPs to analyze companies
 within a business sector.
 """
 
-from app.mcp.finance_mcp import (
-    FinanceMCP
+import logging
+from typing import Any
+
+from app.exceptions.custom_exceptions import (
+    InvalidRequestException,
 )
+from app.mcp.finance_mcp import FinanceMCP
+from app.mcp.news_mcp import NewsMCP
+from app.mcp.research_mcp import ResearchMCP
 
-from app.mcp.news_mcp import (
-    NewsMCP
-)
-
-from app.mcp.research_mcp import (
-    ResearchMCP
-)
+logger = logging.getLogger(__name__)
 
 
-SECTOR_COMPANIES = {
-
+SECTOR_COMPANIES: dict[str, list[str]] = {
     "IT": [
-
         "Infosys",
-
         "TCS",
-
-        "Wipro"
-
+        "Wipro",
     ],
-
     "Banking": [
-
         "HDFC Bank",
-
-        "ICICI Bank"
-
+        "ICICI Bank",
     ],
-
     "Energy": [
-
-        "Reliance Industries"
-
-    ]
-
+        "Reliance Industries",
+    ],
 }
 
 
@@ -64,18 +51,36 @@ class SectorMCP:
     a sector.
     """
 
-    def __init__(
-        self
-    ):
+    def __init__(self) -> None:
         """
         Initialize MCPs.
         """
 
+        logger.info(
+            "Initializing Sector MCP."
+        )
+
         self.finance = FinanceMCP()
-
         self.news = NewsMCP()
-
         self.research = ResearchMCP()
+
+    # -----------------------------------------------------
+    # Validation
+    # -----------------------------------------------------
+
+    @staticmethod
+    def _validate_sector(
+        sector: str,
+    ) -> None:
+        """
+        Validate sector name.
+        """
+
+        if not sector or not sector.strip():
+
+            raise InvalidRequestException(
+                "Sector name cannot be empty."
+            )
 
     # -----------------------------------------------------
     # Sector Companies
@@ -83,27 +88,25 @@ class SectorMCP:
 
     def get_sector_companies(
         self,
-        sector: str
-    ) -> list:
+        sector: str,
+    ) -> list[str]:
         """
         Return companies
         belonging to a sector.
-
-        Parameters
-        ----------
-        sector : str
-
-        Returns
-        -------
-        list
         """
 
-        return SECTOR_COMPANIES.get(
+        self._validate_sector(
+            sector
+        )
 
+        logger.info(
+            "Fetching companies for sector=%s",
             sector,
+        )
 
-            []
-
+        return SECTOR_COMPANIES.get(
+            sector,
+            [],
         )
 
     # -----------------------------------------------------
@@ -112,170 +115,176 @@ class SectorMCP:
 
     def get_sector_finance(
         self,
-        sector: str
-    ) -> list:
+        sector: str,
+    ) -> list[dict[str, Any]]:
         """
-        Get finance summary
-        for all companies
-        in a sector.
-
-        Parameters
-        ----------
-        sector : str
-
-        Returns
-        -------
-        list
+        Retrieve financial
+        summaries for all
+        companies in a sector.
         """
+
+        logger.info(
+            "Fetching sector finance | sector=%s",
+            sector,
+        )
 
         companies = self.get_sector_companies(
             sector
         )
 
-        return [
+        finance = []
 
-            self.finance.get_stock_summary(
-                company
-            )
+        for company in companies:
+            try:
+                finance.append(
+                    self.finance.get_stock_summary(company)
+                )
+            except Exception as ex:
+                logger.warning(
+                    "Skipping finance for %s: %s",
+                    company,
+                    ex,
+                )
 
-            for company in companies
-
-        ]
-
+        return finance
     # -----------------------------------------------------
     # News
     # -----------------------------------------------------
 
     def get_sector_news(
         self,
-        sector: str
-    ) -> list:
+        sector: str,
+    ) -> list[dict[str, Any]]:
         """
-        Get latest news
-        for all companies
-        in a sector.
-
-        Parameters
-        ----------
-        sector : str
-
-        Returns
-        -------
-        list
+        Retrieve news and
+        sentiment for all
+        companies in a sector.
         """
+
+        logger.info(
+            "Fetching sector news | sector=%s",
+            sector,
+        )
 
         companies = self.get_sector_companies(
             sector
         )
 
-        return [
+        news = []
 
-            {
-
-                "company":
-
+        for company in companies:
+            try:
+                news.append(
+                    {
+                        "company": company,
+                        "summary": self.news.get_news_summary(
+                            company
+                        ),
+                        "sentiment": self.news.get_latest_sentiment(
+                            company
+                        ),
+                    }
+                )
+            except Exception as ex:
+                logger.warning(
+                    "Skipping news for %s: %s",
                     company,
+                    ex,
+                )
 
-                "summary":
-
-                    self.news.get_news_summary(
-                        company
-                    ),
-
-                "sentiment":
-
-                    self.news.get_latest_sentiment(
-                        company
-                    )
-
-            }
-
-            for company in companies
-
-        ]
-
+        return news
     # -----------------------------------------------------
     # Research
     # -----------------------------------------------------
 
     def get_sector_research(
         self,
-        sector: str
-    ) -> list:
+        sector: str,
+    ) -> list[dict[str, Any]]:
         """
-        Get research
-        summary for all
-        companies.
-
-        Parameters
-        ----------
-        sector : str
-
-        Returns
-        -------
-        list
+        Retrieve research
+        summaries for all
+        companies in a sector.
         """
+
+        logger.info(
+            "Fetching sector research | sector=%s",
+            sector,
+        )
 
         companies = self.get_sector_companies(
             sector
         )
 
-        return [
+        research = []
 
-            {
+        for company in companies:
 
-                "company":
+            try:
 
-                    company,
-
-                "research":
-
-                    self.research.answer_question(
-
-                        f"Summarize {company}"
-
+                result = self.research.answer_question(
+                    (
+                        f"Provide a concise research summary "
+                        f"of {company} in under 150 words "
+                        f"covering business, financial "
+                        f"performance, growth strategy "
+                        f"and risks."
                     )
+                )
 
-            }
+                research.append(
+                    {
+                        "company": company,
+                        "research": (
+                            result.get("answer", "")
+                            if isinstance(result, dict)
+                            else str(result or "")
+                        ),
+                    }
+                )
 
-            for company in companies
+            except Exception as ex:
 
-        ]
-        # -----------------------------------------------------
+                logger.warning(
+                    "Skipping research for %s: %s",
+                    company,
+                    ex,
+                )
+
+        return research
+
+    # -----------------------------------------------------
     # Sector Summary
     # -----------------------------------------------------
 
     def get_sector_summary(
         self,
-        sector: str
-    ) -> dict:
+        sector: str,
+    ) -> dict[str, Any]:
         """
-        Get complete
-        sector summary.
-
-        Parameters
-        ----------
-        sector : str
-
-        Returns
-        -------
-        dict
-            Sector analysis.
+        Retrieve complete
+        sector analysis.
         """
+
+        logger.info(
+            "Generating sector summary | sector=%s",
+            sector,
+        )
 
         companies = self.get_sector_companies(
             sector
         )
 
-        if len(companies) == 0:
+        if not companies:
 
-            return {
+            logger.warning(
+                "Sector not found: %s",
+                sector,
+            )
 
-                "error":
-
-                    "Sector not found."
-
-            }
+            raise InvalidRequestException(
+                f"Sector '{sector}' not found."
+            )
 
         finance = self.get_sector_finance(
             sector
@@ -289,32 +298,17 @@ class SectorMCP:
             sector
         )
 
+        logger.info(
+            "Sector summary generated successfully."
+        )
+
         return {
-
-            "sector":
-
-                sector,
-
-            "total_companies":
-
-                len(companies),
-
-            "companies":
-
-                companies,
-
-            "finance":
-
-                finance,
-
-            "news":
-
-                news,
-
-            "research":
-
-                research
-
+            "sector": sector,
+            "total_companies": len(companies),
+            "companies": companies,
+            "finance": finance,
+            "news": news,
+            "research": research,
         }
 
     # -----------------------------------------------------
@@ -322,29 +316,21 @@ class SectorMCP:
     # -----------------------------------------------------
 
     def health_check(
-        self
-    ) -> dict:
+        self,
+    ) -> dict[str, Any]:
         """
-        Check MCP status.
+        Check MCP availability.
+        """
 
-        Returns
-        -------
-        dict
-            MCP availability.
-        """
+        logger.info(
+            "Sector MCP health check."
+        )
 
         return {
-
-            "finance":
-
-                "Available",
-
-            "news":
-
-                "Available",
-
-            "research":
-
-                self.research.health_check()
-
+            "finance": self.finance.health_check(),
+            "news": self.news.health_check(),
+            "research": self.research.health_check(),
         }
+
+
+sector_mcp = SectorMCP()

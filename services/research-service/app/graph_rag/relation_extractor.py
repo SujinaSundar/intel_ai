@@ -1,50 +1,50 @@
 """
-Relation extractor.
+Relation Extractor.
 
-Extracts high-confidence business relationships
-from annual report chunks.
+Extracts high-confidence business
+relationships from annual report chunks.
 """
 
 import json
+import logging
 
+from app.exceptions.custom_exceptions import (
+    InvalidRequestException,
+    LLMServiceException,
+)
 from app.llm.llm_service import (
-    generate_answer
+    generate_answer,
 )
 
+logger = logging.getLogger(__name__)
 
-# ----------------------------------------
-# Allowed Relations
-# ----------------------------------------
+# ---------------------------------------------------------
+# Allowed Relationships
+# ---------------------------------------------------------
 
 ALLOWED_RELATIONS = {
-
     # Leadership
-
     "HAS_CEO",
     "HAS_CFO",
     "HAS_CHAIRMAN",
     "HAS_MANAGING_DIRECTOR",
     "HAS_FOUNDER",
 
-    # Products
-
+    # Products & Services
     "HAS_PRODUCT",
     "HAS_SERVICE",
     "HAS_PLATFORM",
     "HAS_TECHNOLOGY",
-
     "PROVIDES",
     "OFFERS",
 
     # Strategy
-
     "FOCUSES_ON",
     "OPERATES_IN",
     "SERVES",
     "EXPANDS_TO",
 
     # Corporate
-
     "PARTNERS_WITH",
     "ACQUIRED",
     "SUBSIDIARY_OF",
@@ -52,101 +52,95 @@ ALLOWED_RELATIONS = {
     "BELONGS_TO",
 
     # Innovation
-
     "DEVELOPS",
     "USES",
     "LAUNCHED",
 
     # ESG
-
     "SUPPORTS",
     "PROMOTES",
-    "REDUCES_EMISSIONS"
-
+    "REDUCES_EMISSIONS",
 }
 
-
-# ----------------------------------------
-# Generic entities
-# ----------------------------------------
+# ---------------------------------------------------------
+# Generic Target Entities
+# ---------------------------------------------------------
 
 GENERIC_TARGETS = {
-
     "company",
     "companies",
-
     "organization",
     "organisations",
-
     "business",
-
     "entity",
-
     "group",
-
     "partner",
     "partners",
-
     "customer",
     "customers",
-
     "client",
     "clients",
-
     "employee",
     "employees",
-
     "stakeholder",
     "stakeholders",
-
     "service",
     "services",
-
     "product",
     "products",
-
     "technology",
     "technologies",
-
     "platform",
     "platforms",
-
     "solution",
     "solutions",
-
     "initiative",
     "initiatives",
-
     "market",
     "markets",
-
     "industry",
-    "industries"
-
+    "industries",
 }
 
 
-# ----------------------------------------
+# ---------------------------------------------------------
 # Clean LLM Response
-# ----------------------------------------
+# ---------------------------------------------------------
 
 def clean_llm_response(
-    response: str
+    response: str,
 ) -> str:
     """
-    Clean markdown from LLM output.
+    Clean markdown formatting from the
+    LLM response and extract the JSON array.
+
+    Parameters
+    ----------
+    response : str
+        Raw LLM response.
+
+    Returns
+    -------
+    str
+        Clean JSON string or an empty string
+        if no JSON array is found.
     """
+
+    if not response or not response.strip():
+        raise InvalidRequestException(
+            "LLM response cannot be empty."
+        )
 
     response = response.strip()
 
     response = response.replace(
         "```json",
-        ""
+        "",
     )
 
     response = response.replace(
         "```",
-        ""
+        "",
     )
 
     response = response.strip()
@@ -157,25 +151,59 @@ def clean_llm_response(
 
     if start == -1 or end == -1:
 
+        logger.warning(
+            "No JSON array found in LLM response."
+        )
+
         return ""
 
-    return response[
-        start:end + 1
-    ]
+    cleaned_response = response[start : end + 1]
 
+    logger.debug(
+        "Successfully cleaned LLM response."
+    )
 
-# ----------------------------------------
+    return cleaned_response
+# ---------------------------------------------------------
 # Relation Extraction
-# ----------------------------------------
+# ---------------------------------------------------------
 
 def extract_relations(
     company_name: str,
-    text: str
-) -> list:
+    text: str,
+) -> list[dict]:
     """
-    Extract graph triples
-    from one report chunk.
+    Extract business relationships from
+    a report chunk using the LLM.
+
+    Parameters
+    ----------
+    company_name : str
+        Company name.
+
+    text : str
+        Annual report chunk.
+
+    Returns
+    -------
+    list[dict]
+        Validated graph triples.
     """
+
+    if not company_name.strip():
+        raise InvalidRequestException(
+            "Company name cannot be empty."
+        )
+
+    if not text.strip():
+        raise InvalidRequestException(
+            "Report text cannot be empty."
+        )
+
+    logger.info(
+        "Extracting relations for company: %s",
+        company_name,
+    )
 
     prompt = f"""
 You are an expert Financial Knowledge Graph Builder.
@@ -216,8 +244,7 @@ Do not guess or infer missing information.
 
 10. Never invent facts.
 
-11. Every relationship must be explicitly supported
-by the text.
+11. Every relationship must be explicitly supported by the text.
 
 Allowed Relations
 
@@ -239,44 +266,55 @@ TEXT
 
 {text[:2500]}
 """
-    response = generate_answer(
-        prompt
-    )
 
-    response = clean_llm_response(
+    try:
+
+        response = generate_answer(prompt)
+
+    except LLMServiceException:
+
+        logger.exception(
+            "LLM relation extraction failed."
+        )
+
+        raise
+
+    cleaned_response = clean_llm_response(
         response
     )
 
-    if not response:
+    if not cleaned_response:
+
+        logger.info(
+            "No relations returned by LLM."
+        )
 
         return []
 
     try:
 
         relations = json.loads(
-            response
+            cleaned_response
         )
 
-    except Exception:
+    except json.JSONDecodeError:
 
-        print()
-
-        print(
-            "Relation extraction failed."
+        logger.exception(
+            "Invalid JSON returned from LLM."
         )
 
-        print()
-
-        print(
-            response
+        logger.debug(
+            "LLM Response: %s",
+            cleaned_response,
         )
 
         return []
 
-    if not isinstance(
-        relations,
-        list
-    ):
+    if not isinstance(relations, list):
+
+        logger.warning(
+            "LLM output is not a list."
+        )
 
         return []
 
@@ -288,180 +326,140 @@ TEXT
 
         try:
 
-            # -------------------------
-            # Required Fields
-            # -------------------------
-
-            required = {
-
+            required_fields = {
                 "source",
-
                 "source_type",
-
                 "relation",
-
                 "target",
-
-                "target_type"
-
+                "target_type",
             }
 
-            if not required.issubset(
-
+            if not required_fields.issubset(
                 relation.keys()
-
             ):
-
                 continue
 
             source = (
-
                 relation["source"]
-
                 .strip()
-
             )
 
             source_type = (
-
                 relation["source_type"]
-
                 .strip()
-
             )
 
             relation_name = (
-
                 relation["relation"]
-
                 .strip()
-
                 .upper()
-
             )
 
             target = (
-
                 relation["target"]
-
                 .strip()
-
             )
 
             target_type = (
-
                 relation["target_type"]
-
                 .strip()
-
             )
 
-            # -------------------------
+            # -------------------------------------
             # Keep only current company
-            # -------------------------
+            # -------------------------------------
 
-            if source.lower() != company_name.lower():
-
+            if (
+                source.lower()
+                != company_name.lower()
+            ):
                 continue
 
             source = company_name
 
-            # -------------------------
-            # Allowed Relations
-            # -------------------------
+            # -------------------------------------
+            # Allowed relation
+            # -------------------------------------
 
-            if relation_name not in ALLOWED_RELATIONS:
-
+            if (
+                relation_name
+                not in ALLOWED_RELATIONS
+            ):
                 continue
 
-            # -------------------------
-            # Empty Target
-            # -------------------------
+            # -------------------------------------
+            # Empty target
+            # -------------------------------------
 
             if not target:
-
                 continue
 
-            # -------------------------
-            # Generic Target
-            # -------------------------
+            # -------------------------------------
+            # Generic entity
+            # -------------------------------------
 
-            if target.lower() in GENERIC_TARGETS:
-
+            if (
+                target.lower()
+                in GENERIC_TARGETS
+            ):
                 continue
 
-            # -------------------------
-            # Self Loop
-            # -------------------------
+            # -------------------------------------
+            # Self-loop
+            # -------------------------------------
 
-            if target.lower() == company_name.lower():
-
+            if (
+                target.lower()
+                == company_name.lower()
+            ):
                 continue
 
-            # -------------------------
-            # Normalize Target
-            # -------------------------
+            # -------------------------------------
+            # Normalize entity names
+            # -------------------------------------
 
             if target_type in {
-
                 "Product",
-
                 "Service",
-
                 "Technology",
-
                 "Platform",
-
                 "Industry",
-
-                "Sector"
-
+                "Sector",
             }:
-
                 target = target.title()
 
-            # -------------------------
-            # Duplicate Removal
-            # -------------------------
-
             key = (
-
                 source.lower(),
-
                 relation_name,
-
-                target.lower()
-
+                target.lower(),
             )
 
             if key in seen:
-
                 continue
 
-            seen.add(
-                key
-            )
+            seen.add(key)
 
             unique.append(
-
                 {
-
                     "source": source,
-
                     "source_type": source_type,
-
                     "relation": relation_name,
-
                     "target": target,
-
-                    "target_type": target_type
-
+                    "target_type": target_type,
                 }
-
             )
 
         except Exception:
 
+            logger.exception(
+                "Skipping invalid relation."
+            )
+
             continue
+
+    logger.info(
+        "Extracted %d valid relations.",
+        len(unique),
+    )
 
     return unique

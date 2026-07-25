@@ -5,18 +5,27 @@ Builds the Agentic AI
 workflow using LangGraph.
 """
 
-from langgraph.graph import (
-    StateGraph,
-    END
-)
+import logging
+from typing import Any
 
-from app.langgraph.state import (
-    AgentState
-)
+from langgraph.graph import END, StateGraph
 
-from app.langgraph.nodes import (
-    WorkflowNodes
+from app.exceptions.custom_exceptions import (
+    InvalidRequestException,
+    LLMServiceException,
 )
+from app.langgraph.nodes import WorkflowNodes
+from app.langgraph.state import AgentState
+
+logger = logging.getLogger(__name__)
+
+ROUTE_MAPPING = {
+    "Finance": "finance",
+    "News": "news",
+    "Research": "research",
+    "Comparison": "comparison",
+    "Sector": "sector",
+}
 
 
 class AgentWorkflow:
@@ -28,235 +37,204 @@ class AgentWorkflow:
     Research Agent.
     """
 
-    def __init__(
-        self
-    ):
+    def __init__(self) -> None:
         """
-        Initialize workflow.
+        Initialize and compile
+        the workflow graph.
         """
 
-        self.nodes = WorkflowNodes()
-
-        self.builder = StateGraph(
-            AgentState
+        logger.info(
+            "Initializing LangGraph workflow."
         )
 
+        self.nodes = WorkflowNodes()
+        self.builder = StateGraph(AgentState)
+
         self._build()
+
     # -----------------------------------------------------
     # Route Decision
     # -----------------------------------------------------
 
     def _route(
         self,
-        state: AgentState
+        state: AgentState,
     ) -> str:
         """
         Decide the next
         LangGraph node.
+
+        Parameters
+        ----------
+        state : AgentState
+
+        Returns
+        -------
+        str
+            Next workflow node.
         """
 
         route = state.get("route")
 
-        print("=" * 80)
-        print("LANGGRAPH ROUTE")
-        print(route)
-        print("=" * 80)
+        logger.info(
+            "Evaluating workflow route."
+        )
 
         if route is None:
-            print("ERROR: Route is None")
+
+            logger.error(
+                "Route information is missing."
+            )
+
             return END
 
         agent = route.get("agent")
 
-        mapping = {
-            "Finance": "finance",
-            "News": "news",
-            "Research": "research",
-            "Comparison": "comparison",
-            "Sector": "sector",
-        }
+        logger.info(
+            "Selected agent: %s",
+            agent,
+        )
 
-        next_node = mapping.get(agent)
+        next_node = ROUTE_MAPPING.get(agent)
 
         if next_node is None:
-            print(f"ERROR: Unknown agent received: {agent}")
+
+            logger.error(
+                "Unknown agent received: %s",
+                agent,
+            )
+
             return END
 
         return next_node
+
     # -----------------------------------------------------
     # Build Workflow
     # -----------------------------------------------------
 
     def _build(
-        self
-    ):
+        self,
+    ) -> None:
         """
-        Build the LangGraph
-        workflow.
+        Build and compile
+        the LangGraph workflow.
         """
 
-        # -------------------------------------------------
-        # Add Nodes
-        # -------------------------------------------------
+        logger.info(
+            "Building LangGraph workflow."
+        )
+
+        # -------------------------
+        # Nodes
+        # -------------------------
 
         self.builder.add_node(
-
             "router",
-
-            self.nodes.router_node
-
+            self.nodes.router_node,
         )
 
         self.builder.add_node(
-
             "finance",
-
-            self.nodes.finance_node
-
+            self.nodes.finance_node,
         )
 
         self.builder.add_node(
-
             "news",
-
-            self.nodes.news_node
-
+            self.nodes.news_node,
         )
 
         self.builder.add_node(
-
             "research",
-
-            self.nodes.research_node
-
+            self.nodes.research_node,
         )
 
         self.builder.add_node(
-
             "comparison",
-
-            self.nodes.comparison_node
-
+            self.nodes.comparison_node,
         )
 
         self.builder.add_node(
-
             "sector",
-
-            self.nodes.sector_node
-
+            self.nodes.sector_node,
         )
 
         self.builder.add_node(
-
             "response",
-
-            self.nodes.response_node
-
+            self.nodes.response_node,
         )
 
-        # -------------------------------------------------
+        # -------------------------
         # Entry Point
-        # -------------------------------------------------
+        # -------------------------
 
         self.builder.set_entry_point(
-
             "router"
-
         )
 
-        # -------------------------------------------------
+        # -------------------------
         # Conditional Routing
-        # -------------------------------------------------
+        # -------------------------
 
         self.builder.add_conditional_edges(
-
             "router",
-
             self._route,
-
             {
-
                 "finance": "finance",
-
                 "news": "news",
-
                 "research": "research",
-
                 "comparison": "comparison",
-
                 "sector": "sector",
-
                 END: END,
-
-            }
-
+            },
         )
 
-        # -------------------------------------------------
+        # -------------------------
         # Response Edges
-        # -------------------------------------------------
+        # -------------------------
 
         self.builder.add_edge(
-
             "finance",
-
-            "response"
-
-        )
-
-        self.builder.add_edge(
-
-            "news",
-
-            "response"
-
-        )
-
-        self.builder.add_edge(
-
-            "research",
-
-            "response"
-
-        )
-
-        self.builder.add_edge(
-
-            "comparison",
-
-            "response"
-
-        )
-
-        self.builder.add_edge(
-
-            "sector",
-
-            "response"
-
-        )
-
-        self.builder.add_edge(
-
             "response",
-
-            END
-
         )
 
-        # -------------------------------------------------
-        # Compile
-        # -------------------------------------------------
+        self.builder.add_edge(
+            "news",
+            "response",
+        )
+
+        self.builder.add_edge(
+            "research",
+            "response",
+        )
+
+        self.builder.add_edge(
+            "comparison",
+            "response",
+        )
+
+        self.builder.add_edge(
+            "sector",
+            "response",
+        )
+
+        self.builder.add_edge(
+            "response",
+            END,
+        )
 
         self.graph = self.builder.compile()
-        # -----------------------------------------------------
+
+        logger.info(
+            "LangGraph workflow compiled successfully."
+        )
+
+    # -----------------------------------------------------
     # Run Workflow
     # -----------------------------------------------------
 
     def run(
         self,
-        question: str
+        question: str,
     ) -> str:
         """
         Execute the LangGraph
@@ -269,26 +247,53 @@ class AgentWorkflow:
         Returns
         -------
         str
+            Final response.
         """
 
-        state = {
+        if not question or not question.strip():
 
+            logger.warning(
+                "Empty workflow question received."
+            )
+
+            raise InvalidRequestException(
+                "Question cannot be empty."
+            )
+
+        logger.info(
+            "Executing LangGraph workflow."
+        )
+
+        state: dict[str, Any] = {
             "question": question,
-
             "route": None,
-
             "agent_response": None,
-
-            "final_response": None
-
+            "final_response": None,
         }
 
         result = self.graph.invoke(
-
             state
-
         )
 
-        return result[
+        response = result.get(
             "final_response"
-        ]
+        )
+
+        if not response:
+
+            logger.error(
+                "Workflow completed without a final response."
+            )
+
+            raise LLMServiceException(
+                "Workflow failed to generate a response."
+            )
+
+        logger.info(
+            "Workflow execution completed successfully."
+        )
+
+        return response
+
+
+agent_workflow = AgentWorkflow()

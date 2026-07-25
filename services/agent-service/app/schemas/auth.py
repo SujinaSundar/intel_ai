@@ -1,61 +1,81 @@
 """
-Authentication Schemas.
+Authentication schemas.
 
-Pydantic models for
-user registration,
-login, and JWT responses.
+Pydantic models for user
+registration, login,
+and JWT authentication.
 """
 
 from pydantic import (
     BaseModel,
+    ConfigDict,
     EmailStr,
     Field,
 )
 
 
 # -----------------------------------------------------
-# Register
+# User Registration
 # -----------------------------------------------------
 
 class UserRegisterRequest(BaseModel):
     """
-    User registration request.
+    Request model for user registration.
     """
 
     name: str = Field(
+        ...,
         min_length=2,
-        max_length=100
+        max_length=100,
+        description="Full name of the user.",
+        examples=["John Doe"],
     )
 
-    email: EmailStr
+    email: EmailStr = Field(
+        ...,
+        description="User email address.",
+        examples=["john@example.com"],
+    )
 
     password: str = Field(
+        ...,
         min_length=8,
-        max_length=128
+        max_length=128,
+        description="User password.",
+        examples=["StrongPassword123!"],
     )
 
 
 # -----------------------------------------------------
-# Login
+# User Login
 # -----------------------------------------------------
 
 class UserLoginRequest(BaseModel):
     """
-    User login request.
+    Request model for user login.
     """
 
-    email: EmailStr
+    email: EmailStr = Field(
+        ...,
+        description="Registered email address.",
+        examples=["john@example.com"],
+    )
 
-    password: str
+    password: str = Field(
+        ...,
+        min_length=8,
+        max_length=128,
+        description="User password.",
+    )
 
 
 # -----------------------------------------------------
-# Response
+# User Response
 # -----------------------------------------------------
 
 class UserResponse(BaseModel):
     """
-    User information.
+    User information returned by the API.
     """
 
     id: int
@@ -66,19 +86,27 @@ class UserResponse(BaseModel):
 
     is_active: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True,
+    )
 
 
 # -----------------------------------------------------
-# JWT Token
+# JWT Token Response
 # -----------------------------------------------------
 
 class TokenResponse(BaseModel):
     """
-    JWT response.
+    JWT authentication response.
     """
 
-    access_token: str
+    access_token: str = Field(
+        ...,
+        description="JWT access token.",
+    )
 
-    token_type: str = "bearer"
+    token_type: str = Field(
+        default="bearer",
+        description="Authentication scheme.",
+        examples=["bearer"],
+    )

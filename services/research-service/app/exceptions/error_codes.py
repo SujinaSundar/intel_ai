@@ -1,0 +1,27 @@
+from enum import Enum
+
+
+class ErrorCode(str, Enum):
+    """Application error codes."""
+
+    # Generic
+    INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR"
+    INVALID_REQUEST = "INVALID_REQUEST"
+
+    # Authentication
+    UNAUTHORIZED = "UNAUTHORIZED"
+    FORBIDDEN = "FORBIDDEN"
+
+    # Business
+    COMPANY_NOT_FOUND = "COMPANY_NOT_FOUND"
+    NEWS_NOT_FOUND = "NEWS_NOT_FOUND"
+    RESEARCH_NOT_FOUND = "RESEARCH_NOT_FOUND"
+
+    # Services
+    DATABASE_ERROR = "DATABASE_ERROR"
+    EXTERNAL_API_ERROR = "EXTERNAL_API_ERROR"
+    MCP_ERROR = "MCP_ERROR"
+    LLM_ERROR = "LLM_ERROR"
+
+    # Validation
+    VALIDATION_ERROR = "VALIDATION_ERROR"

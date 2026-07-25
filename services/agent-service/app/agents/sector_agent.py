@@ -10,9 +10,15 @@ all sector analysis tasks
 to the Sector MCP.
 """
 
-from app.mcp.sector_mcp import (
-    SectorMCP
+import logging
+from typing import Any
+
+from app.exceptions.custom_exceptions import (
+    InvalidRequestException,
 )
+from app.mcp.sector_mcp import SectorMCP
+
+logger = logging.getLogger(__name__)
 
 
 class SectorAgent:
@@ -24,13 +30,15 @@ class SectorAgent:
     sectors.
     """
 
-    def __init__(
-        self
-    ):
+    def __init__(self) -> None:
         """
         Initialize the
         Sector MCP.
         """
+
+        logger.info(
+            "Initializing Sector Agent."
+        )
 
         self.mcp = SectorMCP()
 
@@ -41,8 +49,8 @@ class SectorAgent:
     def answer(
         self,
         question: str,
-        sector: str
-    ) -> dict:
+        sector: str,
+    ) -> dict[str, Any]:
         """
         Handle sector-related
         questions.
@@ -50,18 +58,50 @@ class SectorAgent:
         Parameters
         ----------
         question : str
+            User question.
 
         sector : str
+            Sector name.
 
         Returns
         -------
-        dict
+        dict[str, Any]
+            Sector response.
+
+        Raises
+        ------
+        InvalidRequestException
+            If the question or sector is empty.
         """
+
+        if not question or not question.strip():
+
+            logger.warning(
+                "Empty question received."
+            )
+
+            raise InvalidRequestException(
+                "Question cannot be empty."
+            )
+
+        if not sector or not sector.strip():
+
+            logger.warning(
+                "Empty sector received."
+            )
+
+            raise InvalidRequestException(
+                "Sector cannot be empty."
+            )
 
         question = question.lower()
 
-        recommendation_keywords = [
+        logger.info(
+            "Processing sector request | sector=%s",
+            sector,
+        )
 
+        recommendation_keywords = [
             "best",
             "good",
             "top",
@@ -70,37 +110,30 @@ class SectorAgent:
             "performing",
             "leader",
             "strong",
-            "strongest"
-
+            "strongest",
         ]
 
         company_keywords = [
-
             "company",
             "companies",
             "list",
-            "which companies"
-
+            "which companies",
         ]
 
         news_keywords = [
-
             "news",
             "headline",
             "headlines",
-            "latest"
-
+            "latest",
         ]
 
         finance_keywords = [
-
             "stock",
             "price",
             "financial",
             "finance",
             "market",
-            "performance"
-
+            "performance",
         ]
 
         # ---------------------------------------------
@@ -112,14 +145,15 @@ class SectorAgent:
             for keyword in recommendation_keywords
         ):
 
+            logger.info(
+                "Routing to sector recommendation."
+            )
+
             return {
-
                 "intent": "recommendation",
-
                 **self.mcp.get_sector_summary(
                     sector
-                )
-
+                ),
             }
 
         # ---------------------------------------------
@@ -131,16 +165,16 @@ class SectorAgent:
             for keyword in company_keywords
         ):
 
+            logger.info(
+                "Routing to sector companies."
+            )
+
             return {
-
                 "intent": "companies",
-
                 "sector": sector,
-
                 "companies": self.companies(
                     sector
-                )
-
+                ),
             }
 
         # ---------------------------------------------
@@ -152,16 +186,16 @@ class SectorAgent:
             for keyword in news_keywords
         ):
 
+            logger.info(
+                "Routing to sector news."
+            )
+
             return {
-
                 "intent": "news",
-
                 "sector": sector,
-
                 "news": self.mcp.get_sector_news(
                     sector
-                )
-
+                ),
             }
 
         # ---------------------------------------------
@@ -173,30 +207,31 @@ class SectorAgent:
             for keyword in finance_keywords
         ):
 
+            logger.info(
+                "Routing to sector finance."
+            )
+
             return {
-
                 "intent": "finance",
-
                 "sector": sector,
-
                 "finance": self.mcp.get_sector_finance(
                     sector
-                )
-
+                ),
             }
 
         # ---------------------------------------------
         # Default Sector Summary
         # ---------------------------------------------
 
+        logger.info(
+            "Returning sector summary."
+        )
+
         return {
-
             "intent": "summary",
-
             **self.summarize(
                 sector
-            )
-
+            ),
         }
 
     # -----------------------------------------------------
@@ -205,19 +240,16 @@ class SectorAgent:
 
     def summarize(
         self,
-        sector: str
-    ) -> dict:
+        sector: str,
+    ) -> dict[str, Any]:
         """
-        Get sector summary.
-
-        Parameters
-        ----------
-        sector : str
-
-        Returns
-        -------
-        dict
+        Retrieve sector summary.
         """
+
+        logger.info(
+            "Retrieving sector summary | sector=%s",
+            sector,
+        )
 
         return self.mcp.get_sector_summary(
             sector
@@ -229,21 +261,17 @@ class SectorAgent:
 
     def companies(
         self,
-        sector: str
-    ) -> list:
+        sector: str,
+    ) -> list[dict[str, Any]]:
         """
-        Get companies
-        belonging to
-        a sector.
-
-        Parameters
-        ----------
-        sector : str
-
-        Returns
-        -------
-        list
+        Retrieve companies
+        belonging to a sector.
         """
+
+        logger.info(
+            "Retrieving companies | sector=%s",
+            sector,
+        )
 
         return self.mcp.get_sector_companies(
             sector
@@ -254,14 +282,22 @@ class SectorAgent:
     # -----------------------------------------------------
 
     def health_check(
-        self
-    ) -> dict:
+        self,
+    ) -> dict[str, Any]:
         """
-        Check Sector MCP.
+        Check Sector MCP health.
 
         Returns
         -------
-        dict
+        dict[str, Any]
+            Health status.
         """
 
+        logger.info(
+            "Sector Agent health check."
+        )
+
         return self.mcp.health_check()
+
+
+sector_agent = SectorAgent()

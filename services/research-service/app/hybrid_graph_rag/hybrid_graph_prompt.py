@@ -1,5 +1,10 @@
 """
-Hybrid Graph Prompt.
+Hybrid Graph Prompt Builder.
+
+Builds the prompt for the Hybrid GraphRAG
+pipeline by combining vector retrieval,
+graph retrieval, market sentiment, and
+stock information.
 """
 
 
@@ -8,10 +13,32 @@ def build_hybrid_graph_prompt(
     documents: list[str],
     graph_documents: list[str],
     sentiment_text: str,
-    stock_text: str
+    stock_text: str,
 ) -> str:
     """
-    Build Hybrid GraphRAG prompt.
+    Build the Hybrid GraphRAG prompt.
+
+    Parameters
+    ----------
+    question : str
+        User question.
+
+    documents : list[str]
+        Retrieved document chunks.
+
+    graph_documents : list[str]
+        Retrieved graph relationships.
+
+    sentiment_text : str
+        News sentiment summary.
+
+    stock_text : str
+        Stock information summary.
+
+    Returns
+    -------
+    str
+        Prompt for the LLM.
     """
 
     document_context = "\n".join(
@@ -26,28 +53,36 @@ def build_hybrid_graph_prompt(
     # Optional Market Context
     # -----------------------------------
 
-    market_context = ""
+    market_sections: list[str] = []
 
     if sentiment_text:
 
-        market_context += f"""
-
-News Sentiment
+        market_sections.append(
+            f"""News Sentiment
 --------------
-{sentiment_text}
-"""
+{sentiment_text}"""
+        )
 
     if stock_text:
 
-        market_context += f"""
-
-Stock Information
+        market_sections.append(
+            f"""Stock Information
 -----------------
-{stock_text}
-"""
+{stock_text}"""
+        )
 
-    return f"""
-You are a financial research assistant.
+    market_context = ""
+
+    if market_sections:
+
+        market_context = (
+            "\n\n"
+            + "\n\n".join(
+                market_sections
+            )
+        )
+
+    return f"""You are a financial research assistant.
 
 Use ONLY the information provided below.
 
@@ -103,8 +138,7 @@ Graph Context
 
 Document Context
 ----------------
-{document_context}
-{market_context}
+{document_context}{market_context}
 
 Question
 --------

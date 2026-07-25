@@ -10,9 +10,15 @@ all comparison tasks to the
 Comparison MCP.
 """
 
-from app.mcp.comparison_mcp import (
-    ComparisonMCP
+import logging
+from typing import Any
+
+from app.exceptions.custom_exceptions import (
+    InvalidRequestException,
 )
+from app.mcp.comparison_mcp import ComparisonMCP
+
+logger = logging.getLogger(__name__)
 
 
 class ComparisonAgent:
@@ -23,13 +29,15 @@ class ComparisonAgent:
     to compare two companies.
     """
 
-    def __init__(
-        self
-    ):
+    def __init__(self) -> None:
         """
         Initialize the
         Comparison MCP.
         """
+
+        logger.info(
+            "Initializing Comparison Agent."
+        )
 
         self.mcp = ComparisonMCP()
 
@@ -40,31 +48,59 @@ class ComparisonAgent:
     def answer(
         self,
         company_one: str,
-        company_two: str
-    ) -> dict:
+        company_two: str,
+    ) -> dict[str, Any]:
         """
-        Default response.
-
-        Compares two
-        companies.
+        Compare two companies.
 
         Parameters
         ----------
         company_one : str
+            First company name.
 
         company_two : str
+            Second company name.
 
         Returns
         -------
-        dict
+        dict[str, Any]
+            Comparison results.
+
+        Raises
+        ------
+        InvalidRequestException
+            If either company name is empty.
         """
 
-        return self.compare(
+        if not company_one or not company_one.strip():
 
+            logger.warning(
+                "First company name is empty."
+            )
+
+            raise InvalidRequestException(
+                "First company name cannot be empty."
+            )
+
+        if not company_two or not company_two.strip():
+
+            logger.warning(
+                "Second company name is empty."
+            )
+
+            raise InvalidRequestException(
+                "Second company name cannot be empty."
+            )
+
+        logger.info(
+            "Processing comparison request | company_one=%s | company_two=%s",
             company_one,
+            company_two,
+        )
 
-            company_two
-
+        return self.compare(
+            company_one,
+            company_two,
         )
 
     # -----------------------------------------------------
@@ -74,28 +110,34 @@ class ComparisonAgent:
     def compare(
         self,
         company_one: str,
-        company_two: str
-    ) -> dict:
+        company_two: str,
+    ) -> dict[str, Any]:
         """
         Compare two companies.
 
         Parameters
         ----------
         company_one : str
+            First company name.
 
         company_two : str
+            Second company name.
 
         Returns
         -------
-        dict
+        dict[str, Any]
+            Comparison results.
         """
 
-        return self.mcp.compare_companies(
-
+        logger.info(
+            "Comparing companies | company_one=%s | company_two=%s",
             company_one,
+            company_two,
+        )
 
-            company_two
-
+        return self.mcp.compare_companies(
+            company_one,
+            company_two,
         )
 
     # -----------------------------------------------------
@@ -103,14 +145,22 @@ class ComparisonAgent:
     # -----------------------------------------------------
 
     def health_check(
-        self
-    ) -> dict:
+        self,
+    ) -> dict[str, Any]:
         """
-        Check Comparison MCP.
+        Check Comparison MCP health.
 
         Returns
         -------
-        dict
+        dict[str, Any]
+            Health status.
         """
 
+        logger.info(
+            "Comparison Agent health check."
+        )
+
         return self.mcp.health_check()
+
+
+comparison_agent = ComparisonAgent()

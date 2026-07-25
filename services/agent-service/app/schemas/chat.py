@@ -1,42 +1,49 @@
 """
-Chat Schemas.
+Chat schemas.
 
-Defines request and
-response models for
-the Agent Service.
+Defines request and response
+models for the Agent Service.
 """
 
 from pydantic import (
-    BaseModel
+    BaseModel,
+    Field,
 )
 
 
-class ChatRequest(
-    BaseModel
-):
-    """
-    Chat Request.
+# -----------------------------------------------------
+# Chat Request
+# -----------------------------------------------------
 
-    Attributes
-    ----------
-    question : str
-        User research
-        question.
+class ChatRequest(BaseModel):
+    """
+    Request model for chat queries.
     """
 
-    question: str
+    question: str = Field(
+        ...,
+        min_length=1,
+        max_length=5000,
+        description="User question for the AI trading research agent.",
+        examples=[
+            "Compare Infosys and TCS based on recent financial performance."
+        ],
+    )
 
 
-class ChatResponse(
-    BaseModel
-):
+# -----------------------------------------------------
+# Chat Response
+# -----------------------------------------------------
+
+class ChatResponse(BaseModel):
     """
-    Chat Response.
-
-    Attributes
-    ----------
-    answer : str
-        Final AI response.
+    Response model returned by the AI agent.
     """
 
-    answer: str
+    answer: str = Field(
+        ...,
+        description="AI-generated response.",
+        examples=[
+            "Infosys reported stronger revenue growth, while TCS maintained higher operating margins."
+        ],
+    )

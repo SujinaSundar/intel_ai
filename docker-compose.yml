@@ -114,22 +114,21 @@ services:
 
     restart: unless-stopped
 
-  news:
+  frontend:
     build:
-      context: .
-      dockerfile: services/news-service/Dockerfile
+      context: ./frontend
+      dockerfile: Dockerfile
 
-    container_name: intel-ai-news
+    container_name: intel-ai-frontend
 
     ports:
-      - "8002:8002"
+      - "3000:3000"
 
-    env_file:
-      - .env.docker
+    environment:
+      NEXT_PUBLIC_AGENT_API: http://localhost:8000
 
     depends_on:
-      - postgres
-      - neo4j
+      - agent
 
     restart: unless-stopped
 
