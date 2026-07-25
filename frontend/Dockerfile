@@ -5,13 +5,13 @@ FROM node:22-alpine
 WORKDIR /app
 
 # Copy package files
-COPY package*.json ./
+COPY frontend/package*.json ./
 
 # Install dependencies
 RUN npm install
 
 # Copy application source
-COPY . .
+COPY frontend/ .
 
 # Expose Next.js port
 EXPOSE 3000
