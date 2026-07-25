@@ -20,15 +20,14 @@ Schedule:
 Runs daily.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 
-
 with DAG(
     dag_id="news_etl",
-    start_date=datetime(2025, 1, 1),
+    start_date=datetime(2025, 1, 1, tzinfo=timezone.utc),
     schedule="@daily",
     catchup=False,
     tags=["news", "etl", "finbert"],

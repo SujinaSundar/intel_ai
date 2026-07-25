@@ -7,12 +7,11 @@ Groq Large Language Model.
 
 import logging
 
-from groq import Groq
-
 from app.database.config import settings
 from app.exceptions.custom_exceptions import (
     LLMServiceException,
 )
+from groq import Groq
 
 logger = logging.getLogger(__name__)
 

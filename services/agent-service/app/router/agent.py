@@ -8,11 +8,6 @@ Research Agent.
 
 import logging
 
-from fastapi import (
-    APIRouter,
-    Depends,
-)
-
 from app.auth.dependencies import get_current_user
 from app.database.models import User
 from app.schemas.chat import (
@@ -20,6 +15,10 @@ from app.schemas.chat import (
     ChatResponse,
 )
 from app.services.chat_service import ask_question
+from fastapi import (
+    APIRouter,
+    Depends,
+)
 
 logger = logging.getLogger(__name__)
 

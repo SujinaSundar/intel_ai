@@ -1,6 +1,4 @@
-from app.graph_rag.relation_extractor import (
-    extract_relations
-)
+from app.graph_rag.relation_extractor import extract_relations
 
 
 def main():

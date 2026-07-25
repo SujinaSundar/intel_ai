@@ -17,8 +17,6 @@ Combined Context
 
 import logging
 
-from sqlalchemy.exc import SQLAlchemyError
-
 from app.database.connection import SessionLocal
 from app.database.models import (
     Company,
@@ -32,6 +30,7 @@ from app.exceptions.custom_exceptions import (
 from app.hybrid_retrieval.hybrid_service import (
     hybrid_retrieve,
 )
+from sqlalchemy.exc import SQLAlchemyError
 
 logger = logging.getLogger(__name__)
 

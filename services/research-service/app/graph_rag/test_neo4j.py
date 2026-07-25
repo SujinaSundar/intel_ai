@@ -2,9 +2,7 @@
 Test Neo4j connection.
 """
 
-from app.graph_rag.neo4j_service import (
-    get_driver
-)
+from app.graph_rag.neo4j_service import get_driver
 
 
 def main():

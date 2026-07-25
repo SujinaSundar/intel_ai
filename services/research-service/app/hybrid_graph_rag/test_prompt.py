@@ -1,7 +1,4 @@
-from app.hybrid_graph_rag.hybrid_graph_prompt import (
-    build_hybrid_graph_prompt
-)
-
+from app.hybrid_graph_rag.hybrid_graph_prompt import build_hybrid_graph_prompt
 
 prompt = build_hybrid_graph_prompt(
 

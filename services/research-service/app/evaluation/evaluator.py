@@ -2,38 +2,19 @@
 Evaluation engine.
 """
 
-from app.evaluation.benchmark_loader import (
-    load_benchmark
-)
-
+from app.evaluation.benchmark_loader import load_benchmark
+from app.evaluation.generation_metrics import answer_correctness, semantic_similarity
 from app.evaluation.retrieval_metrics import (
+    context_recall,
     hit_rate,
+    mean_reciprocal_rank,
     precision_at_k,
     recall_at_k,
-    mean_reciprocal_rank,
-    context_recall
 )
-
-from app.evaluation.generation_metrics import (
-    semantic_similarity,
-    answer_correctness
-)
-
-from app.rag.rag_pipeline import (
-    ask_question
-)
-
-from app.rag.hybrid_rag_pipeline import (
-    ask_hybrid_question
-)
-
-from app.graph_rag.graph_rag_pipeline import (
-    ask_graph_question
-)
-
-from app.hybrid_graph_rag.hybrid_graph_pipeline import (
-    ask_hybrid_graph_question
-)
+from app.graph_rag.graph_rag_pipeline import ask_graph_question
+from app.hybrid_graph_rag.hybrid_graph_pipeline import ask_hybrid_graph_question
+from app.rag.hybrid_rag_pipeline import ask_hybrid_question
+from app.rag.rag_pipeline import ask_question
 
 
 def evaluate_pipeline(

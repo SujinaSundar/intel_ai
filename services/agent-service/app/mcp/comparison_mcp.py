@@ -175,21 +175,21 @@ class ComparisonMCP:
         )
 
         research_one = self.research.answer_question(
-            (
+            
                 f"Provide a concise research summary of "
                 f"{company_one} in under 150 words covering "
                 f"business, financial performance, growth "
                 f"strategy and risks."
-            )
+            
         )
 
         research_two = self.research.answer_question(
-            (
+            
                 f"Provide a concise research summary of "
                 f"{company_two} in under 150 words covering "
                 f"business, financial performance, growth "
                 f"strategy and risks."
-            )
+            
         )
 
         return {

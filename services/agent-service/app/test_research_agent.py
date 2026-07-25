@@ -4,9 +4,7 @@ Test Research Agent.
 
 from pprint import pprint
 
-from app.agents.research_agent import (
-    ResearchAgent
-)
+from app.agents.research_agent import ResearchAgent
 
 
 def main():

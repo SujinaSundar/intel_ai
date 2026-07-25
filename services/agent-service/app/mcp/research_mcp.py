@@ -12,17 +12,16 @@ import logging
 from typing import Any
 
 import requests
+from app.database.config import settings
+from app.exceptions.custom_exceptions import (
+    InvalidRequestException,
+    LLMServiceException,
+)
 from requests.exceptions import (
     ConnectionError,
     HTTPError,
     RequestException,
     Timeout,
-)
-
-from app.database.config import settings
-from app.exceptions.custom_exceptions import (
-    InvalidRequestException,
-    LLMServiceException,
 )
 
 logger = logging.getLogger(__name__)

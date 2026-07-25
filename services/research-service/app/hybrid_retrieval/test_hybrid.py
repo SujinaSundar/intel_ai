@@ -2,9 +2,7 @@
 Test retrieval layer.
 """
 
-from app.retrieval.retrieval_service import (
-    retrieve_documents
-)
+from app.retrieval.retrieval_service import retrieve_documents
 
 
 def main() -> None:

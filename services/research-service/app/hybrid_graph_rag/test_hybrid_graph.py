@@ -2,9 +2,7 @@
 Test Hybrid GraphRAG.
 """
 
-from app.hybrid_graph_rag.hybrid_graph_pipeline import (
-    ask_hybrid_graph_question
-)
+from app.hybrid_graph_rag.hybrid_graph_pipeline import ask_hybrid_graph_question
 
 
 def main():

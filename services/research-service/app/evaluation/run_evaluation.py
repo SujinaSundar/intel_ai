@@ -2,17 +2,9 @@
 Run evaluation.
 """
 
-from app.evaluation.evaluator import (
-    evaluate_all
-)
-
-from app.evaluation.report_generator import (
-    print_report
-)
-
-from app.evaluation.visualization import (
-    plot_results
-)
+from app.evaluation.evaluator import evaluate_all
+from app.evaluation.report_generator import print_report
+from app.evaluation.visualization import plot_results
 
 
 def main() -> None:

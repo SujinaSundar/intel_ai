@@ -1,6 +1,5 @@
-from fastapi import FastAPI
-
 from app.routes.news import router as news_router
+from fastapi import FastAPI
 
 app = FastAPI(
     title="News Service",

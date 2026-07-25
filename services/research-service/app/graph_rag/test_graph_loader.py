@@ -2,9 +2,7 @@
 Test Graph Loader.
 """
 
-from app.graph_rag.graph_loader import (
-    load_company_chunks
-)
+from app.graph_rag.graph_loader import load_company_chunks
 
 
 def main():

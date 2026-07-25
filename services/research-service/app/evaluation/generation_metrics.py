@@ -2,9 +2,7 @@
 Generation evaluation metrics.
 """
 
-from app.evaluation.embedding_similarity import (
-    compute_similarity
-)
+from app.evaluation.embedding_similarity import compute_similarity
 
 
 def semantic_similarity(

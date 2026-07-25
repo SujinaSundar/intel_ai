@@ -2,9 +2,7 @@
 Test LangGraph Workflow.
 """
 
-from app.langgraph.workflow import (
-    WorkflowRunner
-)
+from app.langgraph.workflow import WorkflowRunner
 
 
 def main():

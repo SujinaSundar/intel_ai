@@ -1,7 +1,6 @@
 from app.database.connection import SessionLocal
 from app.database.models import Company
 
-
 companies = [
     {"company_name": "Reliance Industries", "ticker": "RELIANCE.NS", "sector": "Energy"},
     {"company_name": "TCS", "ticker": "TCS.NS", "sector": "IT"},

@@ -1,6 +1,4 @@
-from app.sentiment.finbert_model import (
-    finbert_pipeline
-)
+from app.sentiment.finbert_model import finbert_pipeline
 
 
 def predict_sentiment(

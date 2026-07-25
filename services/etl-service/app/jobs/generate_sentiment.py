@@ -16,8 +16,6 @@ sentiment_scores
 Update news_metadata.is_processed=True
 """
 
-from sqlalchemy import text
-
 from app.core.logger import logger
 from app.database.connection import SessionLocal
 from app.database.models import (
@@ -27,6 +25,7 @@ from app.database.models import (
 from app.sentiment.sentiment_service import (
     predict_sentiment,
 )
+from sqlalchemy import text
 
 
 def process_news_sentiment() -> None:

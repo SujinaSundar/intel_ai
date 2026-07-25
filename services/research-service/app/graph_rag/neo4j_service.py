@@ -6,19 +6,17 @@ for the Research Service.
 """
 
 import logging
-from typing import Optional
-
-from neo4j import Driver, GraphDatabase
-from neo4j.exceptions import Neo4jError
 
 from app.database.config import settings
 from app.exceptions.custom_exceptions import (
     DatabaseException,
 )
+from neo4j import Driver, GraphDatabase
+from neo4j.exceptions import Neo4jError
 
 logger = logging.getLogger(__name__)
 
-_driver: Optional[Driver] = None
+_driver: Driver | None = None
 
 
 def get_driver() -> Driver:

@@ -1,6 +1,4 @@
-from app.report_ingestion.report_loader import (
-    load_report
-)
+from app.report_ingestion.report_loader import load_report
 
 
 def main() -> None:

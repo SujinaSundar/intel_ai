@@ -2,9 +2,7 @@
 Test BM25 retrieval.
 """
 
-from app.hybrid_retrieval.bm25_service import (
-    bm25_retrieve
-)
+from app.hybrid_retrieval.bm25_service import bm25_retrieve
 
 
 def main():

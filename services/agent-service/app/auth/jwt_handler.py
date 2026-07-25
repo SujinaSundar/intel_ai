@@ -10,9 +10,8 @@ import logging
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-from jose import JWTError, jwt
-
 from app.database.config import settings
+from jose import JWTError, jwt
 
 logger = logging.getLogger(__name__)
 

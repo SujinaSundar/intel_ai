@@ -2,9 +2,7 @@
 Evaluate Traditional RAG.
 """
 
-from app.rag.rag_pipeline import (
-    ask_question
-)
+from app.rag.rag_pipeline import ask_question
 
 TEST_CASES = [
 

@@ -2,9 +2,7 @@
 Test Hybrid Graph Context.
 """
 
-from app.hybrid_graph_rag.hybrid_graph_context_builder import (
-    build_hybrid_graph_context
-)
+from app.hybrid_graph_rag.hybrid_graph_context_builder import build_hybrid_graph_context
 
 
 def main():

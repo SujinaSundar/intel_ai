@@ -1,7 +1,6 @@
-from sqlalchemy.orm import Session
-from sqlalchemy import func
-
 from app.database.models import Company
+from sqlalchemy import func
+from sqlalchemy.orm import Session
 
 
 class CompanyCRUD:

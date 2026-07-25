@@ -14,9 +14,6 @@ Top K Chunks
 
 import logging
 
-from rank_bm25 import BM25Okapi
-from sqlalchemy.exc import SQLAlchemyError
-
 from app.database.connection import SessionLocal
 from app.database.models import (
     Company,
@@ -27,6 +24,8 @@ from app.exceptions.custom_exceptions import (
     DatabaseException,
     InvalidRequestException,
 )
+from rank_bm25 import BM25Okapi
+from sqlalchemy.exc import SQLAlchemyError
 
 logger = logging.getLogger(__name__)
 

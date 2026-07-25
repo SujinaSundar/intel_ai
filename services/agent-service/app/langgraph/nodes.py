@@ -7,7 +7,6 @@ orchestration.
 """
 
 import logging
-from typing import Any
 
 from app.agents.supervisor_agent import SupervisorAgent
 from app.langgraph.state import AgentState

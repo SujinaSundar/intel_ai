@@ -38,5 +38,32 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "pytest>=9.1.1",
     "ruff>=0.16.0",
+]
+
+
+[tool.ruff]
+target-version = "py310"
+line-length = 88
+
+exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    ".pytest_cache",
+    ".ruff_cache",
+    "frontend",
+    "services/research-service/app/evaluation_old",
+     "services/research-service/test_neo.py",
+]
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.ruff.lint]
+ignore = [
+    "E501",
+    "B008",
+    "BLE001",
 ]

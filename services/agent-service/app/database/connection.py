@@ -11,10 +11,9 @@ import logging
 from collections.abc import Generator
 from urllib.parse import quote_plus
 
+from app.database.config import settings
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
-
-from app.database.config import settings
 
 logger = logging.getLogger(__name__)
 

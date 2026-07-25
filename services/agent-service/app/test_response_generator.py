@@ -4,9 +4,7 @@ Test Response Generator.
 
 from pprint import pprint
 
-from app.response.response_generator import (
-    ResponseGenerator
-)
+from app.response.response_generator import ResponseGenerator
 
 
 def main():

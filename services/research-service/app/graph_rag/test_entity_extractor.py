@@ -2,9 +2,7 @@
 Test entity extraction.
 """
 
-from app.graph_rag.entity_extractor import (
-    extract_entities
-)
+from app.graph_rag.entity_extractor import extract_entities
 
 
 def main():

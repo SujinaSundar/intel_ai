@@ -2,14 +2,8 @@
 Embedding similarity utilities.
 """
 
-from sentence_transformers import (
-    SentenceTransformer
-)
-
-from sentence_transformers.util import (
-    cos_sim
-)
-
+from sentence_transformers import SentenceTransformer
+from sentence_transformers.util import cos_sim
 
 embedding_model = SentenceTransformer(
     "all-MiniLM-L6-v2"

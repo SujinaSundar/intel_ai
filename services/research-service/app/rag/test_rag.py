@@ -2,9 +2,7 @@
 Test Traditional RAG.
 """
 
-from app.rag.rag_pipeline import (
-    ask_question
-)
+from app.rag.rag_pipeline import ask_question
 
 
 def main():

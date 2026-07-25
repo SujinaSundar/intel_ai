@@ -2,9 +2,7 @@
 Test Hybrid Context Builder.
 """
 
-from app.context_builder.hybrid_context_builder import (
-    build_hybrid_context
-)
+from app.context_builder.hybrid_context_builder import build_hybrid_context
 
 
 def main():

@@ -1,6 +1,4 @@
-from app.graph_rag.global_graph_context_builder import (
-    build_global_graph_context
-)
+from app.graph_rag.global_graph_context_builder import build_global_graph_context
 
 
 def main():

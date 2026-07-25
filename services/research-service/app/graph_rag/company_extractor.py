@@ -7,8 +7,6 @@ in a user question.
 
 import logging
 
-from sqlalchemy.exc import SQLAlchemyError
-
 from app.database.connection import (
     SessionLocal,
 )
@@ -19,6 +17,7 @@ from app.exceptions.custom_exceptions import (
     DatabaseException,
     InvalidRequestException,
 )
+from sqlalchemy.exc import SQLAlchemyError
 
 logger = logging.getLogger(__name__)
 

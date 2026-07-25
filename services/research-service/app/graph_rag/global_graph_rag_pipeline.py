@@ -2,17 +2,9 @@
 Global GraphRAG Pipeline.
 """
 
-from app.graph_rag.global_graph_context_builder import (
-    build_global_graph_context
-)
-
-from app.graph_rag.graph_prompt_template import (
-    build_graph_prompt
-)
-
-from app.llm.llm_service import (
-    generate_answer
-)
+from app.graph_rag.global_graph_context_builder import build_global_graph_context
+from app.graph_rag.graph_prompt_template import build_graph_prompt
+from app.llm.llm_service import generate_answer
 
 
 def ask_global_graph_question(

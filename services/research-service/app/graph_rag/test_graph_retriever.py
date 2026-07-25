@@ -2,9 +2,7 @@
 Test Graph Retriever.
 """
 
-from app.graph_rag.graph_retriever import (
-    retrieve_graph_context
-)
+from app.graph_rag.graph_retriever import retrieve_graph_context
 
 
 def main():
