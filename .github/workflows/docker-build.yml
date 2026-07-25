@@ -25,11 +25,15 @@ jobs:
           - services/research-service
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Set lowercase owner
+        run: |
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          echo "OWNER=$OWNER" >> $GITHUB_ENV
+          echo "Using owner: $OWNER"
 
       - name: Login to GHCR
         uses: docker/login-action@v3
@@ -38,13 +42,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build & Push
+      - name: Build image
         run: |
           IMAGE=$(basename "${{ matrix.service }}" | tr '[:upper:]' '[:lower:]')
 
           docker build \
             -f ${{ matrix.service }}/Dockerfile \
-            -t ghcr.io/${{ github.repository_owner }}/${IMAGE}:latest \
+            -t ghcr.io/$OWNER/$IMAGE:latest \
             .
 
-          docker push ghcr.io/${{ github.repository_owner }}/${IMAGE}:latest
+      - name: Push image
+        run: |
+          IMAGE=$(basename "${{ matrix.service }}" | tr '[:upper:]' '[:lower:]')
+
+          docker push ghcr.io/$OWNER/$IMAGE:latest
