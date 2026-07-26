@@ -194,7 +194,11 @@ export default function SectorSelector({
 
                         value={sector}
 
-                        onValueChange={setSector}
+                        onValueChange={(value) => {
+    if (value !== null) {
+        setSector(value);
+    }
+}}
 
                     >
 
