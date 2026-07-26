@@ -11,7 +11,11 @@ COPY pyproject.toml uv.lock ./
 
 RUN uv sync --frozen
 
+# Copy application
 COPY services/research-service/app ./app
+
+# Copy the pre-built Chroma database
+COPY services/research-service/chroma_db ./chroma_db
 
 EXPOSE 8001
 
