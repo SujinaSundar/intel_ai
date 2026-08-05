@@ -27,6 +27,7 @@ from app.exceptions.custom_exceptions import (
 from app.llm.llm_service import generate_answer
 from app.prompts.supervisor_prompt import get_supervisor_prompt
 from app.response.response_generator import ResponseGenerator
+from app.utils.company_resolver import resolve_company
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +64,7 @@ class SupervisorAgent:
     def route(
         self,
         question: str,
+        history: list[dict[str, str]] | None = None,
     ) -> dict[str, Any]:
         """
         Route a question using the LLM.
@@ -71,6 +73,9 @@ class SupervisorAgent:
         ----------
         question : str
             User question.
+
+        history : list[dict[str, str]] | None
+            Previous conversation history.
 
         Returns
         -------
@@ -97,7 +102,8 @@ class SupervisorAgent:
             )
 
         prompt = get_supervisor_prompt(
-            question
+            question=question,
+            history=history or [],
         )
 
         logger.info(
@@ -115,18 +121,66 @@ class SupervisorAgent:
                 prompt
             )
 
-            logger.debug(
-                "Raw LLM Response:\n%s",
+            logger.info(
+                "Supervisor raw response:\n%s",
                 response,
             )
 
             decision = json.loads(
                 response
             )
+            # -------------------------------------------------
+            # Recover missing company
+            # -------------------------------------------------
+
+            if (
+                decision.get("agent")
+                in (
+                    "Finance",
+                    "News",
+                    "Sector",
+                )
+                and not decision.get("company")
+            ):
+                logger.info(
+                    "Current question: %s",
+                    question,
+                )
+
+                logger.info(
+                    "Conversation history: %s",
+                    history,
+                )
+
+                company = resolve_company(
+                    question=question,
+                    history=history or [],
+                )
+
+                if company:
+
+                    logger.info(
+                        "Recovered company from context: %s",
+                        company,
+                    )
+
+                    decision["company"] = company
 
             logger.info(
-                "Routing successful | agent=%s",
+                "Supervisor parsed decision: %s",
+                decision,
+            )
+
+            logger.info(
+                (
+                    "Routing successful | "
+                    "agent=%s | "
+                    "company=%s | "
+                    "sector=%s"
+                ),
                 decision.get("agent"),
+                decision.get("company"),
+                decision.get("sector"),
             )
 
             return decision
@@ -135,6 +189,11 @@ class SupervisorAgent:
 
             logger.exception(
                 "Failed to parse LLM routing response."
+            )
+
+            logger.error(
+                "Invalid JSON returned by LLM:\n%s",
+                response,
             )
 
             raise LLMServiceException(
@@ -151,41 +210,6 @@ class SupervisorAgent:
                 "Unable to determine routing decision."
             ) from error
 
-    # -----------------------------------------------------
-    # Execute Request
-    # -----------------------------------------------------
-
-    def run(
-        self,
-        question: str,
-    ) -> str:
-        """
-        Execute a user request.
-
-        Parameters
-        ----------
-        question : str
-            User question.
-
-        Returns
-        -------
-        str
-            Final formatted response.
-        """
-
-        logger.info(
-            "Executing Supervisor workflow."
-        )
-
-        decision = self.route(
-            question
-        )
-
-        agent = decision.get(
-            "agent"
-        )
-
-        result = None
         # -------------------------------------------------
         # Finance
         # -------------------------------------------------

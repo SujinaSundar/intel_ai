@@ -53,6 +53,10 @@ def ask(
 
     answer = ask_question(
         question=request.question,
+        history=[
+            message.model_dump()
+            for message in request.history
+        ],
         user_id=current_user.id,
     )
 
@@ -76,7 +80,9 @@ def health_check():
     Agent Service health check.
     """
 
-    logger.info("Health check endpoint accessed.")
+    logger.info(
+        "Health check endpoint accessed."
+    )
 
     return {
         "service": "Agent Service",

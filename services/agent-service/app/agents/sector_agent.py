@@ -49,7 +49,8 @@ class SectorAgent:
     def answer(
         self,
         question: str,
-        sector: str,
+        sector: str | None = None,
+        company: str | None = None,
     ) -> dict[str, Any]:
         """
         Handle sector-related
@@ -60,8 +61,11 @@ class SectorAgent:
         question : str
             User question.
 
-        sector : str
+        sector : str | None
             Sector name.
+
+        company : str | None
+            Company name.
 
         Returns
         -------
@@ -71,7 +75,7 @@ class SectorAgent:
         Raises
         ------
         InvalidRequestException
-            If the question or sector is empty.
+            If the request is invalid.
         """
 
         if not question or not question.strip():
@@ -84,6 +88,21 @@ class SectorAgent:
                 "Question cannot be empty."
             )
 
+        # -------------------------------------------------
+        # Resolve company to sector
+        # -------------------------------------------------
+
+        if company:
+
+            logger.info(
+                "Resolving company '%s' to sector.",
+                company,
+            )
+
+            sector = self.mcp.get_company_sector(
+                company
+            )
+
         if not sector or not sector.strip():
 
             logger.warning(
@@ -91,7 +110,7 @@ class SectorAgent:
             )
 
             raise InvalidRequestException(
-                "Sector cannot be empty."
+                "Sector cannot be determined."
             )
 
         question = question.lower()
@@ -136,6 +155,103 @@ class SectorAgent:
             "performance",
         ]
 
+        # ---------------------------------------------
+        # Best Company Recommendation
+        # ---------------------------------------------
+
+        if any(
+            keyword in question
+            for keyword in recommendation_keywords
+        ):
+
+            logger.info(
+                "Routing to sector recommendation."
+            )
+
+            return {
+                "intent": "recommendation",
+                **self.mcp.get_sector_summary(
+                    sector
+                ),
+            }
+
+        # ---------------------------------------------
+        # Company Listing
+        # ---------------------------------------------
+
+        if any(
+            keyword in question
+            for keyword in company_keywords
+        ):
+
+            logger.info(
+                "Routing to sector companies."
+            )
+
+            return {
+                "intent": "companies",
+                "sector": sector,
+                "companies": self.companies(
+                    sector
+                ),
+            }
+
+        # ---------------------------------------------
+        # Sector News
+        # ---------------------------------------------
+
+        if any(
+            keyword in question
+            for keyword in news_keywords
+        ):
+
+            logger.info(
+                "Routing to sector news."
+            )
+
+            return {
+                "intent": "news",
+                "sector": sector,
+                "news": self.mcp.get_sector_news(
+                    sector
+                ),
+            }
+
+        # ---------------------------------------------
+        # Sector Finance
+        # ---------------------------------------------
+
+        if any(
+            keyword in question
+            for keyword in finance_keywords
+        ):
+
+            logger.info(
+                "Routing to sector finance."
+            )
+
+            return {
+                "intent": "finance",
+                "sector": sector,
+                "finance": self.mcp.get_sector_finance(
+                    sector
+                ),
+            }
+
+        # ---------------------------------------------
+        # Default Sector Summary
+        # ---------------------------------------------
+
+        logger.info(
+            "Returning sector summary."
+        )
+
+        return {
+            "intent": "summary",
+            **self.summarize(
+                sector
+            ),
+        }
         # ---------------------------------------------
         # Best Company Recommendation
         # ---------------------------------------------

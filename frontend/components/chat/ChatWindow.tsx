@@ -106,6 +106,25 @@ export default function ChatWindow() {
 
         };
 
+        // Build conversation history before updating state
+        const history = [
+
+            ...messages,
+
+            userMessage,
+
+        ].map(
+
+            message => ({
+
+                role: message.role,
+
+                content: message.content,
+
+            })
+
+        );
+
         setMessages(
 
             previous => [
@@ -124,7 +143,9 @@ export default function ChatWindow() {
 
             const answer = await askQuestion(
 
-                question
+                question,
+
+                history,
 
             );
 

@@ -116,10 +116,9 @@ export default function SectorSelector({
         try {
 
             const response = await askQuestion(
-
-                `Analyze the ${sector} sector.`
-
-            );
+    `Analyze the ${sector} sector.`,
+    []
+);
 
             setResult(response);
 
@@ -194,7 +193,9 @@ export default function SectorSelector({
 
                         value={sector}
 
-                        onValueChange={setSector}
+                        onValueChange={(value, _details) => {
+    setSector(value ?? "");
+}}
 
                     >
 
