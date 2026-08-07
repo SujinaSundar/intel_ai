@@ -8,7 +8,6 @@ provides access to the financial reports collection.
 import logging
 
 import chromadb
-from app.database.config import settings
 from app.exceptions.custom_exceptions import (
     DatabaseException,
 )

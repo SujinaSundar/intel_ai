@@ -7,10 +7,9 @@ for company information.
 
 import logging
 
-from sqlalchemy.orm import Session
-
 from app.database.connection import SessionLocal
 from app.database.models import Company
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

@@ -6,7 +6,7 @@ user requests.
 """
 
 import logging
-from typing import Any
+from typing import Any, ClassVar
 
 from app.exceptions.custom_exceptions import (
     InvalidRequestException,
@@ -23,6 +23,16 @@ class FinanceAgent:
     Handles finance-related
     queries for companies.
     """
+
+    # ---------------------------------------------------------
+    # Intent aliases
+    # ---------------------------------------------------------
+
+    INTENT_ALIASES: ClassVar[dict[str, str]] = {
+        "latest_summary": "stock_summary",
+        "summary": "stock_summary",
+        "stock_overview": "stock_summary",
+    }
 
     def __init__(self) -> None:
         """
@@ -50,28 +60,6 @@ class FinanceAgent:
         """
         Route a finance request
         based on the detected intent.
-
-        Parameters
-        ----------
-        company_name : str
-            Company name.
-
-        intent : str
-            Finance intent.
-
-        trade_date : str | None
-            Trading date.
-
-        limit : int | None
-            Number of records.
-
-        question : str
-            Original user question.
-
-        Returns
-        -------
-        dict[str, Any]
-            Finance response.
         """
 
         logger.info(
@@ -90,13 +78,31 @@ class FinanceAgent:
                 "Company name cannot be empty."
             )
 
+        # -----------------------------------------------------
+        # Normalize LLM intent
+        # -----------------------------------------------------
+
+        intent = self.INTENT_ALIASES.get(
+            intent,
+            intent,
+        )
+
+        logger.info(
+            "Normalized finance intent=%s",
+            intent,
+        )
+
+        # -----------------------------------------------------
+        # Route
+        # -----------------------------------------------------
+
         if intent == "latest_price":
 
             return self.latest_price(
                 company_name
             )
 
-        elif intent == "price_by_date":
+        if intent == "price_by_date":
 
             if trade_date is None:
 
@@ -109,20 +115,20 @@ class FinanceAgent:
                 trade_date,
             )
 
-        elif intent == "price_history":
+        if intent == "price_history":
 
             return self.price_history(
                 company_name,
                 limit or 5,
             )
 
-        elif intent == "latest_volume":
+        if intent == "latest_volume":
 
             return self.latest_volume(
                 company_name,
             )
 
-        elif intent == "stock_summary":
+        if intent == "stock_summary":
 
             return self.stock_summary(
                 company_name,
@@ -210,7 +216,7 @@ class FinanceAgent:
         )
 
         return self.finance.get_latest_volume(
-            company_name
+            company_name,
         )
 
     def price_history(

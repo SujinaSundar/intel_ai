@@ -250,13 +250,13 @@ class SectorMCP:
             try:
 
                 result = self.research.answer_question(
-                    (
+                    
                         f"Provide a concise research summary "
                         f"of {company} in under 150 words "
                         f"covering business, financial "
                         f"performance, growth strategy "
                         f"and risks."
-                    )
+                    
                 )
 
                 research.append(

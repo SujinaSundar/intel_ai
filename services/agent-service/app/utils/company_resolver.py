@@ -6,7 +6,6 @@ from the current question
 or conversation history.
 """
 
-import re
 
 COMPANIES = [
     "Infosys",

@@ -22,12 +22,8 @@ Author: Sujina
 from __future__ import annotations
 
 import logging
-from typing import Dict
 
-from neo4j import GraphDatabase
-from neo4j import Driver
-from neo4j import Session
-
+from neo4j import Driver, GraphDatabase
 
 # ============================================================
 # Configuration
@@ -84,7 +80,7 @@ class Neo4jMigrator:
         )
 
         # old node id -> new node id
-        self.node_mapping: Dict[int, int] = {}
+        self.node_mapping: dict[int, int] = {}
 
     # =========================================================
 
@@ -479,10 +475,10 @@ def main():
         logger.info("")
         migrator.print_relationship_summary()
 
-    except Exception as e:
+    except Exception:
 
         logger.exception("Migration failed.")
-        raise e
+        raise 
 
     finally:
 
