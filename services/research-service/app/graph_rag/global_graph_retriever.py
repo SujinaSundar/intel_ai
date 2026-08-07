@@ -2,9 +2,7 @@
 Global Graph Retriever.
 """
 
-from app.graph_rag.neo4j_service import (
-    get_driver
-)
+from app.graph_rag.neo4j_service import get_driver
 
 
 def retrieve_global_graph_context(

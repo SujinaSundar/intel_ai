@@ -14,8 +14,6 @@ Mark as Embedded
 
 import logging
 
-from sqlalchemy.exc import SQLAlchemyError
-
 from app.database.connection import SessionLocal
 from app.database.models import (
     Company,
@@ -32,6 +30,7 @@ from app.exceptions.custom_exceptions import (
 from app.vector_store.chroma_service import (
     collection,
 )
+from sqlalchemy.exc import SQLAlchemyError
 
 logger = logging.getLogger(__name__)
 

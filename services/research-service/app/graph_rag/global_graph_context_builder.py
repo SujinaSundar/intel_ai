@@ -2,9 +2,7 @@
 Global Graph Context Builder.
 """
 
-from app.graph_rag.global_graph_retriever import (
-    retrieve_global_graph_context
-)
+from app.graph_rag.global_graph_retriever import retrieve_global_graph_context
 
 
 def build_global_graph_context():

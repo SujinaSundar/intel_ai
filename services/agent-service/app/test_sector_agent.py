@@ -4,9 +4,7 @@ Test Sector Agent.
 
 from pprint import pprint
 
-from app.agents.sector_agent import (
-    SectorAgent
-)
+from app.agents.sector_agent import SectorAgent
 
 
 def main():

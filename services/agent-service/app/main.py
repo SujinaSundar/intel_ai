@@ -5,9 +5,6 @@ Main entry point for the Agent Service.
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-
 from app.auth.auth_router import router as auth_router
 from app.core.logger import setup_logging
 from app.core.request_logger import log_requests
@@ -15,6 +12,8 @@ from app.exceptions.exception_handlers import (
     register_exception_handlers,
 )
 from app.router.agent import router as agent_router
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 # -----------------------------------------------------
 # Configure Logging
@@ -74,12 +73,14 @@ register_exception_handlers(app)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Restrict in production
+    allow_origins=[
+        "https://intel-ai-jmfh.vercel.app",
+        "http://localhost:3000",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 app.middleware("http")(log_requests)
 
 # -----------------------------------------------------

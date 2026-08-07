@@ -2,7 +2,6 @@ from pprint import pprint
 
 from app.mcp.finance_mcp import FinanceMCP
 
-
 finance = FinanceMCP()
 
 print("\nLatest Price")

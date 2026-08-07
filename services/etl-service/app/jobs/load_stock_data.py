@@ -14,11 +14,9 @@ ETL Steps:
 5. Load the data into PostgreSQL.
 """
 
-from app.core.logger import logger
-
 import pandas as pd
 import yfinance as yf
-
+from app.core.logger import logger
 from app.database.connection import SessionLocal
 from app.database.models import Company, StockPrice
 

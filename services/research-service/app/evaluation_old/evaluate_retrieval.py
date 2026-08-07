@@ -2,13 +2,8 @@
 Manual retrieval evaluation.
 """
 
-from app.evaluation.questions import (
-    questions
-)
-
-from app.retrieval.retrieval_service import (
-    retrieve_documents
-)
+from app.evaluation.questions import questions
+from app.retrieval.retrieval_service import retrieve_documents
 
 
 def evaluate() -> None:

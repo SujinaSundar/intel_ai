@@ -3,7 +3,6 @@ Common retrieval result.
 """
 
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass
@@ -20,9 +19,9 @@ class RetrievalResult:
 
     graph_context: list[str]
 
-    sentiment: Optional[dict]
+    sentiment: dict | None
 
-    stock: Optional[dict]
+    stock: dict | None
 
     retrieval_time: float
 

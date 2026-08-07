@@ -2,10 +2,7 @@
 Retrieval evaluation metrics.
 """
 
-from app.evaluation.embedding_similarity import (
-    compute_similarity
-)
-
+from app.evaluation.embedding_similarity import compute_similarity
 
 SIMILARITY_THRESHOLD = 0.70
 

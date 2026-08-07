@@ -7,14 +7,13 @@ Hybrid GraphRAG retrieval.
 
 import logging
 
-from fastapi import APIRouter
-
 from app.hybrid_graph_rag.hybrid_graph_pipeline import (
     ask_hybrid_graph_question,
 )
 from app.schemas.research import (
     ResearchRequest,
 )
+from fastapi import APIRouter
 
 logger = logging.getLogger(__name__)
 

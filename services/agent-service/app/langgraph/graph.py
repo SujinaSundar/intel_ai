@@ -8,14 +8,13 @@ workflow using LangGraph.
 import logging
 from typing import Any
 
-from langgraph.graph import END, StateGraph
-
 from app.exceptions.custom_exceptions import (
     InvalidRequestException,
     LLMServiceException,
 )
 from app.langgraph.nodes import WorkflowNodes
 from app.langgraph.state import AgentState
+from langgraph.graph import END, StateGraph
 
 logger = logging.getLogger(__name__)
 
@@ -124,10 +123,6 @@ class AgentWorkflow:
             "Building LangGraph workflow."
         )
 
-        # -------------------------
-        # Nodes
-        # -------------------------
-
         self.builder.add_node(
             "router",
             self.nodes.router_node,
@@ -163,17 +158,9 @@ class AgentWorkflow:
             self.nodes.response_node,
         )
 
-        # -------------------------
-        # Entry Point
-        # -------------------------
-
         self.builder.set_entry_point(
             "router"
         )
-
-        # -------------------------
-        # Conditional Routing
-        # -------------------------
 
         self.builder.add_conditional_edges(
             "router",
@@ -187,10 +174,6 @@ class AgentWorkflow:
                 END: END,
             },
         )
-
-        # -------------------------
-        # Response Edges
-        # -------------------------
 
         self.builder.add_edge(
             "finance",
@@ -235,6 +218,7 @@ class AgentWorkflow:
     def run(
         self,
         question: str,
+        history: list[dict[str, str]] | None = None,
     ) -> str:
         """
         Execute the LangGraph
@@ -243,6 +227,10 @@ class AgentWorkflow:
         Parameters
         ----------
         question : str
+
+        history : list[dict[str, str]] | None
+            Previous conversation
+            history.
 
         Returns
         -------
@@ -266,6 +254,7 @@ class AgentWorkflow:
 
         state: dict[str, Any] = {
             "question": question,
+            "history": history or [],
             "route": None,
             "agent_response": None,
             "final_response": None,

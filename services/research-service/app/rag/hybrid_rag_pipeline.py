@@ -4,17 +4,9 @@ Hybrid RAG pipeline.
 
 import time
 
-from app.context_builder.hybrid_context_builder import (
-    build_hybrid_context
-)
-
-from app.prompts.hybrid_prompt_template import (
-    build_hybrid_prompt
-)
-
-from app.llm.llm_service import (
-    generate_answer
-)
+from app.context_builder.hybrid_context_builder import build_hybrid_context
+from app.llm.llm_service import generate_answer
+from app.prompts.hybrid_prompt_template import build_hybrid_prompt
 
 
 def ask_hybrid_question(

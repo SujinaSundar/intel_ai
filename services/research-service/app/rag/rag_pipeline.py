@@ -4,17 +4,9 @@ RAG pipeline.
 
 import time
 
-from app.context_builder.context_builder import (
-    build_context
-)
-
-from app.prompts.prompt_template import (
-    build_prompt
-)
-
-from app.llm.llm_service import (
-    generate_answer
-)
+from app.context_builder.context_builder import build_context
+from app.llm.llm_service import generate_answer
+from app.prompts.prompt_template import build_prompt
 
 
 def ask_question(

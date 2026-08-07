@@ -2,32 +2,28 @@ name: Backend CI
 
 on:
   push:
-    branches:
-      - main
-      - develop
   pull_request:
-    branches:
-      - main
-      - develop
 
 jobs:
-  backend-ci:
+  backend:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.11"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v5
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: uv sync
 
-      - name: Verify Installation
-        run: uv run python --version
+      - name: Run Ruff
+        run: uv run ruff check services
+
+      - name: Run Pytest
+        run: uv run pytest 

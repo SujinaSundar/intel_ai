@@ -5,7 +5,6 @@ PDF text extraction utility.
 import re
 
 import fitz
-
 from app.exceptions.custom_exceptions import (
     ExternalAPIException,
     InvalidRequestException,

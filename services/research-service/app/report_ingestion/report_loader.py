@@ -18,8 +18,6 @@ Save Chunks
 
 import logging
 
-from sqlalchemy.exc import SQLAlchemyError
-
 from app.database.connection import SessionLocal
 from app.database.models import (
     DocumentChunk,
@@ -36,6 +34,7 @@ from app.report_ingestion.chunker import (
 from app.report_ingestion.pdf_parser import (
     extract_pdf_text,
 )
+from sqlalchemy.exc import SQLAlchemyError
 
 logger = logging.getLogger(__name__)
 

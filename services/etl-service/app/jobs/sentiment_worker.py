@@ -22,7 +22,6 @@ import time
 from app.core.logger import logger
 from app.jobs.generate_sentiment import process_news_sentiment
 
-
 POLL_INTERVAL = 60  # seconds
 
 

@@ -27,6 +27,7 @@ from app.exceptions.custom_exceptions import (
 from app.llm.llm_service import generate_answer
 from app.prompts.supervisor_prompt import get_supervisor_prompt
 from app.response.response_generator import ResponseGenerator
+from app.utils.company_resolver import resolve_company
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +64,7 @@ class SupervisorAgent:
     def route(
         self,
         question: str,
+        history: list[dict[str, str]] | None = None,
     ) -> dict[str, Any]:
         """
         Route a question using the LLM.
@@ -71,6 +73,9 @@ class SupervisorAgent:
         ----------
         question : str
             User question.
+
+        history : list[dict[str, str]] | None
+            Previous conversation history.
 
         Returns
         -------
@@ -97,7 +102,8 @@ class SupervisorAgent:
             )
 
         prompt = get_supervisor_prompt(
-            question
+            question=question,
+            history=history or [],
         )
 
         logger.info(
@@ -115,18 +121,66 @@ class SupervisorAgent:
                 prompt
             )
 
-            logger.debug(
-                "Raw LLM Response:\n%s",
+            logger.info(
+                "Supervisor raw response:\n%s",
                 response,
             )
 
             decision = json.loads(
                 response
             )
+            # -------------------------------------------------
+            # Recover missing company
+            # -------------------------------------------------
+
+            if (
+                decision.get("agent")
+                in (
+                    "Finance",
+                    "News",
+                    "Sector",
+                )
+                and not decision.get("company")
+            ):
+                logger.info(
+                    "Current question: %s",
+                    question,
+                )
+
+                logger.info(
+                    "Conversation history: %s",
+                    history,
+                )
+
+                company = resolve_company(
+                    question=question,
+                    history=history or [],
+                )
+
+                if company:
+
+                    logger.info(
+                        "Recovered company from context: %s",
+                        company,
+                    )
+
+                    decision["company"] = company
 
             logger.info(
-                "Routing successful | agent=%s",
+                "Supervisor parsed decision: %s",
+                decision,
+            )
+
+            logger.info(
+                (
+                    "Routing successful | "
+                    "agent=%s | "
+                    "company=%s | "
+                    "sector=%s"
+                ),
                 decision.get("agent"),
+                decision.get("company"),
+                decision.get("sector"),
             )
 
             return decision
@@ -135,6 +189,11 @@ class SupervisorAgent:
 
             logger.exception(
                 "Failed to parse LLM routing response."
+            )
+
+            logger.error(
+                "Invalid JSON returned by LLM:\n%s",
+                response,
             )
 
             raise LLMServiceException(
@@ -150,138 +209,6 @@ class SupervisorAgent:
             raise LLMServiceException(
                 "Unable to determine routing decision."
             ) from error
-
-    # -----------------------------------------------------
-    # Execute Request
-    # -----------------------------------------------------
-
-    def run(
-        self,
-        question: str,
-    ) -> str:
-        """
-        Execute a user request.
-
-        Parameters
-        ----------
-        question : str
-            User question.
-
-        Returns
-        -------
-        str
-            Final formatted response.
-        """
-
-        logger.info(
-            "Executing Supervisor workflow."
-        )
-
-        decision = self.route(
-            question
-        )
-
-        agent = decision.get(
-            "agent"
-        )
-
-        result = None
-        # -------------------------------------------------
-        # Finance
-        # -------------------------------------------------
-
-        if agent == "Finance":
-
-            logger.info(
-                "Routing to Finance Agent."
-            )
-
-            result = self.finance.answer(
-                decision["company"]
-            )
-
-        # -------------------------------------------------
-        # News
-        # -------------------------------------------------
-
-        elif agent == "News":
-
-            logger.info(
-                "Routing to News Agent."
-            )
-
-            result = self.news.answer(
-                decision["company"]
-            )
-
-        # -------------------------------------------------
-        # Research
-        # -------------------------------------------------
-
-        elif agent == "Research":
-
-            logger.info(
-                "Routing to Research Agent."
-            )
-
-            result = self.research.answer(
-                decision["question"]
-            )
-
-        # -------------------------------------------------
-        # Comparison
-        # -------------------------------------------------
-
-        elif agent == "Comparison":
-
-            logger.info(
-                "Routing to Comparison Agent."
-            )
-
-            result = self.comparison.answer(
-                decision["company_one"],
-                decision["company_two"],
-            )
-
-        # -------------------------------------------------
-        # Sector
-        # -------------------------------------------------
-
-        elif agent == "Sector":
-
-            logger.info(
-                "Routing to Sector Agent."
-            )
-
-            result = self.sector.answer(
-                decision["sector"]
-            )
-
-        else:
-
-            logger.error(
-                "Unknown agent received from LLM | agent=%s",
-                agent,
-            )
-
-            raise LLMServiceException(
-                f"Unknown agent '{agent}' selected."
-            )
-
-        logger.info(
-            "Generating final response."
-        )
-
-        final_response = self.generator.generate(
-            question,
-            result,
-        )
-
-        logger.info(
-            "Supervisor workflow completed successfully."
-        )
-
-        return final_response
 
     # -----------------------------------------------------
     # Health Check

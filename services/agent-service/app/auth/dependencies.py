@@ -8,6 +8,9 @@ authentication.
 
 import logging
 
+from app.database.config import settings
+from app.database.connection import get_db
+from app.database.models import User
 from fastapi import (
     Depends,
     HTTPException,
@@ -19,10 +22,6 @@ from jose import (
     jwt,
 )
 from sqlalchemy.orm import Session
-
-from app.database.config import settings
-from app.database.connection import get_db
-from app.database.models import User
 
 logger = logging.getLogger(__name__)
 

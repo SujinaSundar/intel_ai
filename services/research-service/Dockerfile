@@ -11,8 +11,12 @@ COPY pyproject.toml uv.lock ./
 
 RUN uv sync --frozen
 
+# Copy application
 COPY services/research-service/app ./app
+
+# Copy the pre-built Chroma database
+COPY services/research-service/chroma_db ./chroma_db
 
 EXPOSE 8001
 
-CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["sh", "-c", "uv run uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8001}"]

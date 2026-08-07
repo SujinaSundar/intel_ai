@@ -1,71 +1,17 @@
+# -----------------------------
 # Python
+# -----------------------------
 __pycache__/
+**/__pycache__/
 *.py[cod]
 *.pyo
 *.pyd
-
-# Virtual environments
-.venv/
-venv/
-env/
-
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-
-# IDE
-.vscode/
-.idea/
-
-# Git
-.git/
-.gitignore
-
-# Environment
-.env
-.env.*
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Logs
-*.log
-
-# Documentation
-*.docx
-
-# Docker
-Dockerfile.airflow
-
-# Node (future frontend)
-node_modules/
-
-# Build artifacts
-dist/
-build/
-
-# ChromaDB
-services/research-service/chroma_db/
-*.sqlite3
-*.db
-
-# Evaluation outputs
-services/research-service/evaluation_results.csv
-services/research-service/evaluation_summary.csv
-
-# Temporary Office files
-~$*.docx
-
-# Tree output
-tree.txt
-# Python
-**/__pycache__/
-**/*.py[cod]
 **/.pytest_cache/
+.pytest_cache/
 
-# Virtual environments
+# -----------------------------
+# Virtual Environments
+# -----------------------------
 .venv/
 **/.venv/
 venv/
@@ -73,30 +19,79 @@ venv/
 env/
 **/env/
 
-# Frontend
-frontend/.next/
-frontend/node_modules/
-
-# Chroma
-services/research-service/chroma_db/
-
-# Reports (optional if not needed in image)
-services/research-service/app/database/reports/
-
-# Git
-.git/
-
-# IDE
-.vscode/
-.idea/
-
-# Logs
-**/*.log
-
-# Environment
+# -----------------------------
+# Environment Files
+# -----------------------------
 .env
 .env.*
 
-# Build
+# -----------------------------
+# Git
+# -----------------------------
+.git/
+.gitignore
+
+# -----------------------------
+# IDE
+# -----------------------------
+.vscode/
+.idea/
+
+# -----------------------------
+# OS Files
+# -----------------------------
+.DS_Store
+Thumbs.db
+
+# -----------------------------
+# Logs
+# -----------------------------
+*.log
+**/*.log
+
+# -----------------------------
+# Testing
+# -----------------------------
+.coverage
+htmlcov/
+
+# -----------------------------
+# Build Artifacts
+# -----------------------------
 dist/
 build/
+
+# -----------------------------
+# Node / Frontend
+# -----------------------------
+node_modules/
+frontend/node_modules/
+frontend/.next/
+
+# -----------------------------
+# Documentation
+# -----------------------------
+*.docx
+~$*.docx
+tree.txt
+
+# -----------------------------
+# Docker
+# -----------------------------
+Dockerfile.airflow
+
+# -----------------------------
+# Reports (optional)
+# -----------------------------
+services/research-service/app/database/reports/
+services/research-service/evaluation_results.csv
+services/research-service/evaluation_summary.csv
+
+# ---------------------------------------------------------
+# IMPORTANT:
+# Do NOT ignore ChromaDB.
+# It is required inside the Research Service image.
+# ---------------------------------------------------------
+# services/research-service/chroma_db/
+# *.sqlite3
+# *.db

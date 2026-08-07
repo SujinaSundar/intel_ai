@@ -11,17 +11,23 @@ interface AskResponse {
   answer: string;
 }
 
+interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
 export async function askQuestion(
-  question: string
+  question: string,
+  history: ChatMessage[]
 ): Promise<string> {
 
   const response = await apiClient(
     "/ask",
     {
       method: "POST",
-
       body: JSON.stringify({
         question,
+        history,
       }),
     }
   );

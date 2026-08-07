@@ -2,7 +2,6 @@
 Database models for the Financial Research Agent.
 """
 
-from sqlalchemy import DateTime, String
 from datetime import datetime
 
 from sqlalchemy import (
@@ -16,7 +15,7 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
-    UniqueConstraint
+    UniqueConstraint,
 )
 from sqlalchemy.orm import DeclarativeBase
 
@@ -25,7 +24,6 @@ class Base(DeclarativeBase):
     """
     Base class for all SQLAlchemy models.
     """
-    pass
 
 
 class Company(Base):

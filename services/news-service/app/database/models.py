@@ -16,11 +16,11 @@ from sqlalchemy import (
     Boolean,
     Column,
     DateTime,
+    Float,
     ForeignKey,
     Integer,
     String,
     Text,
-    Float,
     UniqueConstraint,
 )
 from sqlalchemy.orm import DeclarativeBase
@@ -30,7 +30,6 @@ class Base(DeclarativeBase):
     """
     Base class for all SQLAlchemy ORM models.
     """
-    pass
 
 class Company(Base):
 

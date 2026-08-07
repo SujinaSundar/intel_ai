@@ -1,0 +1,58 @@
+name: Docker Build & Push
+
+on:
+  push:
+    branches:
+      - main
+      - sprint-15-monitoring-deployment
+
+jobs:
+  docker-build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - frontend
+          - services/agent-service
+          - services/etl-service
+          - services/news-service
+          - services/research-service
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Set lowercase owner
+        run: |
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          echo "OWNER=$OWNER" >> $GITHUB_ENV
+          echo "Using owner: $OWNER"
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build image
+        run: |
+          IMAGE=$(basename "${{ matrix.service }}" | tr '[:upper:]' '[:lower:]')
+
+          docker build \
+            -f ${{ matrix.service }}/Dockerfile \
+            -t ghcr.io/$OWNER/$IMAGE:latest \
+            .
+
+      - name: Push image
+        run: |
+          IMAGE=$(basename "${{ matrix.service }}" | tr '[:upper:]' '[:lower:]')
+
+          docker push ghcr.io/$OWNER/$IMAGE:latest

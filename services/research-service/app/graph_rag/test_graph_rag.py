@@ -2,9 +2,7 @@
 Test GraphRAG.
 """
 
-from app.graph_rag.graph_rag_pipeline import (
-    ask_graph_question
-)
+from app.graph_rag.graph_rag_pipeline import ask_graph_question
 
 
 def main() -> None:

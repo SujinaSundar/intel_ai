@@ -14,8 +14,6 @@ Graph Context
 
 import logging
 
-from neo4j.exceptions import Neo4jError
-
 from app.exceptions.custom_exceptions import (
     DatabaseException,
     InvalidRequestException,
@@ -23,6 +21,7 @@ from app.exceptions.custom_exceptions import (
 from app.graph_rag.neo4j_service import (
     get_driver,
 )
+from neo4j.exceptions import Neo4jError
 
 logger = logging.getLogger(__name__)
 

@@ -4,9 +4,8 @@ CRUD operations for StockPrice.
 
 from datetime import date
 
-from sqlalchemy.orm import Session
-
 from app.database.models import StockPrice
+from sqlalchemy.orm import Session
 
 
 class StockPriceCRUD:

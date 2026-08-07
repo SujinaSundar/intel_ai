@@ -2,9 +2,7 @@
 Test Graph Context Builder.
 """
 
-from app.graph_rag.graph_context_builder import (
-    build_context
-)
+from app.graph_rag.graph_context_builder import build_context
 
 
 def main():

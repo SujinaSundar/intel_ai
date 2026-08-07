@@ -4,14 +4,6 @@ Authentication API routes.
 
 import logging
 
-from fastapi import (
-    APIRouter,
-    Depends,
-    status,
-)
-from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
-
 from app.auth.auth_service import AuthService
 from app.auth.dependencies import get_current_user
 from app.database.connection import get_db
@@ -22,6 +14,13 @@ from app.schemas.auth import (
     UserRegisterRequest,
     UserResponse,
 )
+from fastapi import (
+    APIRouter,
+    Depends,
+    status,
+)
+from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

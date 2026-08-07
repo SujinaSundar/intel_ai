@@ -3,29 +3,18 @@ Evaluation engine.
 """
 
 import json
-
 from pathlib import Path
 
-from app.rag.rag_pipeline import (
-    ask_question
-)
-
-from app.rag.hybrid_rag_pipeline import (
-    ask_hybrid_question
-)
-
+from app.evaluation.generation_metrics import answer_correctness, semantic_similarity
 from app.evaluation.retrieval_metrics import (
+    context_recall,
     hit_rate,
+    mean_reciprocal_rank,
     precision_at_k,
     recall_at_k,
-    mean_reciprocal_rank,
-    context_recall
 )
-
-from app.evaluation.generation_metrics import (
-    semantic_similarity,
-    answer_correctness
-)
+from app.rag.hybrid_rag_pipeline import ask_hybrid_question
+from app.rag.rag_pipeline import ask_question
 
 
 def load_benchmark() -> list[dict]:

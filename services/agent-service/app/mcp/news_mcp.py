@@ -8,10 +8,6 @@ for the Trading Research Agent.
 import logging
 from typing import Any
 
-from sqlalchemy import func
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import Session
-
 from app.database.connection import SessionLocal
 from app.database.models import (
     Company,
@@ -23,6 +19,9 @@ from app.exceptions.custom_exceptions import (
     DatabaseException,
     InvalidRequestException,
 )
+from sqlalchemy import func
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +42,6 @@ class NewsMCP:
         A new SQLAlchemy session is
         created for every request.
         """
-        pass
 
     # -----------------------------------------------------
     # Private Helper

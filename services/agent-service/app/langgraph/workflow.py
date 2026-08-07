@@ -41,6 +41,7 @@ class WorkflowRunner:
     def run(
         self,
         question: str,
+        history: list[dict[str, str]] | None = None,
     ) -> str:
         """
         Execute the LangGraph
@@ -50,6 +51,10 @@ class WorkflowRunner:
         ----------
         question : str
             User question.
+
+        history : list[dict[str, str]] | None
+            Previous conversation
+            history.
 
         Returns
         -------
@@ -78,7 +83,8 @@ class WorkflowRunner:
         )
 
         response = self.workflow.run(
-            question
+            question=question,
+            history=history,
         )
 
         logger.info(

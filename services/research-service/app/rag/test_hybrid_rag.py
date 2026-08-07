@@ -2,9 +2,7 @@
 Test Hybrid RAG.
 """
 
-from app.rag.hybrid_rag_pipeline import (
-    ask_hybrid_question
-)
+from app.rag.hybrid_rag_pipeline import ask_hybrid_question
 
 
 def main():

@@ -7,9 +7,7 @@ and builds the Neo4j graph.
 """
 
 import logging
-from datetime import datetime
-
-from sqlalchemy.exc import SQLAlchemyError
+from datetime import datetime, timezone
 
 from app.database.connection import SessionLocal
 from app.database.models import (
@@ -28,6 +26,7 @@ from app.graph_rag.graph_builder import (
 from app.graph_rag.relation_extractor import (
     extract_relations,
 )
+from sqlalchemy.exc import SQLAlchemyError
 
 logger = logging.getLogger(__name__)
 
@@ -484,7 +483,7 @@ def build_graph_for_all_companies(
 
                     report.graph_status = "COMPLETED"
                     report.graph_processed_at = (
-                        datetime.utcnow()
+                        datetime.now(timezone.utc)
                     )
 
                     db.commit()

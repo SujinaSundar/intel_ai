@@ -1,8 +1,8 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from urllib.parse import quote_plus
 
 from app.database.config import settings
-from urllib.parse import quote_plus
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 password = quote_plus(settings.POSTGRES_PASSWORD)
 

@@ -1,23 +1,58 @@
+"""
+Database connection.
+
+Creates the SQLAlchemy engine
+and session factory.
+"""
+
+import logging
+from urllib.parse import quote_plus
+
+from app.database.config import settings
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from app.database.config import settings
-from urllib.parse import quote_plus
+logger = logging.getLogger(__name__)
 
-password = quote_plus(settings.POSTGRES_PASSWORD)
+# -----------------------------------------------------
+# Database URL
+# -----------------------------------------------------
+
+password = quote_plus(
+    settings.POSTGRES_PASSWORD
+)
 
 DATABASE_URL = (
-    f"postgresql://{settings.POSTGRES_USER}:{password}"
-    f"@{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}"
+    f"postgresql://"
+    f"{settings.POSTGRES_USER}:"
+    f"{password}@"
+    f"{settings.POSTGRES_HOST}:"
+    f"{settings.POSTGRES_PORT}/"
+    f"{settings.POSTGRES_DB}"
 )
-print(DATABASE_URL)
-engine = create_engine(DATABASE_URL)
+
+# -----------------------------------------------------
+# SQLAlchemy Engine
+# -----------------------------------------------------
+
+engine = create_engine(
+    DATABASE_URL,
+    pool_pre_ping=True,
+    pool_recycle=3600,
+    pool_size=10,
+    max_overflow=20,
+)
+
+logger.info(
+    "Database engine initialized."
+)
+
+# -----------------------------------------------------
+# Session Factory
+# -----------------------------------------------------
 
 SessionLocal = sessionmaker(
+    bind=engine,
     autocommit=False,
     autoflush=False,
-    bind=engine
 )
-
-print("HOST =", settings.POSTGRES_HOST)
-print(DATABASE_URL)

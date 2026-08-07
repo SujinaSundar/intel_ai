@@ -18,12 +18,10 @@ ETL Steps:
 from datetime import datetime
 
 import requests
-
 from app.core.logger import logger
-from app.database.connection import SessionLocal
 from app.database.config import settings
+from app.database.connection import SessionLocal
 from app.database.models import Company, NewsMetadata
-
 
 # --------------------------------------------------
 # Marketaux Symbol Mapping

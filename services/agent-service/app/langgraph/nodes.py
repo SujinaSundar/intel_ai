@@ -7,7 +7,6 @@ orchestration.
 """
 
 import logging
-from typing import Any
 
 from app.agents.supervisor_agent import SupervisorAgent
 from app.langgraph.state import AgentState
@@ -81,7 +80,8 @@ class WorkflowNodes:
         )
 
         route = self.supervisor.route(
-            state["question"]
+            question=state["question"],
+            history=state["history"],
         )
 
         logger.info(
@@ -243,11 +243,23 @@ class WorkflowNodes:
             "company_two"
         )
 
+        # Validate company names
         if not company_one or not company_two:
 
             return self._set_error(
                 state,
                 "Comparison requires two company names.",
+            )
+
+        # Prevent comparing the same company
+        if (
+            company_one.strip().lower()
+            == company_two.strip().lower()
+        ):
+
+            return self._set_error(
+                state,
+                "Please select two different companies for comparison.",
             )
 
         state["agent_response"] = (
@@ -259,7 +271,7 @@ class WorkflowNodes:
 
         return state
 
-    # -----------------------------------------------------
+     # -----------------------------------------------------
     # Sector Node
     # -----------------------------------------------------
 
@@ -277,24 +289,32 @@ class WorkflowNodes:
 
         route = state["route"]
 
-        sector = route.get("sector")
+        sector = route.get(
+            "sector"
+        )
+
+        company = route.get(
+            "company"
+        )
 
         question = route.get(
             "question",
             state["question"],
         )
 
-        if not sector:
+        # At least one of sector or company must exist
+        if not sector and not company:
 
             return self._set_error(
                 state,
-                "Sector name missing.",
+                "Sector or company information is missing.",
             )
 
         state["agent_response"] = (
             self.supervisor.sector.answer(
                 question=question,
                 sector=sector,
+                company=company,
             )
         )
 

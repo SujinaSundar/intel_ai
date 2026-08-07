@@ -2,11 +2,10 @@
 Retrieval evaluation metrics.
 """
 
-from typing import List
 
 
 def hit_rate(
-    retrieved_documents: List[str],
+    retrieved_documents: list[str],
     ground_truth: str
 ) -> float:
     """
@@ -26,7 +25,7 @@ def hit_rate(
 
 
 def precision_at_k(
-    retrieved_documents: List[str],
+    retrieved_documents: list[str],
     ground_truth: str
 ) -> float:
     """
@@ -51,7 +50,7 @@ def precision_at_k(
 
 
 def recall_at_k(
-    retrieved_documents: List[str],
+    retrieved_documents: list[str],
     ground_truth: str
 ) -> float:
     """
@@ -70,7 +69,7 @@ def recall_at_k(
 
 
 def mean_reciprocal_rank(
-    retrieved_documents: List[str],
+    retrieved_documents: list[str],
     ground_truth: str
 ) -> float:
     """
@@ -92,7 +91,7 @@ def mean_reciprocal_rank(
 
 
 def context_recall(
-    retrieved_documents: List[str],
+    retrieved_documents: list[str],
     ground_truth: str
 ) -> float:
     """

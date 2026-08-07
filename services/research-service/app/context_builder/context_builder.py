@@ -15,16 +15,8 @@ Combined Context
 """
 
 from app.database.connection import SessionLocal
-
-from app.database.models import (
-    Company,
-    StockPrice,
-    SentimentScore
-)
-
-from app.retrieval.retrieval_service import (
-    retrieve_documents
-)
+from app.database.models import Company, SentimentScore, StockPrice
+from app.retrieval.retrieval_service import retrieve_documents
 
 
 def build_context(

@@ -8,11 +8,6 @@ Research Agent.
 
 import logging
 
-from fastapi import (
-    APIRouter,
-    Depends,
-)
-
 from app.auth.dependencies import get_current_user
 from app.database.models import User
 from app.schemas.chat import (
@@ -20,6 +15,10 @@ from app.schemas.chat import (
     ChatResponse,
 )
 from app.services.chat_service import ask_question
+from fastapi import (
+    APIRouter,
+    Depends,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +53,10 @@ def ask(
 
     answer = ask_question(
         question=request.question,
+        history=[
+            message.model_dump()
+            for message in request.history
+        ],
         user_id=current_user.id,
     )
 
@@ -77,7 +80,9 @@ def health_check():
     Agent Service health check.
     """
 
-    logger.info("Health check endpoint accessed.")
+    logger.info(
+        "Health check endpoint accessed."
+    )
 
     return {
         "service": "Agent Service",

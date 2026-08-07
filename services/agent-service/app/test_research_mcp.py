@@ -1,8 +1,6 @@
 from pprint import pprint
 
-from app.mcp.research_mcp import (
-    ResearchMCP
-)
+from app.mcp.research_mcp import ResearchMCP
 
 mcp = ResearchMCP()
 

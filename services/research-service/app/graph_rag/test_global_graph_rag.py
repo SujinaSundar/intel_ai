@@ -2,9 +2,7 @@
 Test Global GraphRAG.
 """
 
-from app.graph_rag.global_graph_rag_pipeline import (
-    ask_global_graph_question
-)
+from app.graph_rag.global_graph_rag_pipeline import ask_global_graph_question
 
 
 def main():

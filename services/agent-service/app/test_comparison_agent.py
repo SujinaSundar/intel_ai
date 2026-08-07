@@ -4,9 +4,7 @@ Test Comparison Agent.
 
 from pprint import pprint
 
-from app.agents.comparison_agent import (
-    ComparisonAgent
-)
+from app.agents.comparison_agent import ComparisonAgent
 
 
 def main():

@@ -3,15 +3,13 @@ import sys
 
 
 def setup_logging():
-    """
-    Configure application logging.
-    """
-
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
-        handlers=[
-            logging.StreamHandler(sys.stdout),
-        ],
+        handlers=[logging.StreamHandler(sys.stdout)],
         force=True,
     )
+
+
+setup_logging()
+logger = logging.getLogger(__name__)

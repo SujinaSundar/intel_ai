@@ -20,24 +20,9 @@ from app.exceptions.custom_exceptions import (
 from app.mcp.finance_mcp import FinanceMCP
 from app.mcp.news_mcp import NewsMCP
 from app.mcp.research_mcp import ResearchMCP
+from app.repositories.company_repository import CompanyRepository
 
 logger = logging.getLogger(__name__)
-
-
-SECTOR_COMPANIES: dict[str, list[str]] = {
-    "IT": [
-        "Infosys",
-        "TCS",
-        "Wipro",
-    ],
-    "Banking": [
-        "HDFC Bank",
-        "ICICI Bank",
-    ],
-    "Energy": [
-        "Reliance Industries",
-    ],
-}
 
 
 class SectorMCP:
@@ -63,6 +48,7 @@ class SectorMCP:
         self.finance = FinanceMCP()
         self.news = NewsMCP()
         self.research = ResearchMCP()
+        
 
     # -----------------------------------------------------
     # Validation
@@ -82,6 +68,36 @@ class SectorMCP:
                 "Sector name cannot be empty."
             )
 
+    def get_company_sector(
+        self,
+        company_name: str,
+    ) -> str:
+        """
+        Retrieve the sector
+        for a company.
+        """
+
+        logger.info(
+            "Fetching sector for company=%s",
+            company_name,
+        )
+
+        sector = CompanyRepository().get_sector(
+        company_name
+            )
+
+        if not sector:
+
+            logger.warning(
+                "Company not found: %s",
+                company_name,
+            )
+
+            raise InvalidRequestException(
+                f"Company '{company_name}' not found."
+            )
+
+        return sector
     # -----------------------------------------------------
     # Sector Companies
     # -----------------------------------------------------
@@ -104,9 +120,8 @@ class SectorMCP:
             sector,
         )
 
-        return SECTOR_COMPANIES.get(
-            sector,
-            [],
+        return CompanyRepository().get_companies_by_sector(
+    sector
         )
 
     # -----------------------------------------------------
@@ -135,11 +150,17 @@ class SectorMCP:
         finance = []
 
         for company in companies:
+
             try:
+
                 finance.append(
-                    self.finance.get_stock_summary(company)
+                    self.finance.get_stock_summary(
+                        company
+                    )
                 )
+
             except Exception as ex:
+
                 logger.warning(
                     "Skipping finance for %s: %s",
                     company,
@@ -147,6 +168,7 @@ class SectorMCP:
                 )
 
         return finance
+
     # -----------------------------------------------------
     # News
     # -----------------------------------------------------
@@ -173,7 +195,9 @@ class SectorMCP:
         news = []
 
         for company in companies:
+
             try:
+
                 news.append(
                     {
                         "company": company,
@@ -185,7 +209,9 @@ class SectorMCP:
                         ),
                     }
                 )
+
             except Exception as ex:
+
                 logger.warning(
                     "Skipping news for %s: %s",
                     company,
@@ -193,6 +219,7 @@ class SectorMCP:
                 )
 
         return news
+
     # -----------------------------------------------------
     # Research
     # -----------------------------------------------------
@@ -223,13 +250,13 @@ class SectorMCP:
             try:
 
                 result = self.research.answer_question(
-                    (
+                    
                         f"Provide a concise research summary "
                         f"of {company} in under 150 words "
                         f"covering business, financial "
                         f"performance, growth strategy "
                         f"and risks."
-                    )
+                    
                 )
 
                 research.append(

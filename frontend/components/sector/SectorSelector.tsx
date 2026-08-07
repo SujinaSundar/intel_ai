@@ -116,10 +116,9 @@ export default function SectorSelector({
         try {
 
             const response = await askQuestion(
-
-                `Analyze the ${sector} sector.`
-
-            );
+    `Analyze the ${sector} sector.`,
+    []
+);
 
             setResult(response);
 
@@ -192,13 +191,12 @@ export default function SectorSelector({
 
                     <Select
 
-                        value={sector}
+                       value={sector}
 
-                        onValueChange={(value) => {
-    if (value !== null) {
-        setSector(value);
-    }
+onValueChange={(value, _details) => {
+    setSector(value ?? "");
 }}
+
 
                     >
 

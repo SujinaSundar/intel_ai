@@ -1,6 +1,4 @@
-from app.sentiment.sentiment_service import (
-    predict_sentiment
-)
+from app.sentiment.sentiment_service import predict_sentiment
 
 text = (
     "Infosys beats earnings estimates and raises guidance"

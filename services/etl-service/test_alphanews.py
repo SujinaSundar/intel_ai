@@ -16,8 +16,8 @@ data = response.json()
 print(data.keys())
 print(data["feed"][0])
 print(len(data["feed"]))"""
-from app.database.config import settings
 import requests
+from app.database.config import settings
 
 url = (
     "https://www.alphavantage.co/query"

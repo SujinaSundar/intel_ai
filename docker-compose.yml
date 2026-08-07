@@ -1,38 +1,5 @@
 services:
 
-  postgres:
-    image: postgres:17
-    container_name: intel-ai-postgres
-
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-
-    ports:
-      - "5433:5432"
-
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-    restart: unless-stopped
-
-  neo4j:
-    image: neo4j:5
-    container_name: intel-ai-neo4j
-
-    environment:
-      NEO4J_AUTH: ${NEO4J_USERNAME}/${NEO4J_PASSWORD}
-
-    ports:
-      - "7474:7474"
-      - "7687:7687"
-
-    volumes:
-      - neo4j_data:/data
-
-    restart: unless-stopped
-
   airflow:
     build:
       context: .
@@ -53,8 +20,8 @@ services:
       - ./services/etl-service/app/dags:/opt/airflow/dags
       - ./.env.docker:/opt/airflow/.env
 
-    depends_on:
-      - postgres
+    env_file:
+      - .env.docker
 
     restart: unless-stopped
 
@@ -71,8 +38,35 @@ services:
     command: >
       uv run python -m app.jobs.sentiment_worker
 
-    depends_on:
-      - postgres
+    restart: unless-stopped
+
+  research:
+    build:
+      context: .
+      dockerfile: services/research-service/Dockerfile
+
+    container_name: intel-ai-research
+
+    ports:
+      - "8001:8001"
+
+    env_file:
+      - .env.docker
+
+    restart: unless-stopped
+
+  news:
+    build:
+      context: .
+      dockerfile: services/news-service/Dockerfile
+
+    container_name: intel-ai-news
+
+    ports:
+      - "8002:8002"
+
+    env_file:
+      - .env.docker
 
     restart: unless-stopped
 
@@ -90,27 +84,8 @@ services:
       - .env.docker
 
     depends_on:
-      - postgres
-      - neo4j
-
-    restart: unless-stopped
-
-  research:
-    build:
-      context: .
-      dockerfile: services/research-service/Dockerfile
-
-    container_name: intel-ai-research
-
-    ports:
-      - "8001:8001"
-
-    env_file:
-      - .env.docker
-
-    depends_on:
-      - postgres
-      - neo4j
+      - research
+      - news
 
     restart: unless-stopped
 
@@ -131,7 +106,3 @@ services:
       - agent
 
     restart: unless-stopped
-
-volumes:
-  postgres_data:
-  neo4j_data:

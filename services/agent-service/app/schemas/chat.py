@@ -10,10 +10,38 @@ from pydantic import (
     Field,
 )
 
+# -----------------------------------------------------
+# Chat Message
+# -----------------------------------------------------
+
+
+class ChatMessage(BaseModel):
+    """
+    Single chat message.
+
+    Represents one message
+    in the conversation
+    history.
+    """
+
+    role: str = Field(
+        ...,
+        description="Message role (user or assistant).",
+        examples=["user"],
+    )
+
+    content: str = Field(
+        ...,
+        min_length=1,
+        description="Message content.",
+        examples=["Tell me about Infosys."],
+    )
+
 
 # -----------------------------------------------------
 # Chat Request
 # -----------------------------------------------------
+
 
 class ChatRequest(BaseModel):
     """
@@ -30,14 +58,21 @@ class ChatRequest(BaseModel):
         ],
     )
 
+    history: list[ChatMessage] = Field(
+        default_factory=list,
+        description="Previous conversation history.",
+    )
+
 
 # -----------------------------------------------------
 # Chat Response
 # -----------------------------------------------------
 
+
 class ChatResponse(BaseModel):
     """
-    Response model returned by the AI agent.
+    Response model returned
+    by the AI agent.
     """
 
     answer: str = Field(

@@ -1,6 +1,6 @@
-from fastapi import APIRouter
 from database.connection import SessionLocal
 from database.models import Company
+from fastapi import APIRouter
 
 router = APIRouter()
 
