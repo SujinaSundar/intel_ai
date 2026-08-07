@@ -100,11 +100,12 @@ export default function CompanySelector({
                     </label>
 
                     <Select
-
                         value={value}
-
-                        onValueChange={onChange}
-
+                        onValueChange={(newValue, _details) => {
+                            if (newValue !== null) {
+                                onChange(newValue);
+                            }
+                        }}
                     >
 
                         <SelectTrigger className="h-12 w-full rounded-xl transition-all focus:ring-2 focus:ring-primary">

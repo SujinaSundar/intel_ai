@@ -191,11 +191,12 @@ export default function SectorSelector({
 
                     <Select
 
-                        value={sector}
+                       value={sector}
 
-                        onValueChange={(value, _details) => {
+onValueChange={(value, _details) => {
     setSector(value ?? "");
 }}
+
 
                     >
 

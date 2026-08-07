@@ -1,6 +1,6 @@
 const BASE_URL =
   process.env.NEXT_PUBLIC_AGENT_API ??
-  "http://localhost:8000";
+  "https://agent-service-70305477964.asia-south1.run.app";
 
 interface RegisterRequest {
   name: string;

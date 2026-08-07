@@ -677,8 +677,7 @@ frontend/
 
 services/
     agent-service/
-    finance-service/
-    news-service/
+    ETL-service/
     research-service/
 
 docker-compose.yml

@@ -175,7 +175,11 @@ export default function CompareForm({
 
                             value={companyOne}
 
-                            onValueChange={setCompanyOne}
+                           onValueChange={(value) => {
+    if (value !== null) {
+        setCompanyOne(value);
+    }
+}}
 
                         >
 
@@ -249,7 +253,11 @@ export default function CompareForm({
 
                             value={companyTwo}
 
-                            onValueChange={setCompanyTwo}
+                            onValueChange={(value) => {
+    if (value !== null) {
+        setCompanyTwo(value);
+    }
+}}
 
                         >
 
