@@ -107,11 +107,9 @@ export default function CompareForm({
         try {
 
             const response = await askQuestion(
-
-                `Compare ${companyOne} and ${companyTwo}.`
-
-            );
-
+    `Compare ${companyOne} and ${companyTwo}.`,
+    []
+);
             setResult(response);
 
         }
