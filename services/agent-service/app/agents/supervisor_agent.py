@@ -129,9 +129,15 @@ class SupervisorAgent:
             decision = json.loads(
                 response
             )
+
             # -------------------------------------------------
-            # Recover missing company
+            # Recover missing or unknown company
             # -------------------------------------------------
+
+            company_value = decision.get(
+                "company",
+                "",
+            )
 
             if (
                 decision.get("agent")
@@ -140,8 +146,20 @@ class SupervisorAgent:
                     "News",
                     "Sector",
                 )
-                and not decision.get("company")
+                and str(company_value).strip().lower()
+                in (
+                    "",
+                    "unknown",
+                    "none",
+                    "null",
+                )
             ):
+
+                logger.info(
+                    "Company missing from "
+                    "Supervisor response."
+                )
+
                 logger.info(
                     "Current question: %s",
                     question,
@@ -165,6 +183,13 @@ class SupervisorAgent:
                     )
 
                     decision["company"] = company
+
+                else:
+
+                    logger.warning(
+                        "Unable to resolve company "
+                        "from question or history."
+                    )
 
             logger.info(
                 "Supervisor parsed decision: %s",
@@ -197,7 +222,7 @@ class SupervisorAgent:
             )
 
             raise LLMServiceException(
-                "Invalid routing response received from LLM."
+                "Invalid routing response received by LLM."
             ) from error
 
         except Exception as error:

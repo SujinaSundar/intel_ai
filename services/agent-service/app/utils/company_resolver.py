@@ -1,10 +1,24 @@
 """
 Company Resolver.
 
+
 Resolves company names
 from the current question
 or conversation history.
 """
+
+
+PRONOUNS = (
+    " it ",
+    " it's ",
+    " its ",
+    " they ",
+    " them ",
+    " their ",
+    " this ",
+    " that ",
+    " company ",
+)
 
 
 COMPANIES = [
@@ -22,6 +36,8 @@ COMPANIES = [
 ]
 
 
+
+
 def resolve_company(
     question: str,
     history: list[dict[str, str]] | None = None,
@@ -31,33 +47,65 @@ def resolve_company(
     current question or conversation history.
     """
 
+
     history = history or []
 
-    text = question.lower()
 
-    # -------------------------------------------------
-    # Search current question
-    # -------------------------------------------------
+    question_lower = f" {question.lower()} "
+
+
+    # ---------------------------------------------
+    # Explicit company in current question
+    # ---------------------------------------------
+
 
     for company in COMPANIES:
 
-        if company.lower() in text:
+
+        if company.lower() in question_lower:
+
+
             return company
 
-    # -------------------------------------------------
-    # Search conversation history (latest first)
-    # -------------------------------------------------
+
+    # ---------------------------------------------
+    # Pronoun reference?
+    # ---------------------------------------------
+
+
+    uses_reference = any(
+        pronoun in question_lower
+        for pronoun in PRONOUNS
+    )
+
+
+    if not uses_reference:
+
+
+        return None
+
+
+    # ---------------------------------------------
+    # Find latest company in history
+    # ---------------------------------------------
+
 
     for message in reversed(history):
+
 
         content = message.get(
             "content",
             "",
         ).lower()
 
+
         for company in COMPANIES:
 
+
             if company.lower() in content:
+
+
                 return company
+
 
     return None
