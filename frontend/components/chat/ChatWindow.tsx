@@ -9,27 +9,17 @@
  */
 
 import {
-
     useEffect,
-
     useRef,
-
-    useState
-
+    useState,
 } from "react";
 
 import {
-
     Brain,
-
     BarChart3,
-
     Building2,
-
     Landmark,
-
-    Newspaper
-
+    Newspaper,
 } from "lucide-react";
 
 import ChatInput from "./ChatInput";
@@ -47,19 +37,13 @@ export default function ChatWindow() {
     // ---------------------------------------------------------
 
     const [
-
         messages,
-
-        setMessages
-
+        setMessages,
     ] = useState<Message[]>([]);
 
     const [
-
         loading,
-
-        setLoading
-
+        setLoading,
     ] = useState(false);
 
     // ---------------------------------------------------------
@@ -71,17 +55,12 @@ export default function ChatWindow() {
     useEffect(() => {
 
         messagesEndRef.current?.scrollIntoView({
-
-            behavior: "smooth"
-
+            behavior: "smooth",
         });
 
     }, [
-
         messages,
-
-        loading
-
+        loading,
     ]);
 
     // ---------------------------------------------------------
@@ -89,126 +68,113 @@ export default function ChatWindow() {
     // ---------------------------------------------------------
 
     const handleSend = async (
-
         question: string
-
     ) => {
 
+        // -----------------------------------------------------
+        // Create current user message
+        // -----------------------------------------------------
+
         const userMessage: Message = {
-
             id: crypto.randomUUID(),
-
             role: "user",
-
             content: question,
-
-            createdAt: new Date()
-
+            createdAt: new Date(),
         };
 
-        // Build conversation history before updating state
-        const history = [
+        // -----------------------------------------------------
+        // Build conversation history
+        //
+        // IMPORTANT:
+        // Only previous messages are sent as history.
+        // The current question is sent separately.
+        // -----------------------------------------------------
 
-            ...messages,
+        const history = messages.map(message => ({
+        role: message.role,
+        content: message.content,
+    }));
 
-            userMessage,
-
-        ].map(
-
-            message => ({
-
-                role: message.role,
-
-                content: message.content,
-
-            })
-
+        console.log(
+            "Sending question:",
+            question
         );
 
+        console.log(
+            "Sending conversation history:",
+            history
+        );
+
+        // -----------------------------------------------------
+        // Immediately display user message
+        // -----------------------------------------------------
+
         setMessages(
-
             previous => [
-
                 ...previous,
-
-                userMessage
-
+                userMessage,
             ]
-
         );
 
         setLoading(true);
 
+        // -----------------------------------------------------
+        // Call Agent Service
+        // -----------------------------------------------------
+
         try {
 
             const answer = await askQuestion(
-
                 question,
-
                 history,
-
             );
 
+            // -------------------------------------------------
+            // Add assistant response
+            // -------------------------------------------------
+
             setMessages(
-
                 previous => [
-
                     ...previous,
-
                     {
-
                         id: crypto.randomUUID(),
-
                         role: "assistant",
-
                         content: answer,
-
-                        createdAt: new Date()
-
-                    }
-
+                        createdAt: new Date(),
+                    },
                 ]
-
             );
 
-        }
+        } catch (error) {
 
-        catch {
+            console.error(
+                "Agent Service error:",
+                error
+            );
+
+            // -------------------------------------------------
+            // Display error message
+            // -------------------------------------------------
 
             setMessages(
-
                 previous => [
-
                     ...previous,
-
                     {
-
                         id: crypto.randomUUID(),
-
                         role: "assistant",
-
                         content:
-
                             "Unable to connect to the Agent Service.",
-
                         createdAt: new Date(),
-
-                        error: true
-
-                    }
-
+                        error: true,
+                    },
                 ]
-
             );
 
-        }
-
-        finally {
+        } finally {
 
             setLoading(false);
 
         }
-
     };
 
     // ---------------------------------------------------------
@@ -224,7 +190,6 @@ export default function ChatWindow() {
             {/* -------------------------------------------------- */}
 
             {
-
                 messages.length === 0 && (
 
                     <div className="mb-10 text-center">
@@ -265,6 +230,8 @@ export default function ChatWindow() {
 
                         <div className="mx-auto mt-10 grid max-w-5xl gap-4 md:grid-cols-2 xl:grid-cols-4">
 
+                            {/* Financial Analysis */}
+
                             <div className="rounded-2xl border border-border bg-card p-5 text-left shadow-sm">
 
                                 <BarChart3 className="mb-3 h-6 w-6 text-primary" />
@@ -282,6 +249,8 @@ export default function ChatWindow() {
                                 </p>
 
                             </div>
+
+                            {/* Company Research */}
 
                             <div className="rounded-2xl border border-border bg-card p-5 text-left shadow-sm">
 
@@ -301,6 +270,8 @@ export default function ChatWindow() {
 
                             </div>
 
+                            {/* News Intelligence */}
+
                             <div className="rounded-2xl border border-border bg-card p-5 text-left shadow-sm">
 
                                 <Newspaper className="mb-3 h-6 w-6 text-primary" />
@@ -318,6 +289,8 @@ export default function ChatWindow() {
                                 </p>
 
                             </div>
+
+                            {/* Sector Analysis */}
 
                             <div className="rounded-2xl border border-border bg-card p-5 text-left shadow-sm">
 
@@ -342,7 +315,6 @@ export default function ChatWindow() {
                     </div>
 
                 )
-
             }
 
             {/* -------------------------------------------------- */}
@@ -350,17 +322,13 @@ export default function ChatWindow() {
             {/* -------------------------------------------------- */}
 
             {
-
                 messages.length === 0 && (
 
                     <SuggestedQuestions
-
                         onSelect={handleSend}
-
                     />
 
                 )
-
             }
 
             {/* -------------------------------------------------- */}
@@ -370,33 +338,22 @@ export default function ChatWindow() {
             <div className="flex-1 overflow-y-auto py-6 pr-2">
 
                 {
-
                     messages.map(
-
                         message => (
 
                             <ChatMessage
-
                                 key={message.id}
-
                                 message={message}
-
                             />
 
                         )
-
                     )
-
                 }
 
                 {
-
                     loading && (
-
                         <TypingIndicator />
-
                     )
-
                 }
 
                 {/* Auto Scroll */}
@@ -412,17 +369,12 @@ export default function ChatWindow() {
             <div className="sticky bottom-0 border-t border-border bg-background/95 py-5 backdrop-blur">
 
                 <ChatInput
-
                     onSend={handleSend}
-
                     disabled={loading}
-
                 />
 
             </div>
 
         </div>
-
     );
-
 }
