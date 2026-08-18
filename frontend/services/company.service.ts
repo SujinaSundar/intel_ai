@@ -23,19 +23,19 @@ export async function getCompanyData(
 
         askQuestion(
 
-            `Provide the latest financial summary of ${company}.`
+            `Provide the latest financial summary of ${company}.`,[]
 
         ),
 
         askQuestion(
 
-            `Give me a research summary of ${company}.`
+            `Give me a research summary of ${company}.`,[]
 
         ),
 
         askQuestion(
 
-            `Summarize the latest news about ${company}.`
+            `Summarize the latest news about ${company}.`,[]
 
         )
 

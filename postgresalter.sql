@@ -70,6 +70,17 @@ SELECT column_name
 FROM information_schema.columns
 WHERE table_name = 'news_metadata';
 
+SELECT column_name
+FROM information_schema.columns
+WHERE table_name = 'document_chunks';
+
+ALTER TABLE document_chunks
+ADD COLUMN is_embedded BOOLEAN DEFAULT FALSE;
+
+UPDATE document_chunks
+SET is_embedded = FALSE
+WHERE is_embedded IS NULL;
+
 ALTER TABLE news_metadata
 ADD COLUMN is_processed BOOLEAN DEFAULT FALSE;
 
@@ -88,3 +99,44 @@ REFERENCES news_metadata(id);
 ALTER TABLE sentiment_scores
 ADD CONSTRAINT uq_sentiment_news
 UNIQUE(news_id);
+
+SELECT COUNT(*) FROM stock_prices;
+SELECT company_name, ticker, sector
+FROM companies
+LIMIT 5;
+
+SELECT *
+FROM stock_prices
+ORDER BY trade_date DESC
+LIMIT 5;
+
+SELECT * FROM companies
+
+SELECT *
+FROM document_chunks
+
+SELECT title
+FROM news_metadata
+WHERE lower(title) LIKE '%timber%';
+
+SELECT
+    n.id,
+    n.title,
+    c.company_name
+FROM news_metadata n
+JOIN companies c
+ON n.company_id = c.id
+WHERE lower(n.title) LIKE '%timber%';
+
+DELETE FROM sentiment_scores;
+DELETE FROM news_metadata;
+
+SELECT MAX(trade_date)
+FROM stock_prices;
+
+SELECT current_database();
+
+SELECT COUNT(*) FROM stock_prices;
+
+SELECT company_name, ticker
+FROM companies;

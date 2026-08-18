@@ -47,7 +47,7 @@ def generate_answer(
     try:
 
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="openai/gpt-oss-20b",
             messages=[
                 {
                     "role": "user",
@@ -55,6 +55,7 @@ def generate_answer(
                 }
             ],
             temperature=0,
+            max_tokens=512,
         )
 
         answer = response.choices[0].message.content
