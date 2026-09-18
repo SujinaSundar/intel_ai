@@ -1121,19 +1121,7 @@ Includes:
 
 ---
 
-# 🎥 Demo
 
-A short demonstration of the platform is available below.
-
-> 📹 **Demo Video:** *(Add YouTube or Loom link here)*
-
-Example:
-
-```
-https://youtu.be/your-demo-video
-```
-
----
 
 # 📈 Supported Capabilities
 
@@ -1407,7 +1395,7 @@ B.Tech in Computer Science and Engineering
 
 - LinkedIn: https://linkedin.com/in/<your-linkedin-profile>
 
-- Email: your-email@example.com
+- Email: sujinasundar2025@gmail.com
 
 ---
 
