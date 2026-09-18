@@ -1045,14 +1045,18 @@ Start asking questions and explore the capabilities of the Intel AI Trading Rese
 
 The Intel AI Trading Research Platform provides a modern, AI-powered interface for exploring financial information, comparing companies, and generating investment research.
 
-<img width="1886" height="822" alt="Screenshot 2026-09-18 170331" src="https://github.com/user-attachments/assets/91bd2bdd-cb17-4e2a-8f4f-78bec22ad10a" />
-<img width="1856" height="732" alt="Screenshot 2026-09-18 170302" src="https://github.com/user-attachments/assets/9431fd00-4fe7-454b-a5f0-e0e432f6f452" />
-<img width="1852" height="677" alt="Screenshot 2026-09-18 170242" src="https://github.com/user-attachments/assets/e9289fa3-1853-4eb2-ad67-054fbd89a1b1" />
-<img width="1896" height="670" alt="Screenshot 2026-09-18 170045" src="https://github.com/user-attachments/assets/9dbd7ba8-c51a-41e7-9ada-8fb36f20877b" />
-<img width="1902" height="782" alt="Screenshot 2026-09-18 170027" src="https://github.com/user-attachments/assets/d19d5d70-11ad-4d4b-88c8-09361b12d338" />
+
 <img width="1082" height="712" alt="Screenshot 2026-09-18 165928" src="https://github.com/user-attachments/assets/d3785e74-c5a9-4761-8bc8-2e3b9654ff85" />
 
+<img width="1902" height="782" alt="Screenshot 2026-09-18 170027" src="https://github.com/user-attachments/assets/d19d5d70-11ad-4d4b-88c8-09361b12d338" />
 
+<img width="1896" height="670" alt="Screenshot 2026-09-18 170045" src="https://github.com/user-attachments/assets/9dbd7ba8-c51a-41e7-9ada-8fb36f20877b" />
+
+<img width="1852" height="677" alt="Screenshot 2026-09-18 170242" src="https://github.com/user-attachments/assets/e9289fa3-1853-4eb2-ad67-054fbd89a1b1" />
+
+<img width="1856" height="732" alt="Screenshot 2026-09-18 170302" src="https://github.com/user-attachments/assets/9431fd00-4fe7-454b-a5f0-e0e432f6f452" />
+
+<img width="1886" height="822" alt="Screenshot 2026-09-18 170331" src="https://github.com/user-attachments/assets/91bd2bdd-cb17-4e2a-8f4f-78bec22ad10a" />
 
 ---
 
